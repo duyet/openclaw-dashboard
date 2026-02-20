@@ -23,7 +23,6 @@ describe("LocalAuthLogin", () => {
     fetchMock.mockReset();
     setLocalAuthTokenMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
-    vi.stubEnv("NEXT_PUBLIC_API_URL", "http://localhost:8000/");
   });
 
   afterEach(() => {
@@ -70,7 +69,7 @@ describe("LocalAuthLogin", () => {
       expect(screen.getByText("Token is invalid.")).toBeInTheDocument()
     );
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/users/me",
+      "/api/v1/users/me",
       expect.objectContaining({
         method: "GET",
         headers: { Authorization: `Bearer ${"x".repeat(50)}` },
@@ -107,7 +106,7 @@ describe("LocalAuthLogin", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText("Unable to reach backend to validate token.")
+        screen.getByText("Unable to reach the API to validate token.")
       ).toBeInTheDocument()
     );
     expect(setLocalAuthTokenMock).not.toHaveBeenCalled();

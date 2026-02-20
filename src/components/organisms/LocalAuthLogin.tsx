@@ -11,23 +11,16 @@ import { Input } from "@/components/ui/input";
 const LOCAL_AUTH_TOKEN_MIN_LENGTH = 50;
 
 async function validateLocalToken(token: string): Promise<string | null> {
-  const rawBaseUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!rawBaseUrl) {
-    return "NEXT_PUBLIC_API_URL is not set.";
-  }
-
-  const baseUrl = rawBaseUrl.replace(/\/+$/, "");
-
   let response: Response;
   try {
-    response = await fetch(`${baseUrl}/api/v1/users/me`, {
+    response = await fetch("/api/v1/users/me", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
   } catch {
-    return "Unable to reach backend to validate token.";
+    return "Unable to reach the API to validate token.";
   }
 
   if (response.ok) {
