@@ -1,0 +1,28 @@
+name = "openclaw-mission-control"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+AUTH_MODE = "clerk"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "openclaw-mc"
+database_id = "placeholder-run-wrangler-d1-create-openclaw-mc"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "placeholder-run-wrangler-kv-create"
+preview_id = "placeholder-run-wrangler-kv-create-preview"
+
+[[queues.producers]]
+binding = "WEBHOOK_QUEUE"
+queue = "webhook-delivery"
+
+[[queues.consumers]]
+queue = "webhook-delivery"
+max_batch_size = 10
+max_retries = 3
+dead_letter_queue = "webhook-delivery-dlq"

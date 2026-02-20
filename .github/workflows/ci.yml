@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('bun.lockb') }}-${{ hashFiles('src/**/*.ts', 'src/**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('bun.lockb') }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Enforce one migration per PR
+        if: github.event_name == 'pull_request'
+        run: bash scripts/ci/one_migration_per_pr.sh
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bunx tsc -p tsconfig.json --noEmit
+
+      - name: Test
+        run: bun run test
+
+      - name: Build
+        run: bun run cf:build
+
+      - name: Docs quality gates
+        run: make docs-check
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/**
+          retention-days: 7
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run E2E tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: bun run dev
+          wait-on: 'http://localhost:3000'
+          browser: chrome
+        env:
+          NEXT_PUBLIC_AUTH_MODE: local
+          LOCAL_AUTH_TOKEN: test-token
+
+      - name: Upload Cypress artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
+          retention-days: 7

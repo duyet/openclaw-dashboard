@@ -1,0 +1,27 @@
+# Node / Next
+node_modules/
+.next/
+*.tsbuildinfo
+out/
+dist/
+
+# Env
+.env
+.env.local
+
+# Coverage
+coverage/
+
+# Auth
+/.clerk/
+
+# IDE
+.idea/
+
+# Deployment / Runtimes
+.wrangler/
+.vercel/
+
+# Cypress
+cypress/screenshots/
+cypress/videos/
