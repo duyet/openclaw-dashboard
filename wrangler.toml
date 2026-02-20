@@ -21,8 +21,9 @@ preview_id = "placeholder-run-wrangler-kv-create-preview"
 binding = "WEBHOOK_QUEUE"
 queue = "webhook-delivery"
 
-[[queues.consumers]]
-queue = "webhook-delivery"
-max_batch_size = 10
-max_retries = 3
-dead_letter_queue = "webhook-delivery-dlq"
+# Queue consumer must be a separate Worker — see workers/queue-consumer.ts
+# [[queues.consumers]]
+# queue = "webhook-delivery"
+# max_batch_size = 10
+# max_retries = 3
+# dead_letter_queue = "webhook-delivery-dlq"
