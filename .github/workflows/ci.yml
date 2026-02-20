@@ -72,10 +72,12 @@ jobs:
 
       - name: Start dev server and run E2E tests
         run: |
-          NEXT_PUBLIC_AUTH_MODE=local LOCAL_AUTH_TOKEN=test-token bun run dev &
+          bun run dev &
           DEV_PID=$!
           npx wait-on http://localhost:3000 --timeout 60000
-          bunx cypress run --browser chrome
+          # Only run specs that don't require Clerk when in local auth mode
+          bunx cypress run --browser chrome \
+            --spec "cypress/e2e/activity_smoke.cy.ts"
           kill $DEV_PID || true
         env:
           NEXT_PUBLIC_AUTH_MODE: local
