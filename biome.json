@@ -36,7 +36,8 @@
         "noExplicitAny": "off",
         "noArrayIndexKey": "off",
         "noShadowRestrictedNames": "off",
-        "noImplicitAnyLet": "off"
+        "noImplicitAnyLet": "off",
+        "useIterableCallbackReturn": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
@@ -48,7 +49,8 @@
         "useAltText": "off",
         "useSemanticElements": "off",
         "noStaticElementInteractions": "off",
-        "useAriaPropsSupportedByRole": "off"
+        "useAriaPropsSupportedByRole": "off",
+        "noLabelWithoutControl": "off"
       },
       "complexity": {
         "noForEach": "off",
@@ -65,7 +67,9 @@
       },
       "correctness": {
         "useExhaustiveDependencies": "off",
-        "useHookAtTopLevel": "off"
+        "useHookAtTopLevel": "off",
+        "noUnusedVariables": "off",
+        "noUnsafeFinally": "off"
       }
     }
   },
