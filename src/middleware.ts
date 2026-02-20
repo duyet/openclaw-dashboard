@@ -4,13 +4,18 @@
  * - Clerk middleware for user auth in clerk mode
  * - Passthrough for public API routes (health, webhook ingest, bootstrap)
  * - Agent token passthrough (handled by route handlers directly)
+ *
+ * IMPORTANT: process.env.NEXT_PUBLIC_AUTH_MODE is inlined at build time by
+ * Next.js webpack. When the value is "local", the clerkMiddleware() branch is
+ * never reached, preventing Clerk from initialising without a valid publishable
+ * key (which would crash the edge worker on every request).
  */
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
- * Routes that should bypass all authentication.
+ * Routes that should bypass all authentication (Clerk mode only).
  */
 const isPublicRoute = createRouteMatcher([
   // Health check endpoints
@@ -33,32 +38,17 @@ function hasAgentToken(request: NextRequest): boolean {
   return request.headers.has("X-Agent-Token");
 }
 
-/**
- * Check if we are in local auth mode.
- */
-function isLocalAuthMode(): boolean {
-  return process.env.NEXT_PUBLIC_AUTH_MODE === "local";
-}
-
-export default clerkMiddleware(async (auth, request) => {
-  // Agent token requests bypass Clerk entirely
-  if (hasAgentToken(request)) {
-    return NextResponse.next();
-  }
-
-  // Public routes pass through
-  if (isPublicRoute(request)) {
-    return NextResponse.next();
-  }
-
-  // In local auth mode, skip Clerk protection
-  if (isLocalAuthMode()) {
-    return NextResponse.next();
-  }
-
-  // Protect all other routes with Clerk
-  await auth.protect();
-});
+// In local auth mode the entire request is passed through without touching
+// Clerk. Using a top-level ternary on the build-time constant means webpack
+// can dead-code-eliminate the clerkMiddleware() call, so Clerk never attempts
+// to validate the (absent) publishable key when building for local/CI.
+export default process.env.NEXT_PUBLIC_AUTH_MODE === "local"
+  ? (_request: NextRequest) => NextResponse.next()
+  : clerkMiddleware(async (auth, request) => {
+      if (hasAgentToken(request)) return NextResponse.next();
+      if (isPublicRoute(request)) return NextResponse.next();
+      await auth.protect();
+    });
 
 export const config = {
   matcher: [
