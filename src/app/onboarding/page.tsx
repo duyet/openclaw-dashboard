@@ -1,9 +1,5 @@
 "use client";
 
-export const runtime = "edge";
-
-export const dynamic = "force-dynamic";
-
 import { Globe, Info, RotateCcw, Save, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";

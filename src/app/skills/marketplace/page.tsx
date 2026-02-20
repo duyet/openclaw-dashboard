@@ -1,9 +1,5 @@
 "use client";
 
-export const runtime = "edge";
-
-export const dynamic = "force-dynamic";
-
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

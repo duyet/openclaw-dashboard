@@ -14,7 +14,16 @@ describe("resolveSignInRedirectUrl", () => {
   });
 
   it("defaults to /onboarding when no env fallback is set", () => {
-    expect(resolveSignInRedirectUrl(null)).toBe("/onboarding");
+    // Remove any env-file fallback to exercise the hard-coded default.
+    const saved = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL;
+    delete process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL;
+    try {
+      expect(resolveSignInRedirectUrl(null)).toBe("/onboarding");
+    } finally {
+      if (saved !== undefined) {
+        process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL = saved;
+      }
+    }
   });
 
   it("allows safe relative paths", () => {

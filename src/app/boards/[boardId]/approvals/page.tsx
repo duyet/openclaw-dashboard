@@ -2,8 +2,6 @@
 
 export const runtime = "edge";
 
-export const dynamic = "force-dynamic";
-
 import { useParams } from "next/navigation";
 
 import { SignedIn, SignedOut, SignInButton } from "@/auth/clerk";

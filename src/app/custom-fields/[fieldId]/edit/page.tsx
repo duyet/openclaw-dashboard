@@ -2,8 +2,6 @@
 
 export const runtime = "edge";
 
-export const dynamic = "force-dynamic";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo } from "react";

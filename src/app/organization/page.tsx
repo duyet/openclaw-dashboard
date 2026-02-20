@@ -1,9 +1,5 @@
 "use client";
 
-export const runtime = "edge";
-
-export const dynamic = "force-dynamic";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, UserPlus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";

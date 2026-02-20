@@ -1,9 +1,5 @@
 "use client";
 
-export const runtime = "edge";
-
-export const dynamic = "force-dynamic";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useCreateGatewayApiV1GatewaysPost } from "@/api/generated/gateways/gateways";

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import GlobalApprovalsPage from "./page";
@@ -57,8 +57,14 @@ vi.mock("@clerk/nextjs", () => {
 });
 
 describe("/approvals auth boundary", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("renders without ClerkProvider runtime errors when publishable key is a placeholder", () => {
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "placeholder";
+    // Must be in Clerk auth mode so the placeholder-key path is exercised.
+    vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "clerk");
+    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "placeholder");
 
     render(
       <AuthProvider>

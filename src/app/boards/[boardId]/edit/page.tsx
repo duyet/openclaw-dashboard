@@ -2,8 +2,6 @@
 
 export const runtime = "edge";
 
-export const dynamic = "force-dynamic";
-
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";

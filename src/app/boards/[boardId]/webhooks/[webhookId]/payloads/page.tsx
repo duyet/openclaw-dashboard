@@ -2,8 +2,6 @@
 
 export const runtime = "edge";
 
-export const dynamic = "force-dynamic";
-
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {

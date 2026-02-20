@@ -1,9 +1,5 @@
 "use client";
 
-export const runtime = "edge";
-
-export const dynamic = "force-dynamic";
-
 import { useRouter } from "next/navigation";
 import { useCreateTagApiV1TagsPost } from "@/api/generated/tags/tags";
 
