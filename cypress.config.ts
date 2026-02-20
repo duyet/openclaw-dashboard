@@ -22,6 +22,9 @@ export default defineConfig({
       openMode: 0,
     },
     setupNodeEvents(_on, config) {
+      if (process.env.NEXT_PUBLIC_AUTH_MODE === "local") {
+        return config;
+      }
       return clerkSetup({ config });
     },
   },

@@ -18,10 +18,13 @@ binding = "KV"
 id = "dd84f5cc51dc4ffe90132e03fff9ad20"
 preview_id = "43eebe6b333a41a581b0818a0f7ce234"
 
-[[queues.producers]]
-binding = "WEBHOOK_QUEUE"
-queue = "webhook-delivery"
-
+# Queues: create the queue first with:
+#   npx wrangler queues create webhook-delivery
+# then uncomment:
+# [[queues.producers]]
+# binding = "WEBHOOK_QUEUE"
+# queue = "webhook-delivery"
+#
 # Queue consumer must be a separate Worker — see workers/queue-consumer.ts
 # [[queues.consumers]]
 # queue = "webhook-delivery"
