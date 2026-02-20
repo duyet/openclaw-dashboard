@@ -42,6 +42,8 @@ jobs:
 
       - name: Build
         run: bun run cf:build
+        env:
+          NEXT_PUBLIC_AUTH_MODE: local
 
       - name: Docs quality gates
         run: make docs-check
@@ -119,6 +121,11 @@ jobs:
 
       - name: Build for Cloudflare Pages
         run: bun run cf:build
+        env:
+          # NEXT_PUBLIC_* vars are inlined at build time by Next.js.
+          # Setting this here ensures the local-auth code path is baked in,
+          # so the middleware skips Clerk (which would fail without a key).
+          NEXT_PUBLIC_AUTH_MODE: local
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
