@@ -5,7 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
-AUTH_MODE = "clerk"
+NEXT_PUBLIC_AUTH_MODE = "local"
+LOCAL_AUTH_TOKEN = "change-me-to-a-secure-token-at-least-50-chars-long-please"
 
 [[d1_databases]]
 binding = "DB"
