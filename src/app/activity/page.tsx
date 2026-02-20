@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { Activity as ActivityIcon } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";

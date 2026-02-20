@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { SignIn } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 
