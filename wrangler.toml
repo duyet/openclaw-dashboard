@@ -11,12 +11,12 @@ LOCAL_AUTH_TOKEN = "change-me-to-a-secure-token-at-least-50-chars-long-please"
 [[d1_databases]]
 binding = "DB"
 database_name = "openclaw-mission-control"
-database_id = "placeholder-run-wrangler-d1-create-openclaw-mc"
+database_id = "656eb2a0-00e3-4dac-a384-8b086ae80151"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "placeholder-run-wrangler-kv-create"
-preview_id = "placeholder-run-wrangler-kv-create-preview"
+id = "dd84f5cc51dc4ffe90132e03fff9ad20"
+preview_id = "43eebe6b333a41a581b0818a0f7ce234"
 
 [[queues.producers]]
 binding = "WEBHOOK_QUEUE"

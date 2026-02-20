@@ -67,12 +67,16 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run E2E tests
-        uses: cypress-io/github-action@v6
-        with:
-          start: bun run dev
-          wait-on: 'http://localhost:3000'
-          browser: chrome
+      - name: Install Cypress binary
+        run: bunx cypress install
+
+      - name: Start dev server and run E2E tests
+        run: |
+          NEXT_PUBLIC_AUTH_MODE=local LOCAL_AUTH_TOKEN=test-token bun run dev &
+          DEV_PID=$!
+          npx wait-on http://localhost:3000 --timeout 60000
+          bunx cypress run --browser chrome
+          kill $DEV_PID || true
         env:
           NEXT_PUBLIC_AUTH_MODE: local
           LOCAL_AUTH_TOKEN: test-token
