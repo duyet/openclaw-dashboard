@@ -1,4 +1,4 @@
-name = "openclaw-dashboard"
+name = "openclaw-mission-control"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
@@ -10,7 +10,7 @@ LOCAL_AUTH_TOKEN = "change-me-to-a-secure-token-at-least-50-chars-long-please"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "openclaw-mc"
+database_name = "openclaw-mission-control"
 database_id = "placeholder-run-wrangler-d1-create-openclaw-mc"
 
 [[kv_namespaces]]

@@ -116,4 +116,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .vercel/output/static --project-name=openclaw-dashboard --commit-dirty=true
+          command: pages deploy .vercel/output/static --project-name=openclaw-mission-control --commit-dirty=true
