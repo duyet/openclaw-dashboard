@@ -86,6 +86,11 @@ describe("BoardOnboardingChat polling", () => {
     );
 
     await screen.findByText("What should we prioritize?");
+    // Flush pending React effect cleanups so the polling interval is
+    // cancelled before we advance fake timers (avoids CI timing flakiness).
+    await act(async () => {
+      await Promise.resolve();
+    });
     const callsBeforeWait = getOnboardingMock.mock.calls.length;
 
     await act(async () => {
