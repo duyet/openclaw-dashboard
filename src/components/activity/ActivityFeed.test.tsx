@@ -13,7 +13,7 @@ describe("ActivityFeed", () => {
         errorMessage={null}
         items={[]}
         renderItem={(item) => <div key={item.id}>{item.label}</div>}
-      />,
+      />
     );
 
     expect(screen.getByText("Loading feed…")).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe("ActivityFeed", () => {
         errorMessage={"Boom"}
         items={[]}
         renderItem={(item) => <div key={item.id}>{item.label}</div>}
-      />,
+      />
     );
 
     expect(screen.getByText("Boom")).toBeInTheDocument();
@@ -39,7 +39,7 @@ describe("ActivityFeed", () => {
         errorMessage={""}
         items={[]}
         renderItem={(item) => <div key={item.id}>{item.label}</div>}
-      />,
+      />
     );
 
     expect(screen.getByText("Unable to load feed.")).toBeInTheDocument();
@@ -52,12 +52,12 @@ describe("ActivityFeed", () => {
         errorMessage={null}
         items={[]}
         renderItem={(item) => <div key={item.id}>{item.label}</div>}
-      />,
+      />
     );
 
     expect(screen.getByText("Waiting for new activity…")).toBeInTheDocument();
     expect(
-      screen.getByText("When updates happen, they will show up here."),
+      screen.getByText("When updates happen, they will show up here.")
     ).toBeInTheDocument();
   });
 
@@ -77,7 +77,7 @@ describe("ActivityFeed", () => {
             {item.label}
           </div>
         )}
-      />,
+      />
     );
 
     expect(screen.getAllByTestId("feed-item")).toHaveLength(2);

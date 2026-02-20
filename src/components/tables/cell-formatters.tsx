@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { StatusPill } from "@/components/atoms/StatusPill";
 import {
@@ -41,7 +41,7 @@ export function linkifyCell({
         <p
           className={cn(
             "text-sm font-medium text-slate-900 group-hover:text-blue-600",
-            labelClassName,
+            labelClassName
           )}
         >
           {label}
@@ -61,7 +61,7 @@ export function linkifyCell({
       title={title}
       className={cn(
         "text-sm font-medium text-slate-700 hover:text-blue-600",
-        className,
+        className
       )}
     >
       {label}
@@ -71,14 +71,14 @@ export function linkifyCell({
 
 export function pillCell(
   value: string | null | undefined,
-  fallback = "unknown",
+  fallback = "unknown"
 ) {
   return <StatusPill status={value ?? fallback} />;
 }
 
 export function dateCell(
   value: string | null | undefined,
-  { relative = false, className, fallback = "—" }: DateCellOptions = {},
+  { relative = false, className, fallback = "—" }: DateCellOptions = {}
 ) {
   const display = relative ? formatRelative(value) : formatTimestamp(value);
   return (

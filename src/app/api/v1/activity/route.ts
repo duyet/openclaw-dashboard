@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { activityEvents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { activityEvents } from "@/lib/db/schema";
+import { handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/activity

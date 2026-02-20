@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boards } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boards } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/boards
@@ -19,13 +19,13 @@ export async function GET(request: Request) {
     const actor = await requireActorContext(request, env.DB);
 
     if (!actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+      throw new ApiError(403, "No active organization");
     }
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
-    const gatewayId = url.searchParams.get('gateway_id');
-    const boardGroupId = url.searchParams.get('board_group_id');
+    const gatewayId = url.searchParams.get("gateway_id");
+    const boardGroupId = url.searchParams.get("board_group_id");
 
     const query = db
       .select()
@@ -67,20 +67,20 @@ export async function POST(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+    if (actor.type !== "user" || !actor.orgId) {
+      throw new ApiError(403, "No active organization");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const name = ((body.name as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const name = ((body.name as string) || "").trim();
     if (!name) {
-      throw new ApiError(422, 'Board name is required');
+      throw new ApiError(422, "Board name is required");
     }
 
     const slug = ((body.slug as string) || name)
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
     const now = new Date().toISOString();
     const boardId = crypto.randomUUID();
@@ -90,19 +90,25 @@ export async function POST(request: Request) {
       organizationId: actor.orgId,
       name,
       slug,
-      description: (body.description as string) || '',
+      description: (body.description as string) || "",
       gatewayId: (body.gateway_id as string) || null,
       boardGroupId: (body.board_group_id as string) || null,
-      boardType: (body.board_type as string) || 'goal',
+      boardType: (body.board_type as string) || "goal",
       objective: (body.objective as string) || null,
-      successMetrics: body.success_metrics ? body.success_metrics as Record<string, unknown> : null,
+      successMetrics: body.success_metrics
+        ? (body.success_metrics as Record<string, unknown>)
+        : null,
       targetDate: (body.target_date as string) || null,
       goalConfirmed: (body.goal_confirmed as boolean) ?? false,
       goalSource: (body.goal_source as string) || null,
-      requireApprovalForDone: (body.require_approval_for_done as boolean) ?? true,
-      requireReviewBeforeDone: (body.require_review_before_done as boolean) ?? false,
-      blockStatusChangesWithPendingApproval: (body.block_status_changes_with_pending_approval as boolean) ?? false,
-      onlyLeadCanChangeStatus: (body.only_lead_can_change_status as boolean) ?? false,
+      requireApprovalForDone:
+        (body.require_approval_for_done as boolean) ?? true,
+      requireReviewBeforeDone:
+        (body.require_review_before_done as boolean) ?? false,
+      blockStatusChangesWithPendingApproval:
+        (body.block_status_changes_with_pending_approval as boolean) ?? false,
+      onlyLeadCanChangeStatus:
+        (body.only_lead_can_change_status as boolean) ?? false,
       maxAgents: (body.max_agents as number) ?? 1,
       createdAt: now,
       updatedAt: now,

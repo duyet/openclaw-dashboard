@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardGroups } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boardGroups } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/board-groups/:groupId
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { groupId } = await params;
@@ -22,17 +22,22 @@ export async function GET(
     const actor = await requireActorContext(request, env.DB);
 
     if (!actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+      throw new ApiError(403, "No active organization");
     }
 
     const result = await db
       .select()
       .from(boardGroups)
-      .where(and(eq(boardGroups.id, groupId), eq(boardGroups.organizationId, actor.orgId)))
+      .where(
+        and(
+          eq(boardGroups.id, groupId),
+          eq(boardGroups.organizationId, actor.orgId)
+        )
+      )
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'Board group not found');
+      throw new ApiError(404, "Board group not found");
     }
 
     return Response.json(result[0]);
@@ -47,7 +52,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { groupId } = await params;
@@ -55,45 +60,53 @@ export async function PATCH(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+    if (actor.type !== "user" || !actor.orgId) {
+      throw new ApiError(403, "No active organization");
     }
 
     const existing = await db
       .select()
       .from(boardGroups)
-      .where(and(eq(boardGroups.id, groupId), eq(boardGroups.organizationId, actor.orgId)))
+      .where(
+        and(
+          eq(boardGroups.id, groupId),
+          eq(boardGroups.organizationId, actor.orgId)
+        )
+      )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Board group not found');
+      throw new ApiError(404, "Board group not found");
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const updates: Record<string, unknown> = {};
 
-    if (typeof body.name === 'string') {
+    if (typeof body.name === "string") {
       const name = body.name.trim();
-      if (!name) throw new ApiError(422, 'Board group name cannot be empty');
+      if (!name) throw new ApiError(422, "Board group name cannot be empty");
       updates.name = name;
     }
-    if (typeof body.slug === 'string') {
+    if (typeof body.slug === "string") {
       updates.slug = body.slug
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
     }
     if (body.description !== undefined) {
       updates.description = body.description || null;
     }
 
     if (Object.keys(updates).length === 0) {
-      throw new ApiError(422, 'No valid fields to update');
+      throw new ApiError(422, "No valid fields to update");
     }
 
     updates.updatedAt = new Date().toISOString();
 
-    await db.update(boardGroups).set(updates).where(eq(boardGroups.id, groupId));
+    await db
+      .update(boardGroups)
+      .set(updates)
+      .where(eq(boardGroups.id, groupId));
 
     const result = await db
       .select()
@@ -113,7 +126,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { groupId } = await params;
@@ -121,18 +134,23 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+    if (actor.type !== "user" || !actor.orgId) {
+      throw new ApiError(403, "No active organization");
     }
 
     const existing = await db
       .select({ id: boardGroups.id })
       .from(boardGroups)
-      .where(and(eq(boardGroups.id, groupId), eq(boardGroups.organizationId, actor.orgId)))
+      .where(
+        and(
+          eq(boardGroups.id, groupId),
+          eq(boardGroups.organizationId, actor.orgId)
+        )
+      )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Board group not found');
+      throw new ApiError(404, "Board group not found");
     }
 
     await db.delete(boardGroups).where(eq(boardGroups.id, groupId));

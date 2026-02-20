@@ -1,9 +1,8 @@
-import type { FormEvent } from "react";
 import { CheckCircle2, RefreshCcw, XCircle } from "lucide-react";
-
-import type { GatewayCheckStatus } from "@/lib/gateway-form";
+import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { GatewayCheckStatus } from "@/lib/gateway-form";
 
 type GatewayFormProps = {
   name: string;

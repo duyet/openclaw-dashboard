@@ -1,32 +1,31 @@
-import { useMemo } from "react";
-import Link from "next/link";
-
 import {
   type ColumnDef,
-  type OnChangeFn,
-  type SortingState,
   getCoreRowModel,
   getSortedRowModel,
+  type OnChangeFn,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import Link from "next/link";
+import { useMemo } from "react";
 
 import type { MarketplaceSkillCardRead } from "@/api/generated/model";
-import {
-  DataTable,
-  type DataTableEmptyState,
-} from "@/components/tables/DataTable";
-import { dateCell } from "@/components/tables/cell-formatters";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   SKILLS_TABLE_EMPTY_ICON,
   useTableSortingState,
 } from "@/components/skills/table-helpers";
+import { dateCell } from "@/components/tables/cell-formatters";
+import {
+  DataTable,
+  type DataTableEmptyState,
+} from "@/components/tables/DataTable";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { truncateText as truncate } from "@/lib/formatters";
 import {
   packLabelFromUrl,
-  packUrlFromSkillSourceUrl,
   packsHrefFromPackUrl,
+  packUrlFromSkillSourceUrl,
 } from "@/lib/skills-source";
 
 function riskBadgeVariant(risk: string | null | undefined) {
@@ -115,7 +114,7 @@ export function MarketplaceSkillsTable({
   const { resolvedSorting, handleSortingChange } = useTableSortingState(
     sorting,
     onSortingChange,
-    [{ id: "name", desc: false }],
+    [{ id: "name", desc: false }]
   );
 
   const columns = useMemo<ColumnDef<MarketplaceSkillCardRead>[]>(() => {

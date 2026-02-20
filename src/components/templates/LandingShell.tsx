@@ -4,10 +4,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import {
-  SignInButton,
+  isClerkEnabled,
   SignedIn,
   SignedOut,
-  isClerkEnabled,
+  SignInButton,
 } from "@/auth/clerk";
 
 import { UserMenu } from "@/components/organisms/UserMenu";

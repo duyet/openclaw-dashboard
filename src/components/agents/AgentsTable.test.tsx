@@ -1,5 +1,5 @@
-import type React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import type React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { AgentRead, BoardRead } from "@/api/generated/model";
@@ -51,19 +51,19 @@ describe("AgentsTable", () => {
     const board = buildBoard();
 
     render(
-      <AgentsTable agents={[agent]} boards={[board]} onDelete={onDelete} />,
+      <AgentsTable agents={[agent]} boards={[board]} onDelete={onDelete} />
     );
 
     expect(
-      screen.getByRole("link", { name: /Ava ID agent-1/i }),
+      screen.getByRole("link", { name: /Ava ID agent-1/i })
     ).toHaveAttribute("href", "/agents/agent-1");
     expect(screen.getByRole("link", { name: "Ops Board" })).toHaveAttribute(
       "href",
-      "/boards/board-1",
+      "/boards/board-1"
     );
     expect(screen.getByRole("link", { name: "Edit" })).toHaveAttribute(
       "href",
-      "/agents/agent-1/edit",
+      "/agents/agent-1/edit"
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
@@ -76,14 +76,14 @@ describe("AgentsTable", () => {
         agents={[buildAgent()]}
         boards={[buildBoard()]}
         showActions={false}
-      />,
+      />
     );
 
     expect(
-      screen.queryByRole("link", { name: "Edit" }),
+      screen.queryByRole("link", { name: "Edit" })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Delete" }),
+      screen.queryByRole("button", { name: "Delete" })
     ).not.toBeInTheDocument();
   });
 
@@ -95,14 +95,14 @@ describe("AgentsTable", () => {
         showActions={false}
         hiddenColumns={["status", "openclaw_session_id"]}
         columnOrder={["updated_at", "name", "board_id", "last_seen_at"]}
-      />,
+      />
     );
 
     expect(
-      screen.queryByRole("columnheader", { name: "Status" }),
+      screen.queryByRole("columnheader", { name: "Status" })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("columnheader", { name: "Session" }),
+      screen.queryByRole("columnheader", { name: "Session" })
     ).not.toBeInTheDocument();
 
     const headers = screen
@@ -125,7 +125,7 @@ describe("AgentsTable", () => {
         agents={[zulu, alpha]}
         boards={[buildBoard()]}
         showActions={false}
-      />,
+      />
     );
 
     // Default behavior applies name sorting.
@@ -137,7 +137,7 @@ describe("AgentsTable", () => {
         boards={[buildBoard()]}
         showActions={false}
         disableSorting
-      />,
+      />
     );
 
     // disableSorting keeps incoming data order.

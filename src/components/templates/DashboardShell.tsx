@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
-import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-
-import { SignedIn, useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import type { ReactNode } from "react";
+import { useEffect } from "react";
 import {
   type getMeApiV1UsersMeGetResponse,
   useGetMeApiV1UsersMeGet,
 } from "@/api/generated/users/users";
+
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, useAuth } from "@/auth/clerk";
 import { BrandMark } from "@/components/atoms/BrandMark";
 import { OrgSwitcher } from "@/components/organisms/OrgSwitcher";
 import { UserMenu } from "@/components/organisms/UserMenu";

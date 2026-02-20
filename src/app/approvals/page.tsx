@@ -2,18 +2,16 @@
 
 export const dynamic = "force-dynamic";
 
-import { useCallback, useMemo } from "react";
-
-import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
-import type { ApiError } from "@/api/mutator";
+import { useCallback, useMemo } from "react";
 import {
   listApprovalsApiV1BoardsBoardIdApprovalsGet,
   updateApprovalApiV1BoardsBoardIdApprovalsApprovalIdPatch,
 } from "@/api/generated/approvals/approvals";
 import { useListBoardsApiV1BoardsGet } from "@/api/generated/boards/boards";
 import type { ApprovalRead, BoardRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { BoardApprovalsPanel } from "@/components/BoardApprovalsPanel";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
@@ -56,7 +54,7 @@ function GlobalApprovalsInner() {
 
   const approvalsKey = useMemo(
     () => ["approvals", "global", boardIdsKey] as const,
-    [boardIdsKey],
+    [boardIdsKey]
   );
 
   const approvalsQuery = useQuery<GlobalApprovalsData, ApiError>({
@@ -71,15 +69,15 @@ function GlobalApprovalsInner() {
           const response = await listApprovalsApiV1BoardsBoardIdApprovalsGet(
             board.id,
             { limit: 200 },
-            { cache: "no-store" },
+            { cache: "no-store" }
           );
           if (response.status !== 200) {
             throw new Error(
-              `Failed to load approvals for ${board.name} (status ${response.status}).`,
+              `Failed to load approvals for ${board.name} (status ${response.status}).`
             );
           }
           return { boardId: board.id, approvals: response.data.items ?? [] };
-        }),
+        })
       );
 
       const approvals: ApprovalRead[] = [];
@@ -111,17 +109,17 @@ function GlobalApprovalsInner() {
         boardId,
         approvalId,
         { status },
-        { cache: "no-store" },
+        { cache: "no-store" }
       ),
   });
 
   const approvals = useMemo(
     () => approvalsQuery.data?.approvals ?? [],
-    [approvalsQuery.data],
+    [approvalsQuery.data]
   );
   const warnings = useMemo(
     () => approvalsQuery.data?.warnings ?? [],
-    [approvalsQuery.data],
+    [approvalsQuery.data]
   );
   const errorText = approvalsQuery.error?.message ?? null;
 
@@ -143,19 +141,19 @@ function GlobalApprovalsInner() {
                 return {
                   ...prev,
                   approvals: prev.approvals.map((item) =>
-                    item.id === approvalId ? result.data : item,
+                    item.id === approvalId ? result.data : item
                   ),
                 };
-              },
+              }
             );
           },
           onSettled: () => {
             queryClient.invalidateQueries({ queryKey: approvalsKey });
           },
-        },
+        }
       );
     },
-    [approvals, approvalsKey, queryClient, updateApprovalMutation],
+    [approvals, approvalsKey, queryClient, updateApprovalMutation]
   );
 
   const combinedError = useMemo(() => {

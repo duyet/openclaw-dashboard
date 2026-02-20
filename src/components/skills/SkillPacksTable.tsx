@@ -1,26 +1,25 @@
-import { useMemo } from "react";
-import Link from "next/link";
-
 import {
   type ColumnDef,
-  type OnChangeFn,
-  type SortingState,
   getCoreRowModel,
   getSortedRowModel,
+  type OnChangeFn,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import Link from "next/link";
+import { useMemo } from "react";
 
 import type { SkillPackRead } from "@/api/generated/model";
-import {
-  DataTable,
-  type DataTableEmptyState,
-} from "@/components/tables/DataTable";
-import { dateCell } from "@/components/tables/cell-formatters";
-import { Button } from "@/components/ui/button";
 import {
   SKILLS_TABLE_EMPTY_ICON,
   useTableSortingState,
 } from "@/components/skills/table-helpers";
+import { dateCell } from "@/components/tables/cell-formatters";
+import {
+  DataTable,
+  type DataTableEmptyState,
+} from "@/components/tables/DataTable";
+import { Button } from "@/components/ui/button";
 import { truncateText as truncate } from "@/lib/formatters";
 
 type SkillPacksTableProps = {
@@ -55,7 +54,7 @@ export function SkillPacksTable({
   const { resolvedSorting, handleSortingChange } = useTableSortingState(
     sorting,
     onSortingChange,
-    [{ id: "name", desc: false }],
+    [{ id: "name", desc: false }]
   );
 
   const columns = useMemo<ColumnDef<SkillPackRead>[]>(() => {
@@ -121,7 +120,7 @@ export function SkillPacksTable({
         cell: ({ row }) => {
           if (!onSync) return null;
           const isThisPackSyncing = Boolean(
-            syncingPackIds?.has(row.original.id),
+            syncingPackIds?.has(row.original.id)
           );
           return (
             <div className="flex justify-end">

@@ -45,14 +45,14 @@ const canonicalJson = (value: unknown): string =>
 
 const areSortedStringArraysEqual = (
   left: readonly string[],
-  right: readonly string[],
+  right: readonly string[]
 ): boolean =>
   left.length === right.length &&
   left.every((value, index) => value === right[index]);
 
 export const parseCustomFieldDefaultValue = (
   fieldType: CustomFieldType,
-  value: string,
+  value: string
 ): ParsedDefaultValue => {
   const trimmed = value.trim();
   if (!trimmed) return { value: null, error: null };
@@ -116,7 +116,7 @@ export const parseCustomFieldDefaultValue = (
 
 export const formatCustomFieldDefaultValue = (
   value: unknown,
-  options: { pretty?: boolean } = {},
+  options: { pretty?: boolean } = {}
 ): string => {
   if (value === null || value === undefined) return "";
   if (typeof value === "string") return value;
@@ -131,14 +131,14 @@ export const formatCustomFieldDefaultValue = (
 
 export const filterBoardsBySearch = (
   boards: BoardRead[],
-  query: string,
+  query: string
 ): BoardRead[] => {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return boards;
   return boards.filter(
     (board) =>
       board.name.toLowerCase().includes(normalizedQuery) ||
-      board.slug.toLowerCase().includes(normalizedQuery),
+      board.slug.toLowerCase().includes(normalizedQuery)
   );
 };
 
@@ -171,7 +171,7 @@ export const normalizeCustomFieldFormInput = ({
 
   const parsedDefaultValue = parseCustomFieldDefaultValue(
     formState.fieldType,
-    formState.defaultValue,
+    formState.defaultValue
   );
   if (parsedDefaultValue.error) {
     return { value: null, error: parsedDefaultValue.error };
@@ -194,7 +194,7 @@ export const normalizeCustomFieldFormInput = ({
 };
 
 export const createCustomFieldPayload = (
-  values: NormalizedCustomFieldFormValues,
+  values: NormalizedCustomFieldFormValues
 ): TaskCustomFieldDefinitionCreate => ({
   field_key: values.fieldKey,
   label: values.label,
@@ -209,7 +209,7 @@ export const createCustomFieldPayload = (
 
 export const buildCustomFieldUpdatePayload = (
   field: TaskCustomFieldDefinitionRead,
-  values: NormalizedCustomFieldFormValues,
+  values: NormalizedCustomFieldFormValues
 ): TaskCustomFieldDefinitionUpdate => {
   const updates: TaskCustomFieldDefinitionUpdate = {};
 
@@ -247,7 +247,7 @@ export const buildCustomFieldUpdatePayload = (
 };
 
 export const deriveFormStateFromCustomField = (
-  field: TaskCustomFieldDefinitionRead,
+  field: TaskCustomFieldDefinitionRead
 ): CustomFieldFormState => ({
   fieldKey: field.field_key,
   label: field.label ?? field.field_key,
@@ -263,7 +263,7 @@ export const deriveFormStateFromCustomField = (
 
 export const extractApiErrorMessage = (
   error: unknown,
-  fallback: string,
+  fallback: string
 ): string => {
   if (error instanceof ApiError) return error.message || fallback;
   if (error instanceof Error) return error.message || fallback;

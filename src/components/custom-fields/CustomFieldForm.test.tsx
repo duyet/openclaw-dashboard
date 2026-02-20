@@ -1,5 +1,5 @@
-import type React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { BoardRead } from "@/api/generated/model";
@@ -47,7 +47,7 @@ describe("CustomFieldForm", () => {
         submittingLabel="Creating..."
         submitErrorFallback="Failed to create custom field."
         onSubmit={onSubmit}
-      />,
+      />
     );
 
     fireEvent.change(screen.getByLabelText("Field key"), {
@@ -60,7 +60,7 @@ describe("CustomFieldForm", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("Select at least one board."),
+        screen.getByText("Select at least one board.")
       ).toBeInTheDocument();
     });
     expect(onSubmit).not.toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe("CustomFieldForm", () => {
         submittingLabel="Creating..."
         submitErrorFallback="Failed to create custom field."
         onSubmit={onSubmit}
-      />,
+      />
     );
 
     fireEvent.change(screen.getByLabelText("Field key"), {
@@ -125,12 +125,12 @@ describe("CustomFieldForm", () => {
         submittingLabel="Saving..."
         submitErrorFallback="Failed to update custom field."
         onSubmit={vi.fn().mockResolvedValue(undefined)}
-      />,
+      />
     );
 
     expect(screen.getByDisplayValue("client_name")).toBeDisabled();
     expect(
-      screen.getByText("Field key cannot be changed after creation."),
+      screen.getByText("Field key cannot be changed after creation.")
     ).toBeInTheDocument();
   });
 });

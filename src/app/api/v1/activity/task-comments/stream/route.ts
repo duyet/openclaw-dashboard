@@ -1,12 +1,12 @@
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { activityEvents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError } from '@/lib/errors';
-import { sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { activityEvents } from "@/lib/db/schema";
+import { handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/activity/task-comments/stream
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     await requireActorContext(request, env.DB);
 
     const url = new URL(request.url);
-    const since = url.searchParams.get('since') || new Date().toISOString();
+    const since = url.searchParams.get("since") || new Date().toISOString();
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
@@ -38,9 +38,9 @@ export async function GET(request: Request) {
             // Filter for task-comment-like events
             const commentEvents = events.filter(
               (e) =>
-                e.eventType === 'task.comment' ||
-                e.eventType === 'task.comment.created' ||
-                e.eventType.startsWith('task.comment'),
+                e.eventType === "task.comment" ||
+                e.eventType === "task.comment.created" ||
+                e.eventType.startsWith("task.comment")
             );
 
             for (const event of commentEvents) {
@@ -49,7 +49,9 @@ export async function GET(request: Request) {
               seen.add(event.id);
               if (event.createdAt > lastSeen) lastSeen = event.createdAt;
               controller.enqueue(
-                encoder.encode(`event: update\ndata: ${JSON.stringify(event)}\n\n`),
+                encoder.encode(
+                  `event: update\ndata: ${JSON.stringify(event)}\n\n`
+                )
               );
             }
 
@@ -65,10 +67,10 @@ export async function GET(request: Request) {
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-        Connection: 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {

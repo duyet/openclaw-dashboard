@@ -2,30 +2,27 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { AgentsTable } from "@/components/agents/AgentsTable";
-import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
-import { Button } from "@/components/ui/button";
-import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
-
-import { ApiError } from "@/api/mutator";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
-  type listAgentsApiV1AgentsGetResponse,
   getListAgentsApiV1AgentsGetQueryKey,
+  type listAgentsApiV1AgentsGetResponse,
   useDeleteAgentApiV1AgentsAgentIdDelete,
   useListAgentsApiV1AgentsGet,
 } from "@/api/generated/agents/agents";
 import {
-  type listBoardsApiV1BoardsGetResponse,
   getListBoardsApiV1BoardsGetQueryKey,
+  type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
-import { type AgentRead } from "@/api/generated/model";
+import type { AgentRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
+import { AgentsTable } from "@/components/agents/AgentsTable";
+import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
+import { Button } from "@/components/ui/button";
+import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
@@ -83,14 +80,14 @@ export default function AgentsPage() {
       boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
         : [],
-    [boardsQuery.data],
+    [boardsQuery.data]
   );
   const agents = useMemo(
     () =>
       agentsQuery.data?.status === 200
         ? (agentsQuery.data.data.items ?? [])
         : [],
-    [agentsQuery.data],
+    [agentsQuery.data]
   );
 
   const deleteMutation = useDeleteAgentApiV1AgentsAgentIdDelete<
@@ -113,7 +110,7 @@ export default function AgentsPage() {
         invalidateQueryKeys: [agentsKey, boardsKey],
       }),
     },
-    queryClient,
+    queryClient
   );
 
   const handleDelete = () => {

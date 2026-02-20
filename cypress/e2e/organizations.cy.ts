@@ -1,5 +1,6 @@
 describe("Organizations (PR #61)", () => {
-  const email = Cypress.env("CLERK_TEST_EMAIL") || "jane+clerk_test@example.com";
+  const email =
+    Cypress.env("CLERK_TEST_EMAIL") || "jane+clerk_test@example.com";
 
   it("negative: signed-out user is redirected to sign-in when opening /organization", () => {
     cy.visit("/organization");

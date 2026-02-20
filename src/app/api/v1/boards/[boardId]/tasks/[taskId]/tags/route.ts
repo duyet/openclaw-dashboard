@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { tagAssignments, tags, tasks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { tagAssignments, tags, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/boards/:boardId/tasks/:taskId/tags
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { boardId, taskId } = await params;
@@ -29,7 +29,7 @@ export async function GET(
       .limit(1);
 
     if (task.length === 0) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
     // Get tag assignments with tag details
@@ -84,7 +84,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { boardId, taskId } = await params;
@@ -100,25 +100,21 @@ export async function POST(
       .limit(1);
 
     if (task.length === 0) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     if (!body.tag_id) {
-      throw new ApiError(422, 'tag_id is required');
+      throw new ApiError(422, "tag_id is required");
     }
 
     const tagId = body.tag_id as string;
 
     // Verify tag exists
-    const tag = await db
-      .select()
-      .from(tags)
-      .where(eq(tags.id, tagId))
-      .limit(1);
+    const tag = await db.select().from(tags).where(eq(tags.id, tagId)).limit(1);
 
     if (tag.length === 0) {
-      throw new ApiError(404, 'Tag not found');
+      throw new ApiError(404, "Tag not found");
     }
 
     // Check for duplicate assignment
@@ -126,15 +122,12 @@ export async function POST(
       .select({ id: tagAssignments.id })
       .from(tagAssignments)
       .where(
-        and(
-          eq(tagAssignments.taskId, taskId),
-          eq(tagAssignments.tagId, tagId),
-        ),
+        and(eq(tagAssignments.taskId, taskId), eq(tagAssignments.tagId, tagId))
       )
       .limit(1);
 
     if (existing.length > 0) {
-      throw new ApiError(409, 'Tag is already assigned to this task');
+      throw new ApiError(409, "Tag is already assigned to this task");
     }
 
     const now = new Date().toISOString();
@@ -157,7 +150,7 @@ export async function POST(
         tag_color: tag[0].color,
         created_at: now,
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     return handleApiError(error);
@@ -170,7 +163,7 @@ export async function POST(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { boardId, taskId } = await params;
@@ -179,28 +172,27 @@ export async function DELETE(
     await requireActorContext(request, env.DB);
 
     const url = new URL(request.url);
-    const tagId = url.searchParams.get('tag_id');
+    const tagId = url.searchParams.get("tag_id");
 
     if (!tagId) {
-      throw new ApiError(422, 'tag_id query parameter is required');
+      throw new ApiError(422, "tag_id query parameter is required");
     }
 
     const existing = await db
       .select({ id: tagAssignments.id })
       .from(tagAssignments)
       .where(
-        and(
-          eq(tagAssignments.taskId, taskId),
-          eq(tagAssignments.tagId, tagId),
-        ),
+        and(eq(tagAssignments.taskId, taskId), eq(tagAssignments.tagId, tagId))
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Tag assignment not found');
+      throw new ApiError(404, "Tag assignment not found");
     }
 
-    await db.delete(tagAssignments).where(eq(tagAssignments.id, existing[0].id));
+    await db
+      .delete(tagAssignments)
+      .where(eq(tagAssignments.id, existing[0].id));
 
     return new Response(null, { status: 204 });
   } catch (error) {

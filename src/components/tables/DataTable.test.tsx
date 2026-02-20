@@ -1,10 +1,10 @@
-import type React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
 import {
   type ColumnDef,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { fireEvent, render, screen } from "@testing-library/react";
+import type React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { DataTable } from "./DataTable";
@@ -75,7 +75,7 @@ describe("DataTable", () => {
           getEditHref: (current) => `/items/${current.id}/edit`,
           onDelete,
         }}
-      />,
+      />
     );
 
     const editLink = screen.getByRole("link", { name: "Edit" });
@@ -108,19 +108,19 @@ describe("DataTable", () => {
             },
           ],
         }}
-      />,
+      />
     );
 
     expect(screen.getByRole("link", { name: "View" })).toHaveAttribute(
       "href",
-      "/items/row-1",
+      "/items/row-1"
     );
     expect(screen.getByRole("button", { name: "Archive" })).toBeInTheDocument();
     expect(
-      screen.queryByRole("link", { name: "Edit" }),
+      screen.queryByRole("link", { name: "Edit" })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Delete" }),
+      screen.queryByRole("button", { name: "Delete" })
     ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Archive" }));
@@ -129,7 +129,7 @@ describe("DataTable", () => {
 
   it("renders loading and empty states", () => {
     const { rerender } = render(
-      <DataTableHarness rows={[]} isLoading={true} />,
+      <DataTableHarness rows={[]} isLoading={true} />
     );
     expect(screen.getByText("Loading…")).toBeInTheDocument();
 
@@ -138,7 +138,7 @@ describe("DataTable", () => {
         rows={[]}
         isLoading={false}
         emptyMessage="No rows yet"
-      />,
+      />
     );
     expect(screen.getByText("No rows yet")).toBeInTheDocument();
   });
@@ -154,7 +154,7 @@ describe("DataTable", () => {
           actionHref: "/new",
           actionLabel: "Create",
         }}
-      />,
+      />
     );
 
     expect(screen.getByTestId("empty-icon")).toBeInTheDocument();
@@ -162,7 +162,7 @@ describe("DataTable", () => {
     expect(screen.getByText("Create one to continue.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Create" })).toHaveAttribute(
       "href",
-      "/new",
+      "/new"
     );
   });
 });

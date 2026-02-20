@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { agents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { agents } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * POST /api/v1/agents/[agentId]/heartbeat
@@ -14,7 +14,7 @@ import { eq } from 'drizzle-orm';
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ agentId: string }> },
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -23,8 +23,8 @@ export async function POST(
     const { agentId } = await params;
 
     // Only agents can send heartbeats
-    if (actor.type !== 'agent') {
-      throw new ApiError(403, 'Only agents can send heartbeats');
+    if (actor.type !== "agent") {
+      throw new ApiError(403, "Only agents can send heartbeats");
     }
 
     const existing = await db
@@ -34,7 +34,7 @@ export async function POST(
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Agent not found');
+      throw new ApiError(404, "Agent not found");
     }
 
     const now = new Date().toISOString();
@@ -44,7 +44,7 @@ export async function POST(
       .update(agents)
       .set({
         lastSeenAt: now,
-        status: 'online',
+        status: "online",
         updatedAt: now,
       })
       .where(eq(agents.id, agentId));

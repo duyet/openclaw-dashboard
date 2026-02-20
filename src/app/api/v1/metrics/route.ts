@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boards, tasks, agents, approvals } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { agents, approvals, boards, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/metrics
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const actor = await requireActorContext(request, env.DB);
 
     if (!actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+      throw new ApiError(403, "No active organization");
     }
 
     const [boardCount] = await db
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     const [pendingApprovalCount] = await db
       .select({ count: sql<number>`count(*)` })
       .from(approvals)
-      .where(eq(approvals.status, 'pending'));
+      .where(eq(approvals.status, "pending"));
 
     return Response.json({
       boards: boardCount?.count ?? 0,

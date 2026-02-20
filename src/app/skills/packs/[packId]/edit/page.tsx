@@ -3,15 +3,14 @@
 export const dynamic = "force-dynamic";
 
 import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
 import {
   type getSkillPackApiV1SkillsPacksPackIdGetResponse,
   useGetSkillPackApiV1SkillsPacksPackIdGet,
   useUpdateSkillPackApiV1SkillsPacksPackIdPatch,
 } from "@/api/generated/skills/skills";
+
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { MarketplaceSkillForm } from "@/components/skills/MarketplaceSkillForm";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";

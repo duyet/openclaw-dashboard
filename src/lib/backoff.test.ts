@@ -1,5 +1,5 @@
-import { createExponentialBackoff } from "./backoff";
 import { describe, expect, it, vi } from "vitest";
+import { createExponentialBackoff } from "./backoff";
 
 describe("createExponentialBackoff", () => {
   it("uses default options", () => {

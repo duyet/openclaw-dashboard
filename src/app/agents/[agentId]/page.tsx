@@ -2,36 +2,29 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-
-import { SignInButton, SignedIn, SignedOut, useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useMemo, useState } from "react";
+import {
+  type listActivityApiV1ActivityGetResponse,
+  useListActivityApiV1ActivityGet,
+} from "@/api/generated/activity/activity";
 import {
   type getAgentApiV1AgentsAgentIdGetResponse,
   useDeleteAgentApiV1AgentsAgentIdDelete,
   useGetAgentApiV1AgentsAgentIdGet,
 } from "@/api/generated/agents/agents";
 import {
-  type listActivityApiV1ActivityGetResponse,
-  useListActivityApiV1ActivityGet,
-} from "@/api/generated/activity/activity";
-import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
-import {
-  formatRelativeTimestamp as formatRelative,
-  formatTimestamp,
-} from "@/lib/formatters";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import type {
   ActivityEventRead,
   AgentRead,
   BoardRead,
 } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { Markdown } from "@/components/atoms/Markdown";
 import { StatusPill } from "@/components/atoms/StatusPill";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
@@ -45,6 +38,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  formatRelativeTimestamp as formatRelative,
+  formatTimestamp,
+} from "@/lib/formatters";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 export default function AgentDetailPage() {
   const { isSignedIn } = useAuth();
@@ -81,7 +79,7 @@ export default function AgentDetailPage() {
         refetchInterval: 30_000,
         retry: false,
       },
-    },
+    }
   );
 
   const boardsQuery = useListBoardsApiV1BoardsGet<

@@ -2,12 +2,8 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useMemo, useState } from "react";
 import {
   type getBoardWebhookApiV1BoardsBoardIdWebhooksWebhookIdGetResponse,
   type listBoardWebhookPayloadsApiV1BoardsBoardIdWebhooksWebhookIdPayloadsGetResponse,
@@ -15,6 +11,8 @@ import {
   useListBoardWebhookPayloadsApiV1BoardsBoardIdWebhooksWebhookIdPayloadsGet,
 } from "@/api/generated/board-webhooks/board-webhooks";
 import type { BoardWebhookPayloadRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
@@ -75,7 +73,7 @@ export default function WebhookPayloadsPage() {
           refetchOnMount: "always",
           retry: false,
         },
-      },
+      }
     );
 
   const webhook =

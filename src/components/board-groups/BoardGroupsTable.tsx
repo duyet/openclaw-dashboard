@@ -1,22 +1,21 @@
-import { useMemo, useState } from "react";
-
 import {
   type ColumnDef,
+  getCoreRowModel,
+  getSortedRowModel,
   type OnChangeFn,
   type SortingState,
   type Updater,
-  type VisibilityState,
-  getCoreRowModel,
-  getSortedRowModel,
   useReactTable,
+  type VisibilityState,
 } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
 
-import { type BoardGroupRead } from "@/api/generated/model";
+import type { BoardGroupRead } from "@/api/generated/model";
+import { dateCell, linkifyCell } from "@/components/tables/cell-formatters";
 import {
   DataTable,
   type DataTableEmptyState,
 } from "@/components/tables/DataTable";
-import { dateCell, linkifyCell } from "@/components/tables/cell-formatters";
 
 type BoardGroupsTableProps = {
   groups: BoardGroupRead[];
@@ -79,9 +78,9 @@ export function BoardGroupsTable({
   const columnVisibility = useMemo<VisibilityState>(
     () =>
       Object.fromEntries(
-        (hiddenColumns ?? []).map((columnId) => [columnId, false]),
+        (hiddenColumns ?? []).map((columnId) => [columnId, false])
       ),
-    [hiddenColumns],
+    [hiddenColumns]
   );
   const columns = useMemo<ColumnDef<BoardGroupRead>[]>(() => {
     const baseColumns: ColumnDef<BoardGroupRead>[] = [

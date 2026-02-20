@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardGroupMemory, boardGroups } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boardGroupMemory, boardGroups } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/board-groups/:groupId/memory
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { groupId } = await params;
@@ -52,7 +52,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { groupId } = await params;
@@ -68,12 +68,12 @@ export async function POST(
       .limit(1);
 
     if (group.length === 0) {
-      throw new ApiError(404, 'Board group not found');
+      throw new ApiError(404, "Board group not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     if (!body.content) {
-      throw new ApiError(422, 'content is required');
+      throw new ApiError(422, "content is required");
     }
 
     const now = new Date().toISOString();
@@ -83,7 +83,7 @@ export async function POST(
       id: memoryId,
       boardGroupId: groupId,
       content: body.content as string,
-      tags: body.tags ? body.tags as string[] : null,
+      tags: body.tags ? (body.tags as string[]) : null,
       isChat: (body.is_chat as boolean) ?? false,
       source: (body.source as string) || null,
       createdAt: now,
@@ -107,7 +107,7 @@ export async function POST(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { groupId } = await params;
@@ -116,10 +116,10 @@ export async function DELETE(
     await requireActorContext(request, env.DB);
 
     const url = new URL(request.url);
-    const memoryId = url.searchParams.get('id');
+    const memoryId = url.searchParams.get("id");
 
     if (!memoryId) {
-      throw new ApiError(422, 'Memory entry id is required as query param');
+      throw new ApiError(422, "Memory entry id is required as query param");
     }
 
     const existing = await db
@@ -128,13 +128,13 @@ export async function DELETE(
       .where(
         and(
           eq(boardGroupMemory.id, memoryId),
-          eq(boardGroupMemory.boardGroupId, groupId),
-        ),
+          eq(boardGroupMemory.boardGroupId, groupId)
+        )
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Memory entry not found');
+      throw new ApiError(404, "Memory entry not found");
     }
 
     await db.delete(boardGroupMemory).where(eq(boardGroupMemory.id, memoryId));

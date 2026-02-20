@@ -3,7 +3,7 @@ const DASH = "—";
 export const truncateText = (
   value?: string | null,
   max = 24,
-  fallback = DASH,
+  fallback = DASH
 ): string => {
   if (!value) return fallback;
   if (value.length <= max) return value;
@@ -20,7 +20,7 @@ export const parseTimestamp = (value?: string | null): Date | null => {
 
 export const formatTimestamp = (
   value?: string | null,
-  fallback = DASH,
+  fallback = DASH
 ): string => {
   const date = parseTimestamp(value);
   if (!date) return fallback;
@@ -34,7 +34,7 @@ export const formatTimestamp = (
 
 export const formatRelativeTimestamp = (
   value?: string | null,
-  fallback = DASH,
+  fallback = DASH
 ): string => {
   const date = parseTimestamp(value);
   if (!date) return fallback;

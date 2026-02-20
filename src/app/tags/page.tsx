@@ -2,21 +2,19 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
+import { useMemo, useState } from "react";
+import type { TagRead } from "@/api/generated/model";
 import {
   getListTagsApiV1TagsGetQueryKey,
   type listTagsApiV1TagsGetResponse,
   useDeleteTagApiV1TagsTagIdDelete,
   useListTagsApiV1TagsGet,
 } from "@/api/generated/tags/tags";
-import type { TagRead } from "@/api/generated/model";
+import { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { TagsTable } from "@/components/tags/TagsTable";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
@@ -58,7 +56,7 @@ export default function TagsPage() {
   const tags = useMemo(
     () =>
       tagsQuery.data?.status === 200 ? (tagsQuery.data.data.items ?? []) : [],
-    [tagsQuery.data],
+    [tagsQuery.data]
   );
   const tagsKey = getListTagsApiV1TagsGetQueryKey();
 

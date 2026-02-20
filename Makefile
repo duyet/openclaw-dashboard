@@ -2,7 +2,7 @@
 SHELL := /usr/bin/env bash
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: setup dev cf-dev build format format-check lint typecheck test e2e db-generate db-migrate deploy check docs-lint docs-link-check docs-check help
+.PHONY: setup dev cf-dev build format format-check lint fix typecheck test e2e db-generate db-migrate deploy check docs-lint docs-link-check docs-check help
 
 setup: ## Install dependencies (bun install)
 	bun install
@@ -16,14 +16,17 @@ cf-dev: ## Run Cloudflare Pages dev (wrangler)
 build: ## Build for Cloudflare Pages (next-on-pages)
 	bun run cf:build
 
-format: ## Format code (prettier)
-	bunx prettier --write "src/**/*.{ts,tsx,js,jsx,json,css,md}"
+format: ## Format code (biome)
+	bun run fmt
 
-format-check: ## Check formatting without changes
-	bunx prettier --check "src/**/*.{ts,tsx,js,jsx,json,css,md}"
+format-check: ## Check formatting without changes (biome)
+	bunx biome format .
 
-lint: ## Lint (eslint)
+lint: ## Lint (biome)
 	bun run lint
+
+fix: ## Auto-fix lint + format issues (biome)
+	bun run fix
 
 typecheck: ## TypeScript type check
 	bunx tsc -p tsconfig.json --noEmit

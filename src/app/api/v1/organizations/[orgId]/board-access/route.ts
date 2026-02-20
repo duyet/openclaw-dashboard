@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { organizationBoardAccess, organizationMembers } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { organizationBoardAccess, organizationMembers } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/organizations/[orgId]/board-access
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ orgId: string }> },
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -24,8 +24,8 @@ export async function GET(
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
-    const memberId = url.searchParams.get('member_id');
-    const boardId = url.searchParams.get('board_id');
+    const memberId = url.searchParams.get("member_id");
+    const boardId = url.searchParams.get("board_id");
 
     // Get all members of this org first
     const members = await db
@@ -55,7 +55,9 @@ export async function GET(
       result = result.filter((a) => a.boardId === boardId);
     }
 
-    return Response.json(paginatedResponse(result, result.length, { limit, offset }));
+    return Response.json(
+      paginatedResponse(result, result.length, { limit, offset })
+    );
   } catch (error) {
     return handleApiError(error);
   }
@@ -67,7 +69,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ orgId: string }> },
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -75,17 +77,17 @@ export async function POST(
     const actor = await requireActorContext(request, env.DB);
     const { orgId } = await params;
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can grant board access');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can grant board access");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     if (!body.organization_member_id) {
-      throw new ApiError(422, 'organization_member_id is required');
+      throw new ApiError(422, "organization_member_id is required");
     }
     if (!body.board_id) {
-      throw new ApiError(422, 'board_id is required');
+      throw new ApiError(422, "board_id is required");
     }
 
     const organizationMemberId = body.organization_member_id as string;
@@ -98,13 +100,13 @@ export async function POST(
       .where(
         and(
           eq(organizationMembers.id, organizationMemberId),
-          eq(organizationMembers.organizationId, orgId),
-        ),
+          eq(organizationMembers.organizationId, orgId)
+        )
       )
       .limit(1);
 
     if (!member.length) {
-      throw new ApiError(404, 'Member not found in this organization');
+      throw new ApiError(404, "Member not found in this organization");
     }
 
     const now = new Date().toISOString();

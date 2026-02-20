@@ -1,5 +1,5 @@
-import { defineConfig } from "cypress";
 import { clerkSetup } from "@clerk/testing/cypress";
+import { defineConfig } from "cypress";
 
 export default defineConfig({
   env: {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -37,11 +37,36 @@ interface PaginatedResponse<T> {
   offset: number;
 }
 
-const COLUMNS: { title: string; status: TaskStatus; dot: string; badge: string }[] = [
-  { title: "Inbox", status: "inbox", dot: "bg-slate-400", badge: "bg-slate-100 text-slate-600" },
-  { title: "In Progress", status: "in_progress", dot: "bg-purple-500", badge: "bg-purple-100 text-purple-700" },
-  { title: "Review", status: "review", dot: "bg-indigo-500", badge: "bg-indigo-100 text-indigo-700" },
-  { title: "Done", status: "done", dot: "bg-green-500", badge: "bg-emerald-100 text-emerald-700" },
+const COLUMNS: {
+  title: string;
+  status: TaskStatus;
+  dot: string;
+  badge: string;
+}[] = [
+  {
+    title: "Inbox",
+    status: "inbox",
+    dot: "bg-slate-400",
+    badge: "bg-slate-100 text-slate-600",
+  },
+  {
+    title: "In Progress",
+    status: "in_progress",
+    dot: "bg-purple-500",
+    badge: "bg-purple-100 text-purple-700",
+  },
+  {
+    title: "Review",
+    status: "review",
+    dot: "bg-indigo-500",
+    badge: "bg-indigo-100 text-indigo-700",
+  },
+  {
+    title: "Done",
+    status: "done",
+    dot: "bg-green-500",
+    badge: "bg-emerald-100 text-emerald-700",
+  },
 ];
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -53,19 +78,23 @@ async function fetchJson<T>(url: string): Promise<T> {
 export function KanbanBoard() {
   const [selectedBoardIds, setSelectedBoardIds] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatus[]>([]);
-  const [selectedPriorities, setSelectedPriorities] = useState<TaskPriority[]>([]);
+  const [selectedPriorities, setSelectedPriorities] = useState<TaskPriority[]>(
+    []
+  );
 
   // Fetch all boards
   const boardsQuery = useQuery({
     queryKey: ["project-board", "boards"],
-    queryFn: () => fetchJson<PaginatedResponse<ApiBoard>>("/api/v1/boards?limit=200"),
+    queryFn: () =>
+      fetchJson<PaginatedResponse<ApiBoard>>("/api/v1/boards?limit=200"),
     staleTime: 30_000,
   });
 
   const boards = boardsQuery.data?.items ?? [];
 
   // Determine which board IDs to fetch tasks from
-  const activeBoardIds = selectedBoardIds.length > 0 ? selectedBoardIds : boards.map((b) => b.id);
+  const activeBoardIds =
+    selectedBoardIds.length > 0 ? selectedBoardIds : boards.map((b) => b.id);
 
   // Fetch tasks for all active boards (one query per board, deduplicated by key)
   const tasksQueries = useQuery({
@@ -75,9 +104,11 @@ export function KanbanBoard() {
       const results = await Promise.all(
         activeBoardIds.map((boardId) =>
           fetchJson<PaginatedResponse<ApiTask>>(
-            `/api/v1/boards/${boardId}/tasks?limit=200`,
-          ).then((res) => res.items.map((task) => ({ ...task, _boardId: boardId }))),
-        ),
+            `/api/v1/boards/${boardId}/tasks?limit=200`
+          ).then((res) =>
+            res.items.map((task) => ({ ...task, _boardId: boardId }))
+          )
+        )
       );
       return results.flat();
     },
@@ -100,10 +131,16 @@ export function KanbanBoard() {
   // Apply client-side filters
   const filteredTasks = useMemo(() => {
     return allTasks.filter((task) => {
-      if (selectedStatuses.length > 0 && !selectedStatuses.includes(task.status)) {
+      if (
+        selectedStatuses.length > 0 &&
+        !selectedStatuses.includes(task.status)
+      ) {
         return false;
       }
-      if (selectedPriorities.length > 0 && !selectedPriorities.includes(task.priority)) {
+      if (
+        selectedPriorities.length > 0 &&
+        !selectedPriorities.includes(task.priority)
+      ) {
         return false;
       }
       return true;
@@ -128,19 +165,25 @@ export function KanbanBoard() {
 
   const handleBoardToggle = useCallback((boardId: string) => {
     setSelectedBoardIds((prev) =>
-      prev.includes(boardId) ? prev.filter((id) => id !== boardId) : [...prev, boardId],
+      prev.includes(boardId)
+        ? prev.filter((id) => id !== boardId)
+        : [...prev, boardId]
     );
   }, []);
 
   const handleStatusToggle = useCallback((status: TaskStatus) => {
     setSelectedStatuses((prev) =>
-      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
     );
   }, []);
 
   const handlePriorityToggle = useCallback((priority: TaskPriority) => {
     setSelectedPriorities((prev) =>
-      prev.includes(priority) ? prev.filter((p) => p !== priority) : [...prev, priority],
+      prev.includes(priority)
+        ? prev.filter((p) => p !== priority)
+        : [...prev, priority]
     );
   }, []);
 
@@ -181,7 +224,9 @@ export function KanbanBoard() {
                   <div className="sticky top-0 z-10 rounded-t-xl border border-b-0 border-slate-200 bg-white/90 px-4 py-3 backdrop-blur">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className={cn("h-2 w-2 rounded-full", column.dot)} />
+                        <span
+                          className={cn("h-2 w-2 rounded-full", column.dot)}
+                        />
                         <h3 className="text-sm font-semibold text-slate-900">
                           {column.title}
                         </h3>
@@ -189,7 +234,7 @@ export function KanbanBoard() {
                       <span
                         className={cn(
                           "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                          column.badge,
+                          column.badge
                         )}
                       >
                         {columnTasks.length}
@@ -202,7 +247,9 @@ export function KanbanBoard() {
                         <ProjectTaskCard
                           key={task.id}
                           title={task.title}
-                          boardName={boardNameMap.get(task.boardId ?? "") ?? "Unknown"}
+                          boardName={
+                            boardNameMap.get(task.boardId ?? "") ?? "Unknown"
+                          }
                           priority={task.priority}
                           assignee={task.assignedAgentId}
                           dueAt={task.dueAt}

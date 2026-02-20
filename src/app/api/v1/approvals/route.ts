@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { approvals } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { approvals } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/approvals
@@ -20,8 +20,8 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
-    const boardId = url.searchParams.get('board_id');
-    const status = url.searchParams.get('status');
+    const boardId = url.searchParams.get("board_id");
+    const status = url.searchParams.get("status");
 
     let result = await db
       .select()

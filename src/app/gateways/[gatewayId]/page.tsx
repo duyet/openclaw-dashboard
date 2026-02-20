@@ -2,17 +2,15 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-import { AgentsTable } from "@/components/agents/AgentsTable";
-import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
-import { Button } from "@/components/ui/button";
-import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
-
-import { ApiError } from "@/api/mutator";
+import { useParams, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import {
+  getListAgentsApiV1AgentsGetQueryKey,
+  type listAgentsApiV1AgentsGetResponse,
+  useDeleteAgentApiV1AgentsAgentIdDelete,
+  useListAgentsApiV1AgentsGet,
+} from "@/api/generated/agents/agents";
 import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
@@ -23,13 +21,13 @@ import {
   useGatewaysStatusApiV1GatewaysStatusGet,
   useGetGatewayApiV1GatewaysGatewayIdGet,
 } from "@/api/generated/gateways/gateways";
-import {
-  type listAgentsApiV1AgentsGetResponse,
-  getListAgentsApiV1AgentsGetQueryKey,
-  useDeleteAgentApiV1AgentsAgentIdDelete,
-  useListAgentsApiV1AgentsGet,
-} from "@/api/generated/agents/agents";
-import { type AgentRead } from "@/api/generated/model";
+import type { AgentRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
+import { AgentsTable } from "@/components/agents/AgentsTable";
+import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
+import { Button } from "@/components/ui/button";
+import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { formatTimestamp } from "@/lib/formatters";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
@@ -53,7 +51,7 @@ export default function GatewayDetailPage() {
   const { isAdmin } = useOrganizationMembership(isSignedIn);
   const [deleteTarget, setDeleteTarget] = useState<AgentRead | null>(null);
   const agentsKey = getListAgentsApiV1AgentsGetQueryKey(
-    gatewayId ? { gateway_id: gatewayId } : undefined,
+    gatewayId ? { gateway_id: gatewayId } : undefined
   );
 
   const gatewayQuery = useGetGatewayApiV1GatewaysGatewayIdGet<
@@ -108,7 +106,7 @@ export default function GatewayDetailPage() {
         invalidateQueryKeys: [agentsKey],
       }),
     },
-    queryClient,
+    queryClient
   );
 
   const statusParams = gateway
@@ -133,14 +131,14 @@ export default function GatewayDetailPage() {
       agentsQuery.data?.status === 200
         ? (agentsQuery.data.data.items ?? [])
         : [],
-    [agentsQuery.data],
+    [agentsQuery.data]
   );
   const boards = useMemo(
     () =>
       boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
         : [],
-    [boardsQuery.data],
+    [boardsQuery.data]
   );
 
   const status =
@@ -149,7 +147,7 @@ export default function GatewayDetailPage() {
 
   const title = useMemo(
     () => (gateway?.name ? gateway.name : "Gateway"),
-    [gateway?.name],
+    [gateway?.name]
   );
   const handleDelete = () => {
     if (!deleteTarget) return;

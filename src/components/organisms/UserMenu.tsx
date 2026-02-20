@@ -1,10 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { SignOutButton, useUser } from "@/auth/clerk";
-import { clearLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 import {
   Activity,
   Bot,
@@ -18,6 +13,11 @@ import {
   Store,
   Trello,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import { SignOutButton, useUser } from "@/auth/clerk";
+import { clearLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 
 import {
   Popover,
@@ -63,7 +63,7 @@ export function UserMenu({
             // Keep a subtle, enterprise-looking focus ring for keyboard navigation.
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--neutral-300,var(--border-strong))] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
             "data-[state=open]:bg-white",
-            className,
+            className
           )}
           aria-label="Open user menu"
         >
@@ -72,7 +72,7 @@ export function UserMenu({
               "relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-[10px] text-xs font-semibold text-white shadow-sm",
               avatarUrl
                 ? "bg-[color:var(--neutral-200,var(--surface-muted))]"
-                : "bg-gradient-to-br from-[color:var(--primary-navy,var(--accent))] to-[color:var(--secondary-navy,var(--accent-strong))]",
+                : "bg-gradient-to-br from-[color:var(--primary-navy,var(--accent))] to-[color:var(--secondary-navy,var(--accent-strong))]"
             )}
           >
             {avatarUrl ? (
@@ -102,7 +102,7 @@ export function UserMenu({
                 "flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl text-sm font-semibold text-white",
                 avatarUrl
                   ? "bg-[color:var(--neutral-200,var(--surface-muted))]"
-                  : "bg-gradient-to-br from-[color:var(--primary-navy,var(--accent))] to-[color:var(--secondary-navy,var(--accent-strong))]",
+                  : "bg-gradient-to-br from-[color:var(--primary-navy,var(--accent))] to-[color:var(--secondary-navy,var(--accent-strong))]"
               )}
             >
               {avatarUrl ? (

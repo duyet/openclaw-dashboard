@@ -2,13 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo } from "react";
-import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
@@ -17,6 +13,8 @@ import {
   getListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetQueryKey,
   useCreateOrgCustomFieldApiV1OrganizationsMeCustomFieldsPost,
 } from "@/api/generated/org-custom-fields/org-custom-fields";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { CustomFieldForm } from "@/components/custom-fields/CustomFieldForm";
 import { DEFAULT_CUSTOM_FIELD_FORM_STATE } from "@/components/custom-fields/custom-field-form-types";
 import {
@@ -43,7 +41,7 @@ export default function NewCustomFieldPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const boards = useMemo(
@@ -51,7 +49,7 @@ export default function NewCustomFieldPage() {
       boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
         : [],
-    [boardsQuery.data],
+    [boardsQuery.data]
   );
 
   const createMutation =

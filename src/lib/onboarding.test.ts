@@ -13,7 +13,7 @@ describe("isOnboardingComplete", () => {
       isOnboardingComplete({
         preferred_name: "Asha",
         timezone: "",
-      }),
+      })
     ).toBe(false);
   });
 
@@ -23,7 +23,7 @@ describe("isOnboardingComplete", () => {
         name: "   ",
         preferred_name: "   ",
         timezone: "America/New_York",
-      }),
+      })
     ).toBe(false);
   });
 
@@ -32,7 +32,7 @@ describe("isOnboardingComplete", () => {
       isOnboardingComplete({
         preferred_name: "Asha",
         timezone: "America/New_York",
-      }),
+      })
     ).toBe(true);
   });
 
@@ -41,7 +41,7 @@ describe("isOnboardingComplete", () => {
       isOnboardingComplete({
         name: "Asha",
         timezone: "America/New_York",
-      }),
+      })
     ).toBe(true);
   });
 });

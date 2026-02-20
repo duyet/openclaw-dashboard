@@ -2,19 +2,19 @@
 
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type listGatewaysApiV1GatewaysGetResponse,
   useListGatewaysApiV1GatewaysGet,
 } from "@/api/generated/gateways/gateways";
 import type { MarketplaceSkillCardRead } from "@/api/generated/model";
+import {
+  type listSkillPacksApiV1SkillsPacksGetResponse,
+  useListSkillPacksApiV1SkillsPacksGet,
+} from "@/api/generated/skills/skills";
 import {
   listMarketplaceSkillsApiV1SkillsMarketplaceGet,
   type listMarketplaceSkillsApiV1SkillsMarketplaceGetResponse,
@@ -22,16 +22,12 @@ import {
   useListMarketplaceSkillsApiV1SkillsMarketplaceGet,
   useUninstallMarketplaceSkillApiV1SkillsMarketplaceSkillIdUninstallPost,
 } from "@/api/generated/skills-marketplace/skills-marketplace";
-import {
-  type listSkillPacksApiV1SkillsPacksGetResponse,
-  useListSkillPacksApiV1SkillsPacksGet,
-} from "@/api/generated/skills/skills";
-import { SkillInstallDialog } from "@/components/skills/SkillInstallDialog";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { MarketplaceSkillsTable } from "@/components/skills/MarketplaceSkillsTable";
+import { SkillInstallDialog } from "@/components/skills/SkillInstallDialog";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
-import { useUrlSorting } from "@/lib/use-url-sorting";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -40,6 +36,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
+import { useUrlSorting } from "@/lib/use-url-sorting";
 
 const MARKETPLACE_SKILLS_SORTABLE_COLUMNS = [
   "name",
@@ -137,7 +135,7 @@ function parsePageSizeParam(value: string | null) {
   const parsed = parsePositiveIntParam(value, MARKETPLACE_DEFAULT_PAGE_SIZE);
   if (
     MARKETPLACE_PAGE_SIZE_OPTIONS.includes(
-      parsed as (typeof MARKETPLACE_PAGE_SIZE_OPTIONS)[number],
+      parsed as (typeof MARKETPLACE_PAGE_SIZE_OPTIONS)[number]
     )
   ) {
     return parsed;
@@ -173,10 +171,10 @@ export default function SkillsMarketplacePage() {
     useState<Record<string, { id: string; name: string }[]>>({});
   const [isGatewayStatusLoading, setIsGatewayStatusLoading] = useState(false);
   const [gatewayStatusError, setGatewayStatusError] = useState<string | null>(
-    null,
+    null
   );
   const [installingGatewayId, setInstallingGatewayId] = useState<string | null>(
-    null,
+    null
   );
   const initialSearch = searchParams.get("search") ?? "";
   const initialCategory = (searchParams.get("category") ?? "all")
@@ -187,10 +185,10 @@ export default function SkillsMarketplacePage() {
   const initialPageSize = parsePageSizeParam(searchParams.get("limit"));
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    initialCategory || "all",
+    initialCategory || "all"
   );
   const [selectedRisk, setSelectedRisk] = useState<string>(
-    initialRisk || "safe",
+    initialRisk || "safe"
   );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -217,7 +215,7 @@ export default function SkillsMarketplacePage() {
       gatewaysQuery.data?.status === 200
         ? (gatewaysQuery.data.data.items ?? [])
         : [],
-    [gatewaysQuery.data],
+    [gatewaysQuery.data]
   );
 
   const resolvedGatewayId = gateways[0]?.id ?? "";
@@ -287,7 +285,7 @@ export default function SkillsMarketplacePage() {
 
   const skills = useMemo<MarketplaceSkillCardRead[]>(
     () => (skillsQuery.data?.status === 200 ? skillsQuery.data.data : []),
-    [skillsQuery.data],
+    [skillsQuery.data]
   );
   const filterOptionSkillsQuery =
     useListMarketplaceSkillsApiV1SkillsMarketplaceGet<
@@ -305,7 +303,7 @@ export default function SkillsMarketplacePage() {
       filterOptionSkillsQuery.data?.status === 200
         ? filterOptionSkillsQuery.data.data
         : [],
-    [filterOptionSkillsQuery.data],
+    [filterOptionSkillsQuery.data]
   );
 
   const packsQuery = useListSkillPacksApiV1SkillsPacksGet<
@@ -320,11 +318,11 @@ export default function SkillsMarketplacePage() {
 
   const packs = useMemo(
     () => (packsQuery.data?.status === 200 ? packsQuery.data.data : []),
-    [packsQuery.data],
+    [packsQuery.data]
   );
   const selectedPack = useMemo(
     () => packs.find((pack) => pack.id === selectedPackId) ?? null,
-    [packs, selectedPackId],
+    [packs, selectedPackId]
   );
 
   const filteredSkills = useMemo(() => skills, [skills]);
@@ -354,7 +352,7 @@ export default function SkillsMarketplacePage() {
   }, [currentPage, pageSize, skills.length, totalCountInfo]);
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(totalSkills / pageSize)),
-    [pageSize, totalSkills],
+    [pageSize, totalSkills]
   );
   const hasNextPage = useMemo(() => {
     if (totalCountInfo.hasKnownTotal) {
@@ -418,7 +416,7 @@ export default function SkillsMarketplacePage() {
     if (
       selectedCategory !== "all" &&
       !categoryFilterOptions.some(
-        (category) => category.value === selectedCategory.trim().toLowerCase(),
+        (category) => category.value === selectedCategory.trim().toLowerCase()
       )
     ) {
       setSelectedCategory("all");
@@ -520,7 +518,7 @@ export default function SkillsMarketplacePage() {
           gatewayName: gateway.name,
           skills: response.status === 200 ? response.data : [],
         };
-      }),
+      })
     );
 
     return gatewaySkills;
@@ -555,7 +553,7 @@ export default function SkillsMarketplacePage() {
         };
       });
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -584,7 +582,7 @@ export default function SkillsMarketplacePage() {
               gatewayName: gateway.name,
               skills: response.status === 200 ? response.data : [],
             };
-          }),
+          })
         );
 
         if (cancelled) return;
@@ -639,7 +637,7 @@ export default function SkillsMarketplacePage() {
               [variables.params.gateway_id]: true,
             }));
             const gatewayName = gateways.find(
-              (gateway) => gateway.id === variables.params.gateway_id,
+              (gateway) => gateway.id === variables.params.gateway_id
             )?.name;
             if (gatewayName) {
               updateInstalledGatewayNames({
@@ -652,7 +650,7 @@ export default function SkillsMarketplacePage() {
           },
         },
       },
-      queryClient,
+      queryClient
     );
 
   const uninstallMutation =
@@ -668,7 +666,7 @@ export default function SkillsMarketplacePage() {
               [variables.params.gateway_id]: false,
             }));
             const gatewayName = gateways.find(
-              (gateway) => gateway.id === variables.params.gateway_id,
+              (gateway) => gateway.id === variables.params.gateway_id
             )?.name;
             if (gatewayName) {
               updateInstalledGatewayNames({
@@ -681,7 +679,7 @@ export default function SkillsMarketplacePage() {
           },
         },
       },
-      queryClient,
+      queryClient
     );
 
   useEffect(() => {
@@ -709,10 +707,10 @@ export default function SkillsMarketplacePage() {
         const entries = gatewaySkills.map(
           ({ gatewayId, skills: gatewaySkillRows }) => {
             const row = gatewaySkillRows.find(
-              (skill) => skill.id === selectedSkill.id,
+              (skill) => skill.id === selectedSkill.id
             );
             return [gatewayId, Boolean(row?.installed)] as const;
-          },
+          }
         );
         if (cancelled) return;
         setGatewayInstalledById(Object.fromEntries(entries));
@@ -721,7 +719,7 @@ export default function SkillsMarketplacePage() {
         setGatewayStatusError(
           error instanceof Error
             ? error.message
-            : "Unable to load gateway status.",
+            : "Unable to load gateway status."
         );
       } finally {
         if (!cancelled) {
@@ -744,7 +742,7 @@ export default function SkillsMarketplacePage() {
 
   const handleGatewayInstallAction = async (
     gatewayId: string,
-    isInstalled: boolean,
+    isInstalled: boolean
   ) => {
     if (!selectedSkill) return;
     setInstallingGatewayId(gatewayId);
@@ -916,7 +914,7 @@ export default function SkillsMarketplacePage() {
                         const next = Number.parseInt(value, 10);
                         if (
                           MARKETPLACE_PAGE_SIZE_OPTIONS.includes(
-                            next as (typeof MARKETPLACE_PAGE_SIZE_OPTIONS)[number],
+                            next as (typeof MARKETPLACE_PAGE_SIZE_OPTIONS)[number]
                           )
                         ) {
                           setPageSize(next);
@@ -965,7 +963,7 @@ export default function SkillsMarketplacePage() {
                       setCurrentPage((prev) =>
                         totalCountInfo.hasKnownTotal
                           ? Math.min(totalPages, prev + 1)
-                          : prev + 1,
+                          : prev + 1
                       );
                     }}
                   >

@@ -2,21 +2,19 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { useAuth, useUser } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
 import { Globe, Mail, RotateCcw, Save, Trash2, User } from "lucide-react";
-
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
-  useDeleteMeApiV1UsersMeDelete,
   getGetMeApiV1UsersMeGetQueryKey,
   type getMeApiV1UsersMeGetResponse,
+  useDeleteMeApiV1UsersMeDelete,
   useGetMeApiV1UsersMeGet,
   useUpdateMeApiV1UsersMePatch,
 } from "@/api/generated/users/users";
-import { ApiError } from "@/api/mutator";
+import type { ApiError } from "@/api/mutator";
+import { useAuth, useUser } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
@@ -70,7 +68,7 @@ export default function SettingsPage() {
   const timezones = useMemo(() => getSupportedTimezones(), []);
   const timezoneOptions = useMemo(
     () => timezones.map((value) => ({ value, label: value })),
-    [timezones],
+    [timezones]
   );
 
   const updateMeMutation = useUpdateMeApiV1UsersMePatch<ApiError>({

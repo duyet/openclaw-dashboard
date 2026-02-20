@@ -5,7 +5,7 @@ type OnboardingProfileLike = {
 };
 
 export function isOnboardingComplete(
-  profile: OnboardingProfileLike | null | undefined,
+  profile: OnboardingProfileLike | null | undefined
 ): boolean {
   if (!profile) return false;
   const resolvedName = profile.preferred_name?.trim() || profile.name?.trim();

@@ -4,21 +4,22 @@
  * Uses @clerk/nextjs/server for JWT verification on edge runtime.
  * Falls back gracefully if Clerk is not configured.
  */
-import type { ActorContext } from './index';
-import type { Actor } from './types';
-import { getDb } from '../db';
-import type { Database } from '../db';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
+
+import { eq } from "drizzle-orm";
+import type { Database } from "../db";
+import { getDb } from "../db";
+import { users } from "../db/schema";
+import type { ActorContext } from "./index";
+import type { Actor } from "./types";
 
 /**
  * Extract a bearer token from the Authorization header.
  */
 function extractBearerToken(request: Request): string | null {
-  const authorization = request.headers.get('Authorization');
+  const authorization = request.headers.get("Authorization");
   if (!authorization) return null;
   const trimmed = authorization.trim();
-  if (!trimmed.toLowerCase().startsWith('bearer ')) return null;
+  if (!trimmed.toLowerCase().startsWith("bearer ")) return null;
   const token = trimmed.slice(7).trim();
   return token || null;
 }
@@ -31,16 +32,19 @@ function extractBearerToken(request: Request): string | null {
  */
 export async function resolveClerkAuth(
   request: Request,
-  d1: D1Database,
+  d1: D1Database
 ): Promise<ActorContext | null> {
   const token = extractBearerToken(request);
   if (!token) return null;
 
   try {
     // Dynamic import to avoid issues when Clerk is not configured
-    const { verifyToken } = await import('@clerk/nextjs/server');
+    const { verifyToken } = await import("@clerk/nextjs/server");
 
-    const secretKey = typeof process !== 'undefined' ? process.env?.CLERK_SECRET_KEY : undefined;
+    const secretKey =
+      typeof process !== "undefined"
+        ? process.env?.CLERK_SECRET_KEY
+        : undefined;
     if (!secretKey) return null;
 
     const payload = await verifyToken(token, {
@@ -61,7 +65,7 @@ export async function resolveClerkAuth(
 
     if (existingUser.length > 0) {
       return {
-        type: 'user',
+        type: "user",
         userId: existingUser[0].id,
         orgId: existingUser[0].activeOrganizationId ?? undefined,
       };
@@ -70,7 +74,7 @@ export async function resolveClerkAuth(
     // User not found - will be created via bootstrap endpoint
     // Return a minimal context with the clerk ID
     return {
-      type: 'user',
+      type: "user",
       userId: undefined, // No DB user yet
     };
   } catch {
@@ -85,24 +89,30 @@ export async function resolveClerkAuth(
  */
 export async function verifyClerkToken(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.slice(7).trim();
   if (!token) return null;
 
   try {
-    const { verifyToken } = await import('@clerk/nextjs/server');
-    const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
+    const { verifyToken } = await import("@clerk/nextjs/server");
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
     if (!payload?.sub) return null;
 
     const clerkUserId = payload.sub;
-    const user = await db.select().from(users).where(eq(users.clerkUserId, clerkUserId)).get();
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkUserId, clerkUserId))
+      .get();
     if (!user) return null;
 
     return {
-      type: 'user',
+      type: "user",
       userId: user.id,
       clerkId: clerkUserId,
       orgId: user.activeOrganizationId ?? undefined,

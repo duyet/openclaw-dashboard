@@ -2,27 +2,25 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useState } from "react";
 import {
   type getGatewayApiV1GatewaysGatewayIdGetResponse,
   useGetGatewayApiV1GatewaysGatewayIdGet,
   useUpdateGatewayApiV1GatewaysGatewayIdPatch,
 } from "@/api/generated/gateways/gateways";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import type { GatewayUpdate } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { GatewayForm } from "@/components/gateways/GatewayForm";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import {
-  DEFAULT_WORKSPACE_ROOT,
   checkGatewayConnection,
+  DEFAULT_WORKSPACE_ROOT,
   type GatewayCheckStatus,
   validateGatewayUrl,
 } from "@/lib/gateway-form";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 export default function EditGatewayPage() {
   const { isSignedIn } = useAuth();
@@ -38,17 +36,17 @@ export default function EditGatewayPage() {
   const [name, setName] = useState<string | undefined>(undefined);
   const [gatewayUrl, setGatewayUrl] = useState<string | undefined>(undefined);
   const [gatewayToken, setGatewayToken] = useState<string | undefined>(
-    undefined,
+    undefined
   );
   const [workspaceRoot, setWorkspaceRoot] = useState<string | undefined>(
-    undefined,
+    undefined
   );
 
   const [gatewayUrlError, setGatewayUrlError] = useState<string | null>(null);
   const [gatewayCheckStatus, setGatewayCheckStatus] =
     useState<GatewayCheckStatus>("idle");
   const [gatewayCheckMessage, setGatewayCheckMessage] = useState<string | null>(
-    null,
+    null
   );
 
   const [error, setError] = useState<string | null>(null);

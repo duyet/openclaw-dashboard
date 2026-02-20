@@ -2,26 +2,24 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import {
-  type listBoardGroupsApiV1BoardGroupsGetResponse,
   getListBoardGroupsApiV1BoardGroupsGetQueryKey,
+  type listBoardGroupsApiV1BoardGroupsGetResponse,
   useDeleteBoardGroupApiV1BoardGroupsGroupIdDelete,
   useListBoardGroupsApiV1BoardGroupsGet,
 } from "@/api/generated/board-groups/board-groups";
-import { BoardGroupsTable } from "@/components/board-groups/BoardGroupsTable";
 import type { BoardGroupRead } from "@/api/generated/model";
-import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
-import { useUrlSorting } from "@/lib/use-url-sorting";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
+import { BoardGroupsTable } from "@/components/board-groups/BoardGroupsTable";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
+import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import { useUrlSorting } from "@/lib/use-url-sorting";
 
 const BOARD_GROUP_SORTABLE_COLUMNS = ["name", "updated_at"];
 
@@ -52,7 +50,7 @@ export default function BoardGroupsPage() {
       groupsQuery.data?.status === 200
         ? (groupsQuery.data.data.items ?? [])
         : [],
-    [groupsQuery.data],
+    [groupsQuery.data]
   );
 
   const deleteMutation = useDeleteBoardGroupApiV1BoardGroupsGroupIdDelete<
@@ -75,7 +73,7 @@ export default function BoardGroupsPage() {
         invalidateQueryKeys: [groupsKey],
       }),
     },
-    queryClient,
+    queryClient
   );
 
   const handleDelete = () => {

@@ -11,7 +11,8 @@ Cypress.on("uncaught:exception", (err) => {
 
 describe("/activity feed", () => {
   const apiBase = "**/api/v1";
-  const email = Cypress.env("CLERK_TEST_EMAIL") || "jane+clerk_test@example.com";
+  const email =
+    Cypress.env("CLERK_TEST_EMAIL") || "jane+clerk_test@example.com";
 
   const originalDefaultCommandTimeout = Cypress.config("defaultCommandTimeout");
 
@@ -35,15 +36,17 @@ describe("/activity feed", () => {
     };
 
     cy.intercept("GET", `${apiBase}/boards/*/tasks/stream*`, emptySse).as(
-      "tasksStream",
+      "tasksStream"
     );
     cy.intercept("GET", `${apiBase}/boards/*/approvals/stream*`, emptySse).as(
-      "approvalsStream",
+      "approvalsStream"
     );
     cy.intercept("GET", `${apiBase}/boards/*/memory/stream*`, emptySse).as(
-      "memoryStream",
+      "memoryStream"
     );
-    cy.intercept("GET", `${apiBase}/agents/stream*`, emptySse).as("agentsStream");
+    cy.intercept("GET", `${apiBase}/agents/stream*`, emptySse).as(
+      "agentsStream"
+    );
   }
 
   function stubBoardBootstrap() {
@@ -57,7 +60,9 @@ describe("/activity feed", () => {
     cy.intercept("GET", `${apiBase}/boards*`, {
       statusCode: 200,
       body: {
-        items: [{ id: "b1", name: "Testing", updated_at: "2026-02-07T00:00:00Z" }],
+        items: [
+          { id: "b1", name: "Testing", updated_at: "2026-02-07T00:00:00Z" },
+        ],
       },
     }).as("boardsList");
 
@@ -161,8 +166,8 @@ describe("/activity feed", () => {
     cy.wait("@activityList", { timeout: 20_000 });
 
     // Depending on how ApiError is surfaced, we may show a generic or specific message.
-    cy.contains(/unable to load activity feed|unable to load feed|boom/i).should(
-      "be.visible",
-    );
+    cy.contains(
+      /unable to load activity feed|unable to load feed|boom/i
+    ).should("be.visible");
   });
 });

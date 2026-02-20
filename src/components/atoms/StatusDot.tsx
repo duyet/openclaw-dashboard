@@ -41,7 +41,7 @@ const DEFAULT_STATUS_DOT_CLASS: Record<StatusDotVariant, string> = {
 
 export const statusDotClass = (
   status: string | null | undefined,
-  variant: StatusDotVariant = "agent",
+  variant: StatusDotVariant = "agent"
 ) => {
   const normalized = (status ?? "").trim().toLowerCase();
   if (!normalized) {
@@ -70,7 +70,7 @@ export function StatusDot({
       className={cn(
         "inline-block h-2.5 w-2.5 rounded-full",
         statusDotClass(status, variant),
-        className,
+        className
       )}
     />
   );

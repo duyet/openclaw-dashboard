@@ -82,7 +82,7 @@ export function MarketplaceSkillForm({
   const [name, setName] = useState(resolvedInitial.name);
   const [description, setDescription] = useState(resolvedInitial.description);
   const [branch, setBranch] = useState(
-    resolvedInitial.branch?.trim() || normalizedDefaultBranch,
+    resolvedInitial.branch?.trim() || normalizedDefaultBranch
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

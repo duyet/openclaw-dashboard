@@ -9,15 +9,16 @@
  * NOTE: PBKDF2 is available on edge via crypto.subtle.deriveBits with the
  * "PBKDF2" algorithm. No bcrypt needed.
  */
-import type { ActorContext } from './index';
-import type { Actor } from './types';
-import { getDb } from '../db';
-import type { Database } from '../db';
-import { agents } from '../db/schema';
-import { isNotNull, eq } from 'drizzle-orm';
+
+import { eq, isNotNull } from "drizzle-orm";
+import type { Database } from "../db";
+import { getDb } from "../db";
+import { agents } from "../db/schema";
+import type { ActorContext } from "./index";
+import type { Actor } from "./types";
 
 const ITERATIONS = 200_000;
-const HASH_ALGORITHM = 'SHA-256';
+const HASH_ALGORITHM = "SHA-256";
 const KEY_LENGTH_BYTES = 32;
 
 /**
@@ -25,9 +26,9 @@ const KEY_LENGTH_BYTES = 32;
  */
 function base64UrlDecode(input: string): Uint8Array {
   // Add padding
-  const padded = input + '='.repeat((4 - (input.length % 4)) % 4);
+  const padded = input + "=".repeat((4 - (input.length % 4)) % 4);
   // Convert URL-safe to standard base64
-  const base64 = padded.replace(/-/g, '+').replace(/_/g, '/');
+  const base64 = padded.replace(/-/g, "+").replace(/_/g, "/");
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -42,12 +43,15 @@ function base64UrlDecode(input: string): Uint8Array {
  * Hash format: `pbkdf2_sha256$<iterations>$<salt_b64>$<digest_b64>`
  * where salt and digest are URL-safe base64 without padding.
  */
-async function verifyAgentTokenInternal(token: string, storedHash: string): Promise<boolean> {
-  const parts = storedHash.split('$');
+async function verifyAgentTokenInternal(
+  token: string,
+  storedHash: string
+): Promise<boolean> {
+  const parts = storedHash.split("$");
   if (parts.length !== 4) return false;
 
   const [algorithm, iterationsStr, saltB64, digestB64] = parts;
-  if (algorithm !== 'pbkdf2_sha256') return false;
+  if (algorithm !== "pbkdf2_sha256") return false;
 
   const iterations = parseInt(iterationsStr, 10);
   if (isNaN(iterations) || iterations <= 0) return false;
@@ -58,23 +62,23 @@ async function verifyAgentTokenInternal(token: string, storedHash: string): Prom
   // Import the token as a key for PBKDF2
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(token),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveBits'],
+    ["deriveBits"]
   );
 
   // Derive the hash
   const derivedBits = await crypto.subtle.deriveBits(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: salt as unknown as BufferSource,
       iterations,
       hash: HASH_ALGORITHM,
     },
     keyMaterial,
-    KEY_LENGTH_BYTES * 8,
+    KEY_LENGTH_BYTES * 8
   );
 
   const candidateDigest = new Uint8Array(derivedBits);
@@ -96,10 +100,10 @@ async function verifyAgentTokenInternal(token: string, storedHash: string): Prom
  */
 export async function resolveAgentAuth(
   request: Request,
-  d1: D1Database,
+  d1: D1Database
 ): Promise<ActorContext | null> {
   // Check X-Agent-Token header first, then fall back to Authorization: Bearer
-  let token = request.headers.get('X-Agent-Token');
+  let token = request.headers.get("X-Agent-Token");
 
   if (!token) {
     // Only accept Authorization: Bearer as agent token if X-Agent-Token was provided
@@ -139,7 +143,7 @@ export async function resolveAgentAuth(
         });
 
       return {
-        type: 'agent',
+        type: "agent",
         agentId: agent.id,
       };
     }
@@ -156,7 +160,7 @@ export function generateAgentToken(): string {
   crypto.getRandomValues(bytes);
   // URL-safe base64 without padding
   const base64 = btoa(String.fromCharCode(...bytes));
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 /**
@@ -169,35 +173,35 @@ export async function hashAgentToken(token: string): Promise<string> {
 
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(token),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveBits'],
+    ["deriveBits"]
   );
 
   const derivedBits = await crypto.subtle.deriveBits(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt,
       iterations: ITERATIONS,
       hash: HASH_ALGORITHM,
     },
     keyMaterial,
-    KEY_LENGTH_BYTES * 8,
+    KEY_LENGTH_BYTES * 8
   );
 
   const digest = new Uint8Array(derivedBits);
 
   // URL-safe base64 encode without padding
   const saltB64 = btoa(String.fromCharCode(...salt))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
   const digestB64 = btoa(String.fromCharCode(...digest))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 
   return `pbkdf2_sha256$${ITERATIONS}$${saltB64}$${digestB64}`;
 }
@@ -210,7 +214,7 @@ export async function hashAgentToken(token: string): Promise<string> {
  */
 export async function verifyAgentToken(
   token: string,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
   if (!token || token.length < 20) return null;
 
@@ -233,7 +237,7 @@ export async function verifyAgentToken(
         .where(eq(agents.id, agent.id))
         .run()
         .catch(() => undefined);
-      return { type: 'agent', agentId: agent.id };
+      return { type: "agent", agentId: agent.id };
     }
   }
   return null;
@@ -243,11 +247,14 @@ export async function verifyAgentToken(
  * Internal: verify a plaintext token against a stored PBKDF2 hash.
  * Extracted from verifyAgentToken for reuse within the module.
  */
-async function verifyAgentTokenHash(token: string, storedHash: string): Promise<boolean> {
-  const parts = storedHash.split('$');
+async function verifyAgentTokenHash(
+  token: string,
+  storedHash: string
+): Promise<boolean> {
+  const parts = storedHash.split("$");
   if (parts.length !== 4) return false;
   const [algorithm, iterationsStr, saltB64, digestB64] = parts;
-  if (algorithm !== 'pbkdf2_sha256') return false;
+  if (algorithm !== "pbkdf2_sha256") return false;
   const iterations = parseInt(iterationsStr, 10);
   if (isNaN(iterations) || iterations <= 0) return false;
 
@@ -256,20 +263,26 @@ async function verifyAgentTokenHash(token: string, storedHash: string): Promise<
 
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(token),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveBits'],
+    ["deriveBits"]
   );
   const derivedBits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: salt as unknown as BufferSource, iterations, hash: HASH_ALGORITHM },
+    {
+      name: "PBKDF2",
+      salt: salt as unknown as BufferSource,
+      iterations,
+      hash: HASH_ALGORITHM,
+    },
     keyMaterial,
-    KEY_LENGTH_BYTES * 8,
+    KEY_LENGTH_BYTES * 8
   );
   const candidate = new Uint8Array(derivedBits);
   if (candidate.length !== expectedDigest.length) return false;
   let diff = 0;
-  for (let i = 0; i < candidate.length; i++) diff |= candidate[i] ^ expectedDigest[i];
+  for (let i = 0; i < candidate.length; i++)
+    diff |= candidate[i] ^ expectedDigest[i];
   return diff === 0;
 }

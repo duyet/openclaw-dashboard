@@ -1,25 +1,16 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-
-import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { Activity as ActivityIcon } from "lucide-react";
-
-import { ApiError } from "@/api/mutator";
-import { streamAgentsApiV1AgentsStreamGet } from "@/api/generated/agents/agents";
+import Link from "next/link";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listActivityApiV1ActivityGet } from "@/api/generated/activity/activity";
+import { streamAgentsApiV1AgentsStreamGet } from "@/api/generated/agents/agents";
+import { streamApprovalsApiV1BoardsBoardIdApprovalsStreamGet } from "@/api/generated/approvals/approvals";
+import { streamBoardMemoryApiV1BoardsBoardIdMemoryStreamGet } from "@/api/generated/board-memory/board-memory";
 import {
   getBoardSnapshotApiV1BoardsBoardIdSnapshotGet,
   listBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
-import { streamBoardMemoryApiV1BoardsBoardIdMemoryStreamGet } from "@/api/generated/board-memory/board-memory";
-import { streamApprovalsApiV1BoardsBoardIdApprovalsStreamGet } from "@/api/generated/approvals/approvals";
-import { streamTasksApiV1BoardsBoardIdTasksStreamGet } from "@/api/generated/tasks/tasks";
-import {
-  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
-  useGetMyMembershipApiV1OrganizationsMeMemberGet,
-} from "@/api/generated/organizations/organizations";
 import type {
   ActivityEventRead,
   AgentRead,
@@ -29,20 +20,27 @@ import type {
   TaskCommentRead,
   TaskRead,
 } from "@/api/generated/model";
-import { Markdown } from "@/components/atoms/Markdown";
+import {
+  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
+  useGetMyMembershipApiV1OrganizationsMeMemberGet,
+} from "@/api/generated/organizations/organizations";
+import { streamTasksApiV1BoardsBoardIdTasksStreamGet } from "@/api/generated/tasks/tasks";
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
+import { Markdown } from "@/components/atoms/Markdown";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
+import { usePageActive } from "@/hooks/usePageActive";
 import { createExponentialBackoff } from "@/lib/backoff";
+import { apiDatetimeToMs, parseApiDatetime } from "@/lib/datetime";
 import {
   DEFAULT_HUMAN_LABEL,
   resolveHumanActorName,
   resolveMemberDisplayName,
 } from "@/lib/display-name";
-import { apiDatetimeToMs, parseApiDatetime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import { usePageActive } from "@/hooks/usePageActive";
 
 const SSE_RECONNECT_BACKOFF = {
   baseMs: 1_000,
@@ -245,7 +243,7 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
               <span
                 className={cn(
                   "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                  eventPillClass(item.event_type),
+                  eventPillClass(item.event_type)
                 )}
               >
                 {eventLabel(item.event_type)}
@@ -356,7 +354,7 @@ export default function ActivityPage() {
   const resolveAuthor = useCallback(
     (
       agentId: string | null | undefined,
-      fallbackName: string = currentUserDisplayName,
+      fallbackName: string = currentUserDisplayName
     ) => {
       if (agentId) {
         const agent = agentsByIdRef.current.get(agentId);
@@ -374,7 +372,7 @@ export default function ActivityPage() {
         role: null,
       };
     },
-    [currentUserDisplayName],
+    [currentUserDisplayName]
   );
 
   const boardNameForId = useCallback((boardId: string | null | undefined) => {
@@ -385,7 +383,7 @@ export default function ActivityPage() {
   const updateTaskMeta = useCallback(
     (
       task: { id: string; title: string; board_id?: string | null },
-      fallbackBoardId: string,
+      fallbackBoardId: string
     ) => {
       const boardId = task.board_id ?? fallbackBoardId;
       taskMetaByIdRef.current.set(task.id, {
@@ -393,7 +391,7 @@ export default function ActivityPage() {
         boardId,
       });
     },
-    [],
+    []
   );
 
   const mapTaskActivity = useCallback(
@@ -420,7 +418,7 @@ export default function ActivityPage() {
           meta?.title ?? (event.task_id ? "Unknown task" : "Task activity"),
       };
     },
-    [boardNameForId, currentUserDisplayName, resolveAuthor],
+    [boardNameForId, currentUserDisplayName, resolveAuthor]
   );
 
   const mapTaskComment = useCallback(
@@ -446,14 +444,14 @@ export default function ActivityPage() {
           meta?.title ?? (comment.task_id ? "Unknown task" : "Task activity"),
       };
     },
-    [boardNameForId, currentUserDisplayName, resolveAuthor],
+    [boardNameForId, currentUserDisplayName, resolveAuthor]
   );
 
   const mapApprovalEvent = useCallback(
     (
       approval: ApprovalRead,
       boardId: string,
-      previous: ApprovalRead | null = null,
+      previous: ApprovalRead | null = null
     ): FeedItem => {
       const nextStatus = approval.status ?? "pending";
       const previousStatus = previous?.status ?? null;
@@ -512,7 +510,7 @@ export default function ActivityPage() {
         title: `Approval · ${action}`,
       };
     },
-    [boardNameForId, currentUserDisplayName, resolveAuthor],
+    [boardNameForId, currentUserDisplayName, resolveAuthor]
   );
 
   const mapBoardChat = useCallback(
@@ -520,7 +518,7 @@ export default function ActivityPage() {
       const content = (memory.content ?? "").trim();
       const actorName = resolveHumanActorName(
         memory.source,
-        currentUserDisplayName,
+        currentUserDisplayName
       );
       const command = content.startsWith("/");
       return {
@@ -538,14 +536,14 @@ export default function ActivityPage() {
         title: command ? "Board command" : "Board chat",
       };
     },
-    [boardNameForId, currentUserDisplayName],
+    [boardNameForId, currentUserDisplayName]
   );
 
   const mapAgentEvent = useCallback(
     (
       agent: Agent,
       previous: Agent | null,
-      isSnapshot = false,
+      isSnapshot = false
     ): FeedItem | null => {
       const nextStatus = normalizeStatus(agent.status);
       const previousStatus = previous ? normalizeStatus(previous.status) : null;
@@ -603,7 +601,7 @@ export default function ActivityPage() {
         title: `Agent · ${agent.name}`,
       };
     },
-    [boardNameForId],
+    [boardNameForId]
   );
 
   const latestTimestamp = useCallback(
@@ -616,7 +614,7 @@ export default function ActivityPage() {
       }
       return latest ? new Date(latest).toISOString() : null;
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -659,7 +657,7 @@ export default function ActivityPage() {
         if (cancelled) return;
         setBoards(nextBoards);
         boardsByIdRef.current = new Map(
-          nextBoards.map((board) => [board.id, board]),
+          nextBoards.map((board) => [board.id, board])
         );
 
         const seeded: FeedItem[] = [];
@@ -668,8 +666,8 @@ export default function ActivityPage() {
         // Snapshot seeding gives org-level approvals/agents/chat and task metadata.
         const snapshotResults = await Promise.allSettled(
           nextBoards.map((board) =>
-            getBoardSnapshotApiV1BoardsBoardIdSnapshotGet(board.id),
-          ),
+            getBoardSnapshotApiV1BoardsBoardIdSnapshotGet(board.id)
+          )
         );
         if (cancelled) return;
 
@@ -744,7 +742,7 @@ export default function ActivityPage() {
       } catch (err) {
         if (cancelled) return;
         setFeedError(
-          err instanceof Error ? err.message : "Unable to load activity feed.",
+          err instanceof Error ? err.message : "Unable to load activity feed."
         );
       } finally {
         if (cancelled) return;
@@ -783,7 +781,7 @@ export default function ActivityPage() {
         try {
           const since = latestTimestamp(
             (item) =>
-              item.board_id === boardId && isTaskEventType(item.event_type),
+              item.board_id === boardId && isTaskEventType(item.event_type)
           );
           const streamResult =
             await streamTasksApiV1BoardsBoardIdTasksStreamGet(
@@ -792,7 +790,7 @@ export default function ActivityPage() {
               {
                 headers: { Accept: "text/event-stream" },
                 signal: abortController.signal,
-              },
+              }
             );
           if (streamResult.status !== 200) {
             throw new Error("Unable to connect task stream.");
@@ -932,7 +930,7 @@ export default function ActivityPage() {
           const since = latestTimestamp(
             (item) =>
               item.board_id === boardId &&
-              item.event_type.startsWith("approval."),
+              item.event_type.startsWith("approval.")
           );
           const streamResult =
             await streamApprovalsApiV1BoardsBoardIdApprovalsStreamGet(
@@ -941,7 +939,7 @@ export default function ActivityPage() {
               {
                 headers: { Accept: "text/event-stream" },
                 signal: abortController.signal,
-              },
+              }
             );
           if (streamResult.status !== 200) {
             throw new Error("Unable to connect approvals stream.");
@@ -986,10 +984,10 @@ export default function ActivityPage() {
                       approvalsByIdRef.current.get(payload.approval.id) ?? null;
                     approvalsByIdRef.current.set(
                       payload.approval.id,
-                      payload.approval,
+                      payload.approval
                     );
                     pushFeedItem(
-                      mapApprovalEvent(payload.approval, boardId, previous),
+                      mapApprovalEvent(payload.approval, boardId, previous)
                     );
                   }
                 } catch {
@@ -1065,7 +1063,7 @@ export default function ActivityPage() {
             (item) =>
               item.board_id === boardId &&
               (item.event_type === "board.chat" ||
-                item.event_type === "board.command"),
+                item.event_type === "board.command")
           );
           const params = { is_chat: true, ...(since ? { since } : {}) };
           const streamResult =
@@ -1075,7 +1073,7 @@ export default function ActivityPage() {
               {
                 headers: { Accept: "text/event-stream" },
                 signal: abortController.signal,
-              },
+              }
             );
           if (streamResult.status !== 200) {
             throw new Error("Unable to connect board chat stream.");
@@ -1182,14 +1180,14 @@ export default function ActivityPage() {
     const connect = async () => {
       try {
         const since = latestTimestamp((item) =>
-          item.event_type.startsWith("agent."),
+          item.event_type.startsWith("agent.")
         );
         const streamResult = await streamAgentsApiV1AgentsStreamGet(
           since ? { since } : undefined,
           {
             headers: { Accept: "text/event-stream" },
             signal: abortController.signal,
-          },
+          }
         );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect agent stream.");

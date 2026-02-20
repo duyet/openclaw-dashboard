@@ -53,7 +53,7 @@ export function createOptimisticListDeleteMutation<
 
   return {
     onMutate: async (
-      variables: TVariables,
+      variables: TVariables
     ): Promise<OptimisticListDeleteContext<TResponse>> => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<TResponse>(queryKey);
@@ -65,7 +65,7 @@ export function createOptimisticListDeleteMutation<
         }
         const deleteId = getDeleteId(variables);
         const nextItems = payload.items.filter(
-          (item) => getItemId(item) !== deleteId,
+          (item) => getItemId(item) !== deleteId
         );
         const removedCount = payload.items.length - nextItems.length;
         queryClient.setQueryData<TResponse>(queryKey, {
@@ -83,7 +83,7 @@ export function createOptimisticListDeleteMutation<
     onError: (
       _error: unknown,
       _variables: TVariables,
-      context?: OptimisticListDeleteContext<TResponse>,
+      context?: OptimisticListDeleteContext<TResponse>
     ) => {
       if (context?.previous) {
         queryClient.setQueryData(queryKey, context.previous);

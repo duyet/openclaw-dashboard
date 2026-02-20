@@ -2,24 +2,23 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import {
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  useAuth,
-  useUser,
-} from "@/auth/clerk";
 import { Globe, Info, RotateCcw, Save, User } from "lucide-react";
-
-import { ApiError } from "@/api/mutator";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   type getMeApiV1UsersMeGetResponse,
   useGetMeApiV1UsersMeGet,
   useUpdateMeApiV1UsersMePatch,
 } from "@/api/generated/users/users";
+
+import type { ApiError } from "@/api/mutator";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  useAuth,
+  useUser,
+} from "@/auth/clerk";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,14 +73,14 @@ export default function OnboardingPage() {
 
   const requiredMissing = useMemo(
     () => [resolvedName, resolvedTimezone].some((value) => !value.trim()),
-    [resolvedName, resolvedTimezone],
+    [resolvedName, resolvedTimezone]
   );
 
   const timezones = useMemo(() => getSupportedTimezones(), []);
 
   const timezoneOptions = useMemo(
     () => timezones.map((tz) => ({ value: tz, label: tz })),
-    [timezones],
+    [timezones]
   );
 
   useEffect(() => {

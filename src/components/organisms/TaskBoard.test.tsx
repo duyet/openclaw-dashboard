@@ -15,7 +15,7 @@ describe("TaskBoard", () => {
             priority: "medium",
           },
         ]}
-      />,
+      />
     );
 
     const board = screen.getByTestId("task-board");
@@ -37,7 +37,7 @@ describe("TaskBoard", () => {
             priority: "medium",
           },
         ]}
-      />,
+      />
     );
 
     const header = screen

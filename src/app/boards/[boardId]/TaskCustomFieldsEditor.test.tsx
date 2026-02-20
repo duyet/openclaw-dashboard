@@ -5,7 +5,7 @@ import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
 import { TaskCustomFieldsEditor } from "./TaskCustomFieldsEditor";
 
 const buildDefinition = (
-  overrides: Partial<TaskCustomFieldDefinitionRead> = {},
+  overrides: Partial<TaskCustomFieldDefinitionRead> = {}
 ): TaskCustomFieldDefinitionRead => ({
   id: "field-1",
   organization_id: "org-1",
@@ -32,7 +32,7 @@ describe("TaskCustomFieldsEditor", () => {
         setValues={vi.fn()}
         isLoading
         disabled={false}
-      />,
+      />
     );
 
     expect(screen.getByText("Loading custom fields…")).toBeInTheDocument();
@@ -44,11 +44,11 @@ describe("TaskCustomFieldsEditor", () => {
         setValues={vi.fn()}
         isLoading={false}
         disabled={false}
-      />,
+      />
     );
 
     expect(
-      screen.getByText("No custom fields configured for this board."),
+      screen.getByText("No custom fields configured for this board.")
     ).toBeInTheDocument();
   });
 
@@ -67,7 +67,7 @@ describe("TaskCustomFieldsEditor", () => {
         setValues={setValues}
         isLoading={false}
         disabled={false}
-      />,
+      />
     );
 
     expect(screen.queryByText("hidden_if_unset")).not.toBeInTheDocument();
@@ -77,7 +77,7 @@ describe("TaskCustomFieldsEditor", () => {
     });
 
     const updater = setValues.mock.calls.at(-1)?.[0] as (
-      prev: Record<string, unknown>,
+      prev: Record<string, unknown>
     ) => Record<string, unknown>;
     expect(updater({})).toEqual({ client_name: "Acme Corp" });
   });

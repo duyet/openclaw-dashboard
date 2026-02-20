@@ -1,5 +1,5 @@
-import type React from "react";
 import { render, screen } from "@testing-library/react";
+import type React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { dateCell, linkifyCell, pillCell } from "./cell-formatters";
@@ -26,12 +26,12 @@ describe("cell formatters", () => {
         href: "/agents/agent-1",
         label: "Agent One",
         subtitle: "ID agent-1",
-      }),
+      })
     );
 
     expect(screen.getByRole("link", { name: /agent one/i })).toHaveAttribute(
       "href",
-      "/agents/agent-1",
+      "/agents/agent-1"
     );
     expect(screen.getByText("ID agent-1")).toBeInTheDocument();
   });
@@ -42,12 +42,12 @@ describe("cell formatters", () => {
         href: "/boards/board-1",
         label: "Board One",
         block: false,
-      }),
+      })
     );
 
     expect(screen.getByRole("link", { name: "Board One" })).toHaveAttribute(
       "href",
-      "/boards/board-1",
+      "/boards/board-1"
     );
   });
 
@@ -63,7 +63,7 @@ describe("cell formatters", () => {
     const now = new Date("2026-01-01T01:00:00Z").getTime();
     const nowSpy = vi.spyOn(Date, "now").mockReturnValue(now);
     const { rerender } = render(
-      dateCell("2026-01-01T00:00:00Z", { relative: true }),
+      dateCell("2026-01-01T00:00:00Z", { relative: true })
     );
     expect(screen.getByText("1h ago")).toBeInTheDocument();
 

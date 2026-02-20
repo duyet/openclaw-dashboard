@@ -1,23 +1,22 @@
-import { type ReactNode, useMemo, useState } from "react";
-
 import {
   type ColumnDef,
+  getCoreRowModel,
+  getSortedRowModel,
   type OnChangeFn,
   type SortingState,
   type Updater,
-  type VisibilityState,
-  getCoreRowModel,
-  getSortedRowModel,
   useReactTable,
+  type VisibilityState,
 } from "@tanstack/react-table";
+import { type ReactNode, useMemo, useState } from "react";
 
-import { type AgentRead, type BoardRead } from "@/api/generated/model";
-import { DataTable } from "@/components/tables/DataTable";
+import type { AgentRead, BoardRead } from "@/api/generated/model";
 import {
   dateCell,
   linkifyCell,
   pillCell,
 } from "@/components/tables/cell-formatters";
+import { DataTable } from "@/components/tables/DataTable";
 import { truncateText as truncate } from "@/lib/formatters";
 
 type AgentsTableEmptyState = {
@@ -90,13 +89,13 @@ export function AgentsTable({
   const columnVisibility = useMemo<VisibilityState>(
     () =>
       Object.fromEntries(
-        (hiddenColumns ?? []).map((columnId) => [columnId, false]),
+        (hiddenColumns ?? []).map((columnId) => [columnId, false])
       ),
-    [hiddenColumns],
+    [hiddenColumns]
   );
   const boardNameById = useMemo(
     () => new Map(boards.map((board) => [board.id, board.name])),
-    [boards],
+    [boards]
   );
 
   const columns = useMemo<ColumnDef<AgentRead>[]>(() => {

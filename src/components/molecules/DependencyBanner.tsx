@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -53,7 +53,7 @@ export function DependencyBanner({
                   : isDone
                     ? "border-emerald-200 bg-emerald-50 hover:bg-emerald-100/40"
                     : "border-slate-200 bg-white hover:bg-slate-50",
-                dependency.disabled && "cursor-not-allowed opacity-60",
+                dependency.disabled && "cursor-not-allowed opacity-60"
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -67,7 +67,7 @@ export function DependencyBanner({
                       ? "text-rose-700"
                       : isDone
                         ? "text-emerald-700"
-                        : "text-slate-500",
+                        : "text-slate-500"
                   )}
                 >
                   {dependency.statusLabel}
@@ -83,7 +83,7 @@ export function DependencyBanner({
         <div
           className={cn(
             "rounded-lg border p-3 text-xs",
-            toneClassByVariant[variant],
+            toneClassByVariant[variant]
           )}
         >
           {children}

@@ -2,23 +2,18 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-import { X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
-import {
-  type getBoardApiV1BoardsBoardIdGetResponse,
-  useGetBoardApiV1BoardsBoardIdGet,
-  useUpdateBoardApiV1BoardsBoardIdPatch,
-} from "@/api/generated/boards/boards";
+import { X } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type listAgentsApiV1AgentsGetResponse,
   useListAgentsApiV1AgentsGet,
 } from "@/api/generated/agents/agents";
+import {
+  type listBoardGroupsApiV1BoardGroupsGetResponse,
+  useListBoardGroupsApiV1BoardGroupsGet,
+} from "@/api/generated/board-groups/board-groups";
 import {
   getListBoardWebhooksApiV1BoardsBoardIdWebhooksGetQueryKey,
   type listBoardWebhooksApiV1BoardsBoardIdWebhooksGetResponse,
@@ -28,26 +23,30 @@ import {
   useUpdateBoardWebhookApiV1BoardsBoardIdWebhooksWebhookIdPatch,
 } from "@/api/generated/board-webhooks/board-webhooks";
 import {
-  type listBoardGroupsApiV1BoardGroupsGetResponse,
-  useListBoardGroupsApiV1BoardGroupsGet,
-} from "@/api/generated/board-groups/board-groups";
+  type getBoardApiV1BoardsBoardIdGetResponse,
+  useGetBoardApiV1BoardsBoardIdGet,
+  useUpdateBoardApiV1BoardsBoardIdPatch,
+} from "@/api/generated/boards/boards";
 import {
   type listGatewaysApiV1GatewaysGetResponse,
   useListGatewaysApiV1GatewaysGet,
 } from "@/api/generated/gateways/gateways";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import type {
   AgentRead,
   BoardGroupRead,
-  BoardWebhookRead,
   BoardRead,
   BoardUpdate,
+  BoardWebhookRead,
 } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
+import { Markdown } from "@/components/atoms/Markdown";
 import { BoardOnboardingChat } from "@/components/BoardOnboardingChat";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import SearchableSelect from "@/components/ui/searchable-select";
 import {
   Select,
   SelectContent,
@@ -55,10 +54,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import SearchableSelect from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
 import { localDateInputToUtcIso, toLocalDateInput } from "@/lib/datetime";
-import { Markdown } from "@/components/atoms/Markdown";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 const slugify = (value: string) =>
   value
@@ -83,7 +81,7 @@ type WebhookCardProps = {
   onUpdate: (
     webhookId: string,
     description: string,
-    agentId: string | null,
+    agentId: string | null
   ) => Promise<boolean>;
 };
 
@@ -103,7 +101,7 @@ function WebhookCard({
   const [isEditing, setIsEditing] = useState(false);
   const [draftDescription, setDraftDescription] = useState(webhook.description);
   const [draftAgentValue, setDraftAgentValue] = useState(
-    webhook.agent_id ?? LEAD_AGENT_VALUE,
+    webhook.agent_id ?? LEAD_AGENT_VALUE
   );
 
   const isBusy =
@@ -127,7 +125,7 @@ function WebhookCard({
     const saved = await onUpdate(
       webhook.id,
       trimmedDescription,
-      draftAgentValue === LEAD_AGENT_VALUE ? null : draftAgentValue,
+      draftAgentValue === LEAD_AGENT_VALUE ? null : draftAgentValue
     );
     if (saved) {
       setIsEditing(false);
@@ -281,7 +279,7 @@ export default function EditBoardPage() {
   const [description, setDescription] = useState<string | undefined>(undefined);
   const [gatewayId, setGatewayId] = useState<string | undefined>(undefined);
   const [boardGroupId, setBoardGroupId] = useState<string | undefined>(
-    undefined,
+    undefined
   );
   const [boardType, setBoardType] = useState<string | undefined>(undefined);
   const [objective, setObjective] = useState<string | undefined>(undefined);
@@ -300,7 +298,7 @@ export default function EditBoardPage() {
   >(undefined);
   const [maxAgents, setMaxAgents] = useState<number | undefined>(undefined);
   const [successMetrics, setSuccessMetrics] = useState<string | undefined>(
-    undefined,
+    undefined
   );
   const [targetDate, setTargetDate] = useState<string | undefined>(undefined);
 
@@ -320,7 +318,7 @@ export default function EditBoardPage() {
     onboardingParam.toLowerCase() !== "false";
 
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(
-    shouldAutoOpenOnboarding,
+    shouldAutoOpenOnboarding
   );
 
   useEffect(() => {
@@ -355,7 +353,7 @@ export default function EditBoardPage() {
     nextParams.delete("onboarding");
     const qs = nextParams.toString();
     router.replace(
-      qs ? `/boards/${boardId}/edit?${qs}` : `/boards/${boardId}/edit`,
+      qs ? `/boards/${boardId}/edit?${qs}` : `/boards/${boardId}/edit`
     );
   }, [boardId, router, searchParamsString, shouldAutoOpenOnboarding]);
 
@@ -403,7 +401,7 @@ export default function EditBoardPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
   const agentsQuery = useListAgentsApiV1AgentsGet<
     listAgentsApiV1AgentsGetResponse,
@@ -416,7 +414,7 @@ export default function EditBoardPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const updateBoardMutation = useUpdateBoardApiV1BoardsBoardIdPatch<ApiError>({
@@ -441,7 +439,7 @@ export default function EditBoardPage() {
           await queryClient.invalidateQueries({
             queryKey:
               getListBoardWebhooksApiV1BoardsBoardIdWebhooksGetQueryKey(
-                boardId,
+                boardId
               ),
           });
         },
@@ -458,7 +456,7 @@ export default function EditBoardPage() {
           await queryClient.invalidateQueries({
             queryKey:
               getListBoardWebhooksApiV1BoardsBoardIdWebhooksGetQueryKey(
-                boardId,
+                boardId
               ),
           });
         },
@@ -475,7 +473,7 @@ export default function EditBoardPage() {
           await queryClient.invalidateQueries({
             queryKey:
               getListBoardWebhooksApiV1BoardsBoardIdWebhooksGetQueryKey(
-                boardId,
+                boardId
               ),
           });
         },
@@ -552,13 +550,13 @@ export default function EditBoardPage() {
     null;
 
   const isFormReady = Boolean(
-    resolvedName.trim() && resolvedDescription.trim() && displayGatewayId,
+    resolvedName.trim() && resolvedDescription.trim() && displayGatewayId
   );
 
   const gatewayOptions = useMemo(
     () =>
       gateways.map((gateway) => ({ value: gateway.id, label: gateway.name })),
-    [gateways],
+    [gateways]
   );
 
   const groups = useMemo<BoardGroupRead[]>(() => {
@@ -570,7 +568,7 @@ export default function EditBoardPage() {
       { value: "none", label: "No group" },
       ...groups.map((group) => ({ value: group.id, label: group.name })),
     ],
-    [groups],
+    [groups]
   );
   const webhookAgents = useMemo<AgentRead[]>(() => {
     if (agentsQuery.data?.status !== 200) return [];
@@ -589,14 +587,14 @@ export default function EditBoardPage() {
     setRequireApprovalForDone(updated.require_approval_for_done ?? true);
     setRequireReviewBeforeDone(updated.require_review_before_done ?? false);
     setBlockStatusChangesWithPendingApproval(
-      updated.block_status_changes_with_pending_approval ?? false,
+      updated.block_status_changes_with_pending_approval ?? false
     );
     setOnlyLeadCanChangeStatus(updated.only_lead_can_change_status ?? false);
     setMaxAgents(updated.max_agents ?? 1);
     setSuccessMetrics(
       updated.success_metrics
         ? JSON.stringify(updated.success_metrics, null, 2)
-        : "",
+        : ""
     );
     setTargetDate(toLocalDateInput(updated.target_date));
     setBoardGroupId(updated.board_group_id ?? "none");
@@ -700,7 +698,7 @@ export default function EditBoardPage() {
   const handleUpdateWebhook = async (
     webhookId: string,
     description: string,
-    agentId: string | null,
+    agentId: string | null
   ): Promise<boolean> => {
     if (!boardId) return false;
     if (updateWebhookMutation.isPending) return false;
@@ -732,7 +730,7 @@ export default function EditBoardPage() {
       setCopiedWebhookId(webhook.id);
       window.setTimeout(() => {
         setCopiedWebhookId((current) =>
-          current === webhook.id ? null : current,
+          current === webhook.id ? null : current
         );
       }, 1500);
     } catch {
@@ -1024,7 +1022,7 @@ export default function EditBoardPage() {
                   aria-label="Block status changes with pending approval"
                   onClick={() =>
                     setBlockStatusChangesWithPendingApproval(
-                      !resolvedBlockStatusChangesWithPendingApproval,
+                      !resolvedBlockStatusChangesWithPendingApproval
                     )
                   }
                   disabled={isLoading}

@@ -1,17 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RefreshCcw } from "lucide-react";
-
-import {
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { usePageActive } from "@/hooks/usePageActive";
-
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   answerOnboardingApiV1BoardsBoardIdOnboardingAnswerPost,
   confirmOnboardingApiV1BoardsBoardIdOnboardingConfirmPost,
@@ -24,6 +14,14 @@ import type {
   BoardOnboardingReadMessages,
   BoardRead,
 } from "@/api/generated/model";
+import { Button } from "@/components/ui/button";
+import {
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { usePageActive } from "@/hooks/usePageActive";
 
 type NormalizedMessage = {
   role: string;
@@ -37,7 +35,7 @@ type NormalizedMessage = {
  * or malformed entries.
  */
 const normalizeMessages = (
-  value?: BoardOnboardingReadMessages,
+  value?: BoardOnboardingReadMessages
 ): NormalizedMessage[] | null => {
   if (!value) return null;
   if (!Array.isArray(value)) return null;
@@ -149,7 +147,7 @@ export function BoardOnboardingChat({
     "answer" | "extra_context" | null
   >(null);
   const [lastSubmittedAnswer, setLastSubmittedAnswer] = useState<string | null>(
-    null,
+    null
   );
   const [otherText, setOtherText] = useState("");
   const [extraContext, setExtraContext] = useState("");
@@ -161,7 +159,7 @@ export function BoardOnboardingChat({
 
   const normalizedMessages = useMemo(
     () => normalizeMessages(session?.messages),
-    [session?.messages],
+    [session?.messages]
   );
   const lastAssistantFingerprint = useMemo(() => {
     const rawMessages = session?.messages;
@@ -179,7 +177,7 @@ export function BoardOnboardingChat({
   }, [session?.messages]);
   const question = useMemo(
     () => parseQuestion(normalizedMessages),
-    [normalizedMessages],
+    [normalizedMessages]
   );
   const draft: BoardOnboardingAgentComplete | null =
     session?.draft_goal ?? null;
@@ -191,7 +189,7 @@ export function BoardOnboardingChat({
 
   const wantsFreeText = useMemo(
     () => selectedOptions.some((label) => isFreeTextOption(label)),
-    [selectedOptions],
+    [selectedOptions]
   );
 
   useEffect(() => {
@@ -219,13 +217,13 @@ export function BoardOnboardingChat({
     try {
       const result = await startOnboardingApiV1BoardsBoardIdOnboardingStartPost(
         boardId,
-        {},
+        {}
       );
       if (result.status !== 200) throw new Error("Unable to start onboarding.");
       setSession(result.data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to start onboarding.",
+        err instanceof Error ? err.message : "Failed to start onboarding."
       );
     } finally {
       setLoading(false);
@@ -274,7 +272,7 @@ export function BoardOnboardingChat({
             {
               answer: value,
               other_text: freeText ?? null,
-            },
+            }
           );
         if (result.status !== 200) throw new Error("Unable to submit answer.");
         setSession(result.data);
@@ -285,20 +283,20 @@ export function BoardOnboardingChat({
         setLastSubmittedAnswer(freeText ? `${value}: ${freeText}` : value);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to submit answer.",
+          err instanceof Error ? err.message : "Failed to submit answer."
         );
       } finally {
         setLoading(false);
       }
     },
-    [boardId, lastAssistantFingerprint],
+    [boardId, lastAssistantFingerprint]
   );
 
   const toggleOption = useCallback((label: string) => {
     setSelectedOptions((prev) =>
       prev.includes(label)
         ? prev.filter((item) => item !== label)
-        : [...prev, label],
+        : [...prev, label]
     );
   }, []);
 
@@ -327,7 +325,7 @@ export function BoardOnboardingChat({
       setLastSubmittedAnswer("Additional context");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to submit extra context.",
+        err instanceof Error ? err.message : "Failed to submit extra context."
       );
     } finally {
       setLoading(false);
@@ -364,14 +362,14 @@ export function BoardOnboardingChat({
             objective: draft.objective ?? null,
             success_metrics: draft.success_metrics ?? null,
             target_date: draft.target_date ?? null,
-          },
+          }
         );
       if (result.status !== 200)
         throw new Error("Unable to confirm board goal.");
       onConfirmed(result.data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to confirm board goal.",
+        err instanceof Error ? err.message : "Failed to confirm board goal."
       );
     } finally {
       setLoading(false);

@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boards, boardTaskCustomFields } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boards, boardTaskCustomFields } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * DELETE /api/v1/boards/:boardId/custom-fields/:boardCustomFieldId
@@ -13,7 +13,9 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; boardCustomFieldId: string }> },
+  {
+    params,
+  }: { params: Promise<{ boardId: string; boardCustomFieldId: string }> }
 ) {
   try {
     const { boardId, boardCustomFieldId } = await params;
@@ -21,8 +23,8 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can unbind custom fields');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can unbind custom fields");
     }
 
     // Verify board exists
@@ -33,7 +35,7 @@ export async function DELETE(
       .limit(1);
 
     if (board.length === 0) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
     // Find the binding
@@ -43,13 +45,13 @@ export async function DELETE(
       .where(
         and(
           eq(boardTaskCustomFields.id, boardCustomFieldId),
-          eq(boardTaskCustomFields.boardId, boardId),
-        ),
+          eq(boardTaskCustomFields.boardId, boardId)
+        )
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Custom field binding not found');
+      throw new ApiError(404, "Custom field binding not found");
     }
 
     await db

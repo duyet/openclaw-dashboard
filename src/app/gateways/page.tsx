@@ -2,27 +2,24 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import {
+  getListGatewaysApiV1GatewaysGetQueryKey,
+  type listGatewaysApiV1GatewaysGetResponse,
+  useDeleteGatewayApiV1GatewaysGatewayIdDelete,
+  useListGatewaysApiV1GatewaysGet,
+} from "@/api/generated/gateways/gateways";
+import type { GatewayRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { GatewaysTable } from "@/components/gateways/GatewaysTable";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
-
-import { ApiError } from "@/api/mutator";
-import {
-  type listGatewaysApiV1GatewaysGetResponse,
-  getListGatewaysApiV1GatewaysGetQueryKey,
-  useDeleteGatewayApiV1GatewaysGatewayIdDelete,
-  useListGatewaysApiV1GatewaysGet,
-} from "@/api/generated/gateways/gateways";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
-import type { GatewayRead } from "@/api/generated/model";
 import { useUrlSorting } from "@/lib/use-url-sorting";
 
 const GATEWAY_SORTABLE_COLUMNS = ["name", "workspace_root", "updated_at"];
@@ -56,7 +53,7 @@ export default function GatewaysPage() {
       gatewaysQuery.data?.status === 200
         ? (gatewaysQuery.data.data.items ?? [])
         : [],
-    [gatewaysQuery.data],
+    [gatewaysQuery.data]
   );
 
   const deleteMutation = useDeleteGatewayApiV1GatewaysGatewayIdDelete<
@@ -79,7 +76,7 @@ export default function GatewaysPage() {
         invalidateQueryKeys: [gatewaysKey],
       }),
     },
-    queryClient,
+    queryClient
   );
 
   const handleDelete = () => {

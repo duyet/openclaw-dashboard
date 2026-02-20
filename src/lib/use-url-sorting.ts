@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-
 import {
+  functionalUpdate,
   type OnChangeFn,
   type SortingState,
-  functionalUpdate,
 } from "@tanstack/react-table";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const SORT_NONE_SENTINEL = "none";
 
@@ -28,7 +27,7 @@ const resolveDirectionParam = (paramPrefix?: string) =>
 
 const normalizeSorting = (
   value: SortingState,
-  allowedColumnIds: Set<string>,
+  allowedColumnIds: Set<string>
 ): SortingState => {
   for (const sort of value) {
     if (!allowedColumnIds.has(sort.id)) continue;
@@ -59,11 +58,11 @@ export function useUrlSorting({
 
   const allowedSet = useMemo(
     () => new Set(allowedColumnIds),
-    [allowedColumnIds],
+    [allowedColumnIds]
   );
   const normalizedDefaultSorting = useMemo(
     () => normalizeSorting(defaultSorting, allowedSet),
-    [defaultSorting, allowedSet],
+    [defaultSorting, allowedSet]
   );
 
   const sortParam = resolveSortParam(paramPrefix);
@@ -114,7 +113,7 @@ export function useUrlSorting({
     (updater) => {
       const nextSorting = normalizeSorting(
         functionalUpdate(updater, sorting),
-        allowedSet,
+        allowedSet
       );
 
       if (isSameSorting(nextSorting, sorting)) {
@@ -150,7 +149,7 @@ export function useUrlSorting({
       searchParamsString,
       sortParam,
       sorting,
-    ],
+    ]
   );
 
   return { sorting, onSortingChange };

@@ -13,14 +13,14 @@ export type ExponentialBackoff = {
 
 const clampMs = (
   value: number,
-  { min, max }: { min: number; max: number },
+  { min, max }: { min: number; max: number }
 ): number => {
   if (Number.isNaN(value) || !Number.isFinite(value)) return min;
   return Math.min(max, Math.max(min, Math.trunc(value)));
 };
 
 export const createExponentialBackoff = (
-  options: ExponentialBackoffOptions = {},
+  options: ExponentialBackoffOptions = {}
 ): ExponentialBackoff => {
   const baseMs = clampMs(options.baseMs ?? 1_000, { min: 50, max: 60_000 });
   const factor = options.factor ?? 2;
@@ -34,7 +34,7 @@ export const createExponentialBackoff = (
 
   return {
     nextDelayMs: () => {
-      const raw = baseMs * Math.pow(factor, attempt);
+      const raw = baseMs * factor ** attempt;
       const capped = Math.min(maxMs, raw);
       const normalized = clampMs(capped, { min: baseMs, max: maxMs });
 

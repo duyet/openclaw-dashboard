@@ -3,10 +3,10 @@
 import Link from "next/link";
 
 import {
-  SignInButton,
+  isClerkEnabled,
   SignedIn,
   SignedOut,
-  isClerkEnabled,
+  SignInButton,
 } from "@/auth/clerk";
 
 const ArrowIcon = () => (
@@ -98,7 +98,7 @@ export function LandingHero() {
                   <div className="feature-icon">✓</div>
                   <span>{label}</span>
                 </div>
-              ),
+              )
             )}
           </div>
         </div>

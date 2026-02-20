@@ -1,9 +1,8 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
-
 import { DM_Serif_Display, IBM_Plex_Sans, Sora } from "next/font/google";
+import type { ReactNode } from "react";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";

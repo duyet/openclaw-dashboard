@@ -1,14 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import * as React from "react";
 import {
   Command,
   CommandEmpty,
@@ -16,6 +9,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export type DropdownSelectOption = {
   value: string;
@@ -63,7 +62,7 @@ const resolvePlaceholder = (ariaLabel: string, placeholder?: string) => {
  */
 const resolveSearchPlaceholder = (
   ariaLabel: string,
-  searchPlaceholder?: string,
+  searchPlaceholder?: string
 ) => {
   if (searchPlaceholder) {
     return searchPlaceholder;
@@ -139,13 +138,13 @@ export default function DropdownSelect({
           className={cn(
             "inline-flex h-10 w-auto cursor-pointer items-center justify-between gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50",
             open && "bg-slate-50",
-            triggerClassName,
+            triggerClassName
           )}
         >
           <span
             className={cn(
               "flex min-w-0 items-center gap-2 truncate",
-              showPlaceholder && "text-slate-500",
+              showPlaceholder && "text-slate-500"
             )}
           >
             {SelectedIcon ? (
@@ -160,7 +159,7 @@ export default function DropdownSelect({
           <ChevronDown
             className={cn(
               "h-4 w-4 shrink-0 text-slate-400 transition-transform",
-              open && "rotate-180",
+              open && "rotate-180"
             )}
           />
         </button>
@@ -170,7 +169,7 @@ export default function DropdownSelect({
         sideOffset={6}
         className={cn(
           "w-[var(--radix-popover-trigger-width)] min-w-[12rem] overflow-hidden rounded-md border border-slate-200 bg-white p-0 text-slate-900 shadow-lg",
-          contentClassName,
+          contentClassName
         )}
       >
         <Command label={ariaLabel} className="w-full">
@@ -201,7 +200,7 @@ export default function DropdownSelect({
                     "flex items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm text-gray-700 transition-colors data-[selected=true]:bg-gray-50 data-[selected=true]:text-gray-900",
                     isSelected && "font-semibold",
                     !isSelected && "hover:bg-gray-50",
-                    itemClassName,
+                    itemClassName
                   )}
                 >
                   <span className="flex min-w-0 items-center gap-2">
@@ -210,7 +209,7 @@ export default function DropdownSelect({
                         className={cn(
                           "h-4 w-4",
                           isSelected ? "text-gray-700" : "text-gray-500",
-                          option.iconClassName,
+                          option.iconClassName
                         )}
                       />
                     ) : null}

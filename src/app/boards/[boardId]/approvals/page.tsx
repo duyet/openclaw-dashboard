@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useParams } from "next/navigation";
 
-import { SignInButton, SignedIn, SignedOut } from "@/auth/clerk";
+import { SignedIn, SignedOut, SignInButton } from "@/auth/clerk";
 
 import { BoardApprovalsPanel } from "@/components/BoardApprovalsPanel";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";

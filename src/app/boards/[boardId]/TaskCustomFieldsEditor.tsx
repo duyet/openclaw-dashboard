@@ -92,7 +92,7 @@ export function TaskCustomFieldsEditor({
                 onChange={(event) => {
                   const nextFieldValue = parseCustomFieldInputValue(
                     definition,
-                    event.target.value,
+                    event.target.value
                   );
                   setValues((prev) => ({
                     ...prev,
@@ -127,7 +127,7 @@ export function TaskCustomFieldsEditor({
                 onChange={(event) => {
                   const nextFieldValue = parseCustomFieldInputValue(
                     definition,
-                    event.target.value,
+                    event.target.value
                   );
                   setValues((prev) => ({
                     ...prev,

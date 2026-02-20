@@ -2,41 +2,86 @@
 
 export const dynamic = "force-dynamic";
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Activity,
+  ArrowUpRight,
+  MessageSquare,
+  Pause,
+  Pencil,
+  Play,
+  Plus,
+  RefreshCcw,
+  Settings,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import {
   useParams,
   usePathname,
   useRouter,
   useSearchParams,
 } from "next/navigation";
-
-import { SignInButton, SignedIn, SignedOut, useAuth } from "@/auth/clerk";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { listActivityApiV1ActivityGet } from "@/api/generated/activity/activity";
+import { streamAgentsApiV1AgentsStreamGet } from "@/api/generated/agents/agents";
 import {
-  Activity,
-  ArrowUpRight,
-  MessageSquare,
-  Pause,
-  Plus,
-  Pencil,
-  Play,
-  RefreshCcw,
-  Settings,
-  ShieldCheck,
-  X,
-} from "lucide-react";
-
+  streamApprovalsApiV1BoardsBoardIdApprovalsStreamGet,
+  updateApprovalApiV1BoardsBoardIdApprovalsApprovalIdPatch,
+} from "@/api/generated/approvals/approvals";
+import {
+  createBoardMemoryApiV1BoardsBoardIdMemoryPost,
+  streamBoardMemoryApiV1BoardsBoardIdMemoryStreamGet,
+} from "@/api/generated/board-memory/board-memory";
+import {
+  getBoardGroupSnapshotApiV1BoardsBoardIdGroupSnapshotGet,
+  getBoardSnapshotApiV1BoardsBoardIdSnapshotGet,
+} from "@/api/generated/boards/boards";
+import type {
+  ActivityEventRead,
+  AgentRead,
+  ApprovalRead,
+  BoardGroupSnapshot,
+  BoardMemoryRead,
+  BoardRead,
+  OrganizationMemberRead,
+  TagRead,
+  TaskCardRead,
+  TaskCommentRead,
+  TaskCustomFieldDefinitionRead,
+  TaskRead,
+} from "@/api/generated/model";
+import {
+  type listOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetResponse,
+  useListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGet,
+} from "@/api/generated/org-custom-fields/org-custom-fields";
+import {
+  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
+  useGetMyMembershipApiV1OrganizationsMeMemberGet,
+} from "@/api/generated/organizations/organizations";
+import {
+  type listTagsApiV1TagsGetResponse,
+  useListTagsApiV1TagsGet,
+} from "@/api/generated/tags/tags";
+import {
+  createTaskApiV1BoardsBoardIdTasksPost,
+  createTaskCommentApiV1BoardsBoardIdTasksTaskIdCommentsPost,
+  deleteTaskApiV1BoardsBoardIdTasksTaskIdDelete,
+  listTaskCommentsApiV1BoardsBoardIdTasksTaskIdCommentsGet,
+  streamTasksApiV1BoardsBoardIdTasksStreamGet,
+  updateTaskApiV1BoardsBoardIdTasksTaskIdPatch,
+} from "@/api/generated/tasks/tasks";
+import { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { Markdown } from "@/components/atoms/Markdown";
 import { StatusDot } from "@/components/atoms/StatusDot";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
-import { TaskBoard } from "@/components/organisms/TaskBoard";
+import { BoardChatComposer } from "@/components/BoardChatComposer";
 import {
   DependencyBanner,
   type DependencyBannerDependency,
 } from "@/components/molecules/DependencyBanner";
+import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
+import { TaskBoard } from "@/components/organisms/TaskBoard";
 import { DashboardShell } from "@/components/templates/DashboardShell";
-import { BoardChatComposer } from "@/components/BoardChatComposer";
-import { TaskCustomFieldsEditor } from "./TaskCustomFieldsEditor";
-import { buildUrlWithTaskId } from "./task-detail-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -46,10 +91,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import DropdownSelect, {
   type DropdownSelectOption,
 } from "@/components/ui/dropdown-select";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -58,55 +103,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError } from "@/api/mutator";
-import { streamAgentsApiV1AgentsStreamGet } from "@/api/generated/agents/agents";
-import {
-  streamApprovalsApiV1BoardsBoardIdApprovalsStreamGet,
-  updateApprovalApiV1BoardsBoardIdApprovalsApprovalIdPatch,
-} from "@/api/generated/approvals/approvals";
-import { listActivityApiV1ActivityGet } from "@/api/generated/activity/activity";
-import {
-  getBoardGroupSnapshotApiV1BoardsBoardIdGroupSnapshotGet,
-  getBoardSnapshotApiV1BoardsBoardIdSnapshotGet,
-} from "@/api/generated/boards/boards";
-import {
-  createBoardMemoryApiV1BoardsBoardIdMemoryPost,
-  streamBoardMemoryApiV1BoardsBoardIdMemoryStreamGet,
-} from "@/api/generated/board-memory/board-memory";
-import {
-  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
-  useGetMyMembershipApiV1OrganizationsMeMemberGet,
-} from "@/api/generated/organizations/organizations";
-import {
-  createTaskApiV1BoardsBoardIdTasksPost,
-  createTaskCommentApiV1BoardsBoardIdTasksTaskIdCommentsPost,
-  deleteTaskApiV1BoardsBoardIdTasksTaskIdDelete,
-  listTaskCommentsApiV1BoardsBoardIdTasksTaskIdCommentsGet,
-  streamTasksApiV1BoardsBoardIdTasksStreamGet,
-  updateTaskApiV1BoardsBoardIdTasksTaskIdPatch,
-} from "@/api/generated/tasks/tasks";
-import {
-  type listTagsApiV1TagsGetResponse,
-  useListTagsApiV1TagsGet,
-} from "@/api/generated/tags/tags";
-import {
-  type listOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetResponse,
-  useListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGet,
-} from "@/api/generated/org-custom-fields/org-custom-fields";
-import type {
-  AgentRead,
-  ApprovalRead,
-  BoardGroupSnapshot,
-  BoardMemoryRead,
-  BoardRead,
-  ActivityEventRead,
-  OrganizationMemberRead,
-  TaskCardRead,
-  TaskCommentRead,
-  TaskCustomFieldDefinitionRead,
-  TagRead,
-  TaskRead,
-} from "@/api/generated/model";
+import { usePageActive } from "@/hooks/usePageActive";
 import { createExponentialBackoff } from "@/lib/backoff";
 import {
   apiDatetimeToMs,
@@ -120,17 +117,18 @@ import {
   resolveMemberDisplayName,
 } from "@/lib/display-name";
 import { cn } from "@/lib/utils";
-import { usePageActive } from "@/hooks/usePageActive";
 import {
   boardCustomFieldValues,
   canonicalizeCustomFieldValues,
-  customFieldPayload,
   customFieldPatchPayload,
+  customFieldPayload,
   firstMissingRequiredCustomField,
   formatCustomFieldDetailValue,
   isCustomFieldVisible,
   type TaskCustomFieldValues,
 } from "./custom-field-utils";
+import { TaskCustomFieldsEditor } from "./TaskCustomFieldsEditor";
+import { buildUrlWithTaskId } from "./task-detail-query";
 
 type Board = BoardRead;
 
@@ -216,7 +214,7 @@ type BoardTaskUpdatePayload = Parameters<
   TaskCustomFieldPayload;
 
 const toLiveFeedFromActivity = (
-  event: ActivityEventRead,
+  event: ActivityEventRead
 ): LiveFeedItem | null => {
   if (!isLiveFeedEventType(event.event_type)) {
     return null;
@@ -258,7 +256,7 @@ const mergeCommentsById = (...collections: TaskComment[][]): TaskComment[] => {
         comment.id,
         incomingTime >= existingTime
           ? { ...existing, ...comment }
-          : { ...comment, ...existing },
+          : { ...comment, ...existing }
       );
     }
   }
@@ -316,7 +314,7 @@ const toLiveFeedFromAgentSnapshot = (agent: Agent): LiveFeedItem => {
 
 const toLiveFeedFromAgentUpdate = (
   agent: Agent,
-  previous: Agent | null,
+  previous: Agent | null
 ): LiveFeedItem | null => {
   const nextStatus = normalizeAgentStatus(agent.status);
   const previousStatus = previous
@@ -374,7 +372,7 @@ const humanizeLiveFeedApprovalAction = (value: string): string => {
 
 const toLiveFeedFromApproval = (
   approval: ApprovalRead,
-  previous: ApprovalRead | null = null,
+  previous: ApprovalRead | null = null
 ): LiveFeedItem => {
   const nextStatus = approval.status ?? "pending";
   const previousStatus = previous?.status ?? null;
@@ -571,7 +569,7 @@ const formatActionError = (err: unknown, fallback: string) => {
 
 const resolveBoardAccess = (
   member: OrganizationMemberRead | null,
-  boardId?: string | null,
+  boardId?: string | null
 ) => {
   if (!member || !boardId) {
     return { canRead: false, canWrite: false };
@@ -583,7 +581,7 @@ const resolveBoardAccess = (
     return { canRead: true, canWrite: false };
   }
   const entry = member.board_access?.find(
-    (access) => access.board_id === boardId,
+    (access) => access.board_id === boardId
   );
   if (!entry) {
     return { canRead: false, canWrite: false };
@@ -671,7 +669,7 @@ const LiveFeedCard = memo(function LiveFeedCard({
         "rounded-xl border p-3 transition-colors duration-300",
         isNew
           ? "border-blue-200 bg-blue-50/70 shadow-sm hover:border-blue-300 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-right-2 motion-safe:duration-300"
-          : "border-slate-200 bg-white hover:border-slate-300",
+          : "border-slate-200 bg-white hover:border-slate-300"
       )}
     >
       <div className="flex items-start gap-3">
@@ -688,7 +686,7 @@ const LiveFeedCard = memo(function LiveFeedCard({
                 "text-left text-sm font-semibold leading-snug text-slate-900",
                 onViewTask
                   ? "cursor-pointer transition hover:text-slate-950 hover:underline"
-                  : "cursor-default",
+                  : "cursor-default"
               )}
               title={taskTitle}
               style={{
@@ -705,7 +703,7 @@ const LiveFeedCard = memo(function LiveFeedCard({
             <span
               className={cn(
                 "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                eventPillClass,
+                eventPillClass
               )}
             >
               {eventLabel}
@@ -769,7 +767,7 @@ export default function BoardDetailPage() {
   const tags = useMemo(
     () =>
       tagsQuery.data?.status === 200 ? (tagsQuery.data.data.items ?? []) : [],
-    [tagsQuery.data],
+    [tagsQuery.data]
   );
   const customFieldDefinitionsQuery =
     useListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGet<
@@ -790,8 +788,8 @@ export default function BoardDetailPage() {
       .filter((definition) => (definition.board_ids ?? []).includes(boardId))
       .sort((left, right) =>
         (left.label || left.field_key).localeCompare(
-          right.label || right.field_key,
-        ),
+          right.label || right.field_key
+        )
       );
   }, [boardId, customFieldDefinitionsQuery.data]);
 
@@ -799,9 +797,9 @@ export default function BoardDetailPage() {
     () =>
       resolveBoardAccess(
         membershipQuery.data?.status === 200 ? membershipQuery.data.data : null,
-        boardId,
+        boardId
       ),
-    [membershipQuery.data, boardId],
+    [membershipQuery.data, boardId]
   );
   const isOrgAdmin = useMemo(() => {
     const member =
@@ -819,10 +817,10 @@ export default function BoardDetailPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [groupSnapshot, setGroupSnapshot] = useState<BoardGroupSnapshot | null>(
-    null,
+    null
   );
   const [groupSnapshotError, setGroupSnapshotError] = useState<string | null>(
-    null,
+    null
   );
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoadedBoardSnapshot, setHasLoadedBoardSnapshot] = useState(false);
@@ -858,7 +856,7 @@ export default function BoardDetailPage() {
   const [isApprovalsLoading, setIsApprovalsLoading] = useState(false);
   const [approvalsError, setApprovalsError] = useState<string | null>(null);
   const [approvalsUpdatingId, setApprovalsUpdatingId] = useState<string | null>(
-    null,
+    null
   );
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<BoardChatMessage[]>([]);
@@ -873,7 +871,7 @@ export default function BoardDetailPage() {
   >("pause");
   const [isAgentsControlSending, setIsAgentsControlSending] = useState(false);
   const [agentsControlError, setAgentsControlError] = useState<string | null>(
-    null,
+    null
   );
   const [isDeletingTask, setIsDeletingTask] = useState(false);
   const [deleteTaskError, setDeleteTaskError] = useState<string | null>(null);
@@ -885,7 +883,7 @@ export default function BoardDetailPage() {
   const toastTimersRef = useRef<Record<number, number>>({});
   const pushLiveFeed = useCallback((item: LiveFeedItem) => {
     const alreadySeen = liveFeedRef.current.some(
-      (existing) => existing.id === item.id,
+      (existing) => existing.id === item.id
     );
     setLiveFeed((prev) => {
       if (prev.some((existing) => existing.id === item.id)) {
@@ -899,7 +897,7 @@ export default function BoardDetailPage() {
     if (!isLiveFeedOpenRef.current) return;
 
     setLiveFeedFlashIds((prev) =>
-      prev[item.id] ? prev : { ...prev, [item.id]: true },
+      prev[item.id] ? prev : { ...prev, [item.id]: true }
     );
 
     if (typeof window === "undefined") return;
@@ -940,7 +938,7 @@ export default function BoardDetailPage() {
         }, 3500);
       }
     },
-    [dismissToast],
+    [dismissToast]
   );
 
   useEffect(() => {
@@ -1079,7 +1077,7 @@ export default function BoardDetailPage() {
       } catch (err) {
         if (cancelled) return;
         setLiveFeedHistoryError(
-          err instanceof Error ? err.message : "Unable to load live feed.",
+          err instanceof Error ? err.message : "Unable to load live feed."
         );
       } finally {
         if (cancelled) return;
@@ -1121,7 +1119,7 @@ export default function BoardDetailPage() {
   const [editAssigneeId, setEditAssigneeId] = useState("");
   const [editTagIds, setEditTagIds] = useState<string[]>([]);
   const [editDependsOnTaskIds, setEditDependsOnTaskIds] = useState<string[]>(
-    [],
+    []
   );
   const [editCustomFieldValues, setEditCustomFieldValues] =
     useState<TaskCustomFieldValues>({});
@@ -1131,26 +1129,26 @@ export default function BoardDetailPage() {
   const isSidePanelOpen = isDetailOpen || isChatOpen || isLiveFeedOpen;
   const defaultCreateCustomFieldValues = useMemo(
     () => boardCustomFieldValues(boardCustomFieldDefinitions, {}),
-    [boardCustomFieldDefinitions],
+    [boardCustomFieldDefinitions]
   );
   const selectedTaskCustomFieldValues = useMemo(
     () =>
       boardCustomFieldValues(
         boardCustomFieldDefinitions,
-        selectedTask?.custom_field_values,
+        selectedTask?.custom_field_values
       ),
-    [boardCustomFieldDefinitions, selectedTask?.custom_field_values],
+    [boardCustomFieldDefinitions, selectedTask?.custom_field_values]
   );
 
   useEffect(() => {
     setCreateCustomFieldValues((prev) =>
-      boardCustomFieldValues(boardCustomFieldDefinitions, prev),
+      boardCustomFieldValues(boardCustomFieldDefinitions, prev)
     );
   }, [boardCustomFieldDefinitions]);
 
   const titleLabel = useMemo(
     () => (board ? `${board.name} board` : "Board"),
-    [board],
+    [board]
   );
 
   useEffect(() => {
@@ -1245,7 +1243,7 @@ export default function BoardDetailPage() {
               include_self: false,
               include_done: false,
               per_board_task_limit: 5,
-            },
+            }
           );
         if (groupResult.status === 200) {
           setGroupSnapshot(groupResult.data);
@@ -1363,7 +1361,7 @@ export default function BoardDetailPage() {
             {
               headers: { Accept: "text/event-stream" },
               signal: abortController.signal,
-            },
+            }
           );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect board chat stream.");
@@ -1409,7 +1407,7 @@ export default function BoardDetailPage() {
                   pushLiveFeed(toLiveFeedFromBoardChat(payload.memory));
                   setChatMessages((prev) => {
                     const exists = prev.some(
-                      (item) => item.id === payload.memory?.id,
+                      (item) => item.id === payload.memory?.id
                     );
                     if (exists) return prev;
                     const next = [...prev, payload.memory as BoardChatMessage];
@@ -1480,7 +1478,7 @@ export default function BoardDetailPage() {
             {
               headers: { Accept: "text/event-stream" },
               signal: abortController.signal,
-            },
+            }
           );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect approvals stream.");
@@ -1536,14 +1534,14 @@ export default function BoardDetailPage() {
                   const normalized = normalizeApproval(payload.approval);
                   const previousApproval =
                     approvalsRef.current.find(
-                      (item) => item.id === normalized.id,
+                      (item) => item.id === normalized.id
                     ) ?? null;
                   pushLiveFeed(
-                    toLiveFeedFromApproval(normalized, previousApproval),
+                    toLiveFeedFromApproval(normalized, previousApproval)
                   );
                   setApprovals((prev) => {
                     const index = prev.findIndex(
-                      (item) => item.id === normalized.id,
+                      (item) => item.id === normalized.id
                     );
                     if (index === -1) {
                       return [normalized, ...prev];
@@ -1566,7 +1564,7 @@ export default function BoardDetailPage() {
                     const countsByTaskId = new Map(
                       taskCounts
                         .filter((row) => Boolean(row.task_id))
-                        .map((row) => [row.task_id as string, row]),
+                        .map((row) => [row.task_id as string, row])
                     );
                     return prev.map((task) => {
                       const counts = countsByTaskId.get(task.id);
@@ -1626,7 +1624,7 @@ export default function BoardDetailPage() {
       setEditTagIds([]);
       setEditDependsOnTaskIds([]);
       setEditCustomFieldValues(
-        boardCustomFieldValues(boardCustomFieldDefinitions, {}),
+        boardCustomFieldValues(boardCustomFieldDefinitions, {})
       );
       setSaveTaskError(null);
       return;
@@ -1642,8 +1640,8 @@ export default function BoardDetailPage() {
     setEditCustomFieldValues(
       boardCustomFieldValues(
         boardCustomFieldDefinitions,
-        selectedTask.custom_field_values,
-      ),
+        selectedTask.custom_field_values
+      )
     );
     setSaveTaskError(null);
   }, [boardCustomFieldDefinitions, selectedTask]);
@@ -1665,7 +1663,7 @@ export default function BoardDetailPage() {
           {
             headers: { Accept: "text/event-stream" },
             signal: abortController.signal,
-          },
+          }
         );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect task stream.");
@@ -1734,13 +1732,13 @@ export default function BoardDetailPage() {
                   const incomingTask = payload.task;
                   setTasks((prev) => {
                     const index = prev.findIndex(
-                      (item) => item.id === incomingTask.id,
+                      (item) => item.id === incomingTask.id
                     );
                     if (index === -1) {
                       const assignee = incomingTask.assigned_agent_id
                         ? (agentsRef.current.find(
                             (agent) =>
-                              agent.id === incomingTask.assigned_agent_id,
+                              agent.id === incomingTask.assigned_agent_id
                           )?.name ?? null)
                         : null;
                       const created = normalizeTask({
@@ -1755,8 +1753,7 @@ export default function BoardDetailPage() {
                     const existing = next[index];
                     const assignee = incomingTask.assigned_agent_id
                       ? (agentsRef.current.find(
-                          (agent) =>
-                            agent.id === incomingTask.assigned_agent_id,
+                          (agent) => agent.id === incomingTask.assigned_agent_id
                         )?.name ?? null)
                       : null;
                     const updated = normalizeTask({
@@ -1837,7 +1834,7 @@ export default function BoardDetailPage() {
           {
             headers: { Accept: "text/event-stream" },
             signal: abortController.signal,
-          },
+          }
         );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect agent stream.");
@@ -1879,18 +1876,18 @@ export default function BoardDetailPage() {
                   const normalized = normalizeAgent(payload.agent);
                   const previousAgent =
                     agentsRef.current.find(
-                      (item) => item.id === normalized.id,
+                      (item) => item.id === normalized.id
                     ) ?? null;
                   const liveEvent = toLiveFeedFromAgentUpdate(
                     normalized,
-                    previousAgent,
+                    previousAgent
                   );
                   if (liveEvent) {
                     pushLiveFeed(liveEvent);
                   }
                   setAgents((prev) => {
                     const index = prev.findIndex(
-                      (item) => item.id === normalized.id,
+                      (item) => item.id === normalized.id
                     );
                     if (index === -1) {
                       return [normalized, ...prev];
@@ -1955,15 +1952,15 @@ export default function BoardDetailPage() {
     }
     const createCustomFieldPayload = customFieldPayload(
       boardCustomFieldDefinitions,
-      createCustomFieldValues,
+      createCustomFieldValues
     );
     const missingRequiredCustomField = firstMissingRequiredCustomField(
       boardCustomFieldDefinitions,
-      createCustomFieldPayload,
+      createCustomFieldPayload
     );
     if (missingRequiredCustomField) {
       setCreateError(
-        `Custom field "${missingRequiredCustomField}" is required.`,
+        `Custom field "${missingRequiredCustomField}" is required.`
       );
       return;
     }
@@ -1981,7 +1978,7 @@ export default function BoardDetailPage() {
       };
       const result = await createTaskApiV1BoardsBoardIdTasksPost(
         boardId,
-        payload,
+        payload
       );
       if (result.status !== 200) throw new Error("Unable to create task.");
 
@@ -2020,7 +2017,7 @@ export default function BoardDetailPage() {
             content: trimmed,
             tags: ["chat"],
             source: currentUserDisplayName,
-          },
+          }
         );
         if (result.status !== 200) {
           throw new Error("Unable to send message.");
@@ -2046,7 +2043,7 @@ export default function BoardDetailPage() {
         return { ok: false, error: message };
       }
     },
-    [boardId, currentUserDisplayName, isSignedIn, pushLiveFeed],
+    [boardId, currentUserDisplayName, isSignedIn, pushLiveFeed]
   );
 
   const handleSendChat = useCallback(
@@ -2069,7 +2066,7 @@ export default function BoardDetailPage() {
         setIsChatSending(false);
       }
     },
-    [postBoardChatMessage, pushToast],
+    [postBoardChatMessage, pushToast]
   );
 
   const openAgentsControlDialog = (action: "pause" | "resume") => {
@@ -2132,7 +2129,7 @@ export default function BoardDetailPage() {
 
   const assignableAgents = useMemo(
     () => agents.filter((agent) => !agent.is_board_lead),
-    [agents],
+    [agents]
   );
   const boardChatMentionSuggestions = useMemo(() => {
     const options = new Set<string>(["lead"]);
@@ -2184,13 +2181,13 @@ export default function BoardDetailPage() {
 
   const addTaskDependency = useCallback((dependencyId: string) => {
     setEditDependsOnTaskIds((prev) =>
-      prev.includes(dependencyId) ? prev : [...prev, dependencyId],
+      prev.includes(dependencyId) ? prev : [...prev, dependencyId]
     );
   }, []);
 
   const removeTaskDependency = useCallback((dependencyId: string) => {
     setEditDependsOnTaskIds((prev) =>
-      prev.filter((value) => value !== dependencyId),
+      prev.filter((value) => value !== dependencyId)
     );
   }, []);
 
@@ -2226,11 +2223,11 @@ export default function BoardDetailPage() {
     const currentCustomFieldValues = canonicalizeCustomFieldValues(
       boardCustomFieldValues(
         boardCustomFieldDefinitions,
-        selectedTask.custom_field_values,
-      ),
+        selectedTask.custom_field_values
+      )
     );
     const nextCustomFieldValues = canonicalizeCustomFieldValues(
-      customFieldPayload(boardCustomFieldDefinitions, editCustomFieldValues),
+      customFieldPayload(boardCustomFieldDefinitions, editCustomFieldValues)
     );
     return (
       normalizedTitle !== selectedTask.title ||
@@ -2259,7 +2256,7 @@ export default function BoardDetailPage() {
 
   const pendingApprovals = useMemo(
     () => approvals.filter((approval) => approval.status === "pending"),
-    [approvals],
+    [approvals]
   );
 
   const taskApprovals = useMemo(() => {
@@ -2297,7 +2294,7 @@ export default function BoardDetailPage() {
       return [...new Set(merged)];
     };
     return approvals.filter((approval) =>
-      taskIdsForApproval(approval).includes(taskId),
+      taskIdsForApproval(approval).includes(taskId)
     );
   }, [approvals, selectedTask]);
 
@@ -2327,7 +2324,7 @@ export default function BoardDetailPage() {
 
   const boardLead = useMemo(
     () => agents.find((agent) => agent.is_board_lead) ?? null,
-    [agents],
+    [agents]
   );
   const isBoardLeadProvisioning = boardLead?.status === "provisioning";
 
@@ -2340,19 +2337,19 @@ export default function BoardDetailPage() {
         const result =
           await listTaskCommentsApiV1BoardsBoardIdTasksTaskIdCommentsGet(
             boardId,
-            taskId,
+            taskId
           );
         if (result.status !== 200) throw new Error("Unable to load comments.");
         setComments(mergeCommentsById(result.data.items ?? []));
       } catch (err) {
         setCommentsError(
-          err instanceof Error ? err.message : "Something went wrong.",
+          err instanceof Error ? err.message : "Something went wrong."
         );
       } finally {
         setIsCommentsLoading(false);
       }
     },
-    [boardId, isSignedIn],
+    [boardId, isSignedIn]
   );
 
   const openComments = useCallback(
@@ -2367,7 +2364,7 @@ export default function BoardDetailPage() {
           buildUrlWithTaskId(pathname, searchParams, fullTask.id),
           {
             scroll: false,
-          },
+          }
         );
       }
       selectedTaskIdRef.current = fullTask.id;
@@ -2375,13 +2372,13 @@ export default function BoardDetailPage() {
       setIsDetailOpen(true);
       void loadComments(task.id);
     },
-    [loadComments, pathname, router, searchParams],
+    [loadComments, pathname, router, searchParams]
   );
 
   const selectedTaskDependencies = useMemo<DependencyBannerDependency[]>(() => {
     if (!selectedTask) return [];
     const blockedDependencyIds = new Set(
-      selectedTask.blocked_by_task_ids ?? [],
+      selectedTask.blocked_by_task_ids ?? []
     );
     return (selectedTask.depends_on_task_ids ?? []).map((dependencyId) => {
       const dependencyTask = taskById.get(dependencyId);
@@ -2511,7 +2508,7 @@ export default function BoardDetailPage() {
         await createTaskCommentApiV1BoardsBoardIdTasksTaskIdCommentsPost(
           boardId,
           selectedTask.id,
-          { message: trimmed },
+          { message: trimmed }
         );
       if (result.status !== 200) throw new Error("Unable to send message.");
       const created = result.data;
@@ -2536,29 +2533,26 @@ export default function BoardDetailPage() {
     }
     const currentTaskCustomFieldValues = boardCustomFieldValues(
       boardCustomFieldDefinitions,
-      selectedTask.custom_field_values,
+      selectedTask.custom_field_values
     );
     const editCustomFieldPayload = customFieldPayload(
       boardCustomFieldDefinitions,
-      editCustomFieldValues,
+      editCustomFieldValues
     );
     const editCustomFieldPatch = customFieldPatchPayload(
       boardCustomFieldDefinitions,
       currentTaskCustomFieldValues,
-      editCustomFieldPayload,
+      editCustomFieldPayload
     );
     const missingRequiredCustomField = firstMissingRequiredCustomField(
       boardCustomFieldDefinitions.filter((definition) =>
-        Object.prototype.hasOwnProperty.call(
-          editCustomFieldPatch,
-          definition.field_key,
-        ),
+        Object.hasOwn(editCustomFieldPatch, definition.field_key)
       ),
-      editCustomFieldPatch,
+      editCustomFieldPatch
     );
     if (missingRequiredCustomField) {
       setSaveTaskError(
-        `Custom field "${missingRequiredCustomField}" is required.`,
+        `Custom field "${missingRequiredCustomField}" is required.`
       );
       return;
     }
@@ -2605,7 +2599,7 @@ export default function BoardDetailPage() {
       const result = await updateTaskApiV1BoardsBoardIdTasksTaskIdPatch(
         boardId,
         selectedTask.id,
-        updatePayload,
+        updatePayload
       );
       if (result.status === 409) {
         const blockedIds = result.data.detail.blocked_by_task_ids ?? [];
@@ -2615,13 +2609,13 @@ export default function BoardDetailPage() {
         setSaveTaskError(
           blockedTitles
             ? `${result.data.detail.message} Blocked by: ${blockedTitles}`
-            : result.data.detail.message,
+            : result.data.detail.message
         );
         return;
       }
       if (result.status === 422) {
         setSaveTaskError(
-          result.data.detail?.[0]?.msg ?? "Validation error while saving task.",
+          result.data.detail?.[0]?.msg ?? "Validation error while saving task."
         );
         return;
       }
@@ -2639,8 +2633,8 @@ export default function BoardDetailPage() {
       } as TaskCardRead);
       setTasks((prev) =>
         prev.map((task) =>
-          task.id === updated.id ? { ...task, ...updated } : task,
-        ),
+          task.id === updated.id ? { ...task, ...updated } : task
+        )
       );
       setSelectedTask(updated);
       if (closeOnSuccess) {
@@ -2668,8 +2662,8 @@ export default function BoardDetailPage() {
     setEditCustomFieldValues(
       boardCustomFieldValues(
         boardCustomFieldDefinitions,
-        selectedTask.custom_field_values,
-      ),
+        selectedTask.custom_field_values
+      )
     );
     setSaveTaskError(null);
   };
@@ -2681,7 +2675,7 @@ export default function BoardDetailPage() {
     try {
       const result = await deleteTaskApiV1BoardsBoardIdTasksTaskIdDelete(
         boardId,
-        selectedTask.id,
+        selectedTask.id
       );
       if (result.status !== 200) throw new Error("Unable to delete task.");
       setTasks((prev) => prev.filter((task) => task.id !== selectedTask.id));
@@ -2716,14 +2710,14 @@ export default function BoardDetailPage() {
                   status === "inbox" ? null : task.assigned_agent_id,
                 assignee: status === "inbox" ? null : task.assignee,
               }
-            : task,
-        ),
+            : task
+        )
       );
       try {
         const result = await updateTaskApiV1BoardsBoardIdTasksTaskIdPatch(
           boardId,
           taskId,
-          { status },
+          { status }
         );
         if (result.status === 409) {
           const blockedIds = result.data.detail.blocked_by_task_ids ?? [];
@@ -2733,18 +2727,18 @@ export default function BoardDetailPage() {
           throw new Error(
             blockedTitles
               ? `${result.data.detail.message} Blocked by: ${blockedTitles}`
-              : result.data.detail.message,
+              : result.data.detail.message
           );
         }
         if (result.status === 422) {
           throw new Error(
             result.data.detail?.[0]?.msg ??
-              "Validation error while moving task.",
+              "Validation error while moving task."
           );
         }
         const assignee = result.data.assigned_agent_id
           ? (agentsRef.current.find(
-              (agent) => agent.id === result.data.assigned_agent_id,
+              (agent) => agent.id === result.data.assigned_agent_id
             )?.name ?? null)
           : null;
         const updated = normalizeTask({
@@ -2756,8 +2750,8 @@ export default function BoardDetailPage() {
         } as TaskCardRead);
         setTasks((prev) =>
           prev.map((task) =>
-            task.id === updated.id ? { ...task, ...updated } : task,
-          ),
+            task.id === updated.id ? { ...task, ...updated } : task
+          )
         );
       } catch (err) {
         setTasks(previousTasks);
@@ -2766,7 +2760,7 @@ export default function BoardDetailPage() {
         pushToast(message);
       }
     },
-    [boardId, isSignedIn, pushToast, taskTitleById],
+    [boardId, isSignedIn, pushToast, taskTitleById]
   );
 
   const agentInitials = (agent: Agent) =>
@@ -2867,7 +2861,7 @@ export default function BoardDetailPage() {
     value
       .split(".")
       .map((part) =>
-        part.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()),
+        part.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
       )
       .join(" · ");
 
@@ -2949,7 +2943,7 @@ export default function BoardDetailPage() {
       if (!isSignedIn || !boardId) return;
       if (!canWrite) {
         pushToast(
-          "Read-only access. You do not have permission to update approvals.",
+          "Read-only access. You do not have permission to update approvals."
         );
         return;
       }
@@ -2960,14 +2954,14 @@ export default function BoardDetailPage() {
           await updateApprovalApiV1BoardsBoardIdApprovalsApprovalIdPatch(
             boardId,
             approvalId,
-            { status },
+            { status }
           );
         if (result.status !== 200) {
           throw new Error("Unable to update approval.");
         }
         const updated = normalizeApproval(result.data);
         setApprovals((prev) =>
-          prev.map((item) => (item.id === approvalId ? updated : item)),
+          prev.map((item) => (item.id === approvalId ? updated : item))
         );
       } catch (err) {
         const message = formatActionError(err, "Unable to update approval.");
@@ -2977,7 +2971,7 @@ export default function BoardDetailPage() {
         setApprovalsUpdatingId(null);
       }
     },
-    [boardId, canWrite, isSignedIn, pushToast],
+    [boardId, canWrite, isSignedIn, pushToast]
   );
 
   return (
@@ -2999,7 +2993,7 @@ export default function BoardDetailPage() {
         <main
           className={cn(
             "flex-1 bg-gradient-to-br from-slate-50 to-slate-100",
-            isSidePanelOpen ? "overflow-hidden" : "overflow-y-auto",
+            isSidePanelOpen ? "overflow-hidden" : "overflow-y-auto"
           )}
         >
           <div className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm">
@@ -3026,7 +3020,7 @@ export default function BoardDetailPage() {
                         "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                         viewMode === "board"
                           ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900",
+                          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                       )}
                       onClick={() => setViewMode("board")}
                     >
@@ -3037,7 +3031,7 @@ export default function BoardDetailPage() {
                         "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                         viewMode === "list"
                           ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900",
+                          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                       )}
                       onClick={() => setViewMode("list")}
                     >
@@ -3072,7 +3066,7 @@ export default function BoardDetailPage() {
                       variant="outline"
                       onClick={() =>
                         openAgentsControlDialog(
-                          isAgentsPaused ? "resume" : "pause",
+                          isAgentsPaused ? "resume" : "pause"
                         )
                       }
                       disabled={
@@ -3085,7 +3079,7 @@ export default function BoardDetailPage() {
                         "h-9 w-9 p-0",
                         isAgentsPaused
                           ? "border-amber-200 bg-amber-50/60 text-amber-700 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800"
-                          : "",
+                          : ""
                       )}
                       aria-label={
                         isAgentsPaused ? "Resume agents" : "Pause agents"
@@ -3172,7 +3166,7 @@ export default function BoardDetailPage() {
                           key={agent.id}
                           type="button"
                           className={cn(
-                            "flex w-full items-center gap-3 rounded-lg border border-transparent px-2 py-2 text-left transition hover:border-slate-200 hover:bg-slate-50",
+                            "flex w-full items-center gap-3 rounded-lg border border-transparent px-2 py-2 text-left transition hover:border-slate-200 hover:bg-slate-50"
                           )}
                           onClick={() => router.push(`/agents/${agent.id}`)}
                         >
@@ -3183,7 +3177,7 @@ export default function BoardDetailPage() {
                               variant="agent"
                               className={cn(
                                 "absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white",
-                                isWorking && "ring-2 ring-emerald-200",
+                                isWorking && "ring-2 ring-emerald-200"
                               )}
                             />
                           </div>
@@ -3247,7 +3241,7 @@ export default function BoardDetailPage() {
                                   size="sm"
                                   onClick={() =>
                                     router.push(
-                                      `/board-groups/${groupSnapshot.group?.id}`,
+                                      `/board-groups/${groupSnapshot.group?.id}`
                                     )
                                   }
                                   disabled={!groupSnapshot.group?.id}
@@ -3292,7 +3286,7 @@ export default function BoardDetailPage() {
                                         <p className="mt-1 text-xs text-slate-500">
                                           Updated{" "}
                                           {formatTaskTimestamp(
-                                            item.board.updated_at,
+                                            item.board.updated_at
                                           )}
                                         </p>
                                       </div>
@@ -3325,21 +3319,21 @@ export default function BoardDetailPage() {
                                                   className={cn(
                                                     "rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide",
                                                     statusBadgeClass(
-                                                      task.status,
-                                                    ),
+                                                      task.status
+                                                    )
                                                   )}
                                                 >
                                                   {task.status.replace(
                                                     /_/g,
-                                                    " ",
+                                                    " "
                                                   )}
                                                 </span>
                                                 <span
                                                   className={cn(
                                                     "rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide",
                                                     priorityBadgeClass(
-                                                      task.priority,
-                                                    ),
+                                                      task.priority
+                                                    )
                                                   )}
                                                 >
                                                   {task.priority}
@@ -3350,7 +3344,7 @@ export default function BoardDetailPage() {
                                               </div>
                                               <p className="text-xs text-slate-500">
                                                 {formatTaskTimestamp(
-                                                  task.updated_at,
+                                                  task.updated_at
                                                 )}
                                               </p>
                                             </div>
@@ -3373,7 +3367,7 @@ export default function BoardDetailPage() {
                                                         className="h-1.5 w-1.5 rounded-full"
                                                         style={{
                                                           backgroundColor: `#${normalizeTagColor(
-                                                            tag.color,
+                                                            tag.color
                                                           )}`,
                                                         }}
                                                       />
@@ -3506,7 +3500,7 @@ export default function BoardDetailPage() {
                                   <span
                                     className={cn(
                                       "rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide",
-                                      statusBadgeClass(task.status),
+                                      statusBadgeClass(task.status)
                                     )}
                                   >
                                     {task.status.replace(/_/g, " ")}
@@ -3514,7 +3508,7 @@ export default function BoardDetailPage() {
                                   <span
                                     className={cn(
                                       "rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide",
-                                      priorityBadgeClass(task.priority),
+                                      priorityBadgeClass(task.priority)
                                     )}
                                   >
                                     {task.priority}
@@ -3530,7 +3524,7 @@ export default function BoardDetailPage() {
                                             className="h-1.5 w-1.5 rounded-full"
                                             style={{
                                               backgroundColor: `#${normalizeTagColor(
-                                                tag.color,
+                                                tag.color
                                               )}`,
                                             }}
                                           />
@@ -3549,7 +3543,7 @@ export default function BoardDetailPage() {
                                   </span>
                                   <span className="text-xs text-slate-500">
                                     {formatTaskTimestamp(
-                                      task.updated_at ?? task.created_at,
+                                      task.updated_at ?? task.created_at
                                     )}
                                   </span>
                                 </div>
@@ -3583,7 +3577,7 @@ export default function BoardDetailPage() {
       <aside
         className={cn(
           "fixed right-0 top-0 z-50 h-full w-[max(760px,45vw)] max-w-[99vw] transform bg-white shadow-2xl transition-transform",
-          isDetailOpen ? "transform-none" : "translate-x-full",
+          isDetailOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
@@ -3895,7 +3889,7 @@ export default function BoardDetailPage() {
       <aside
         className={cn(
           "fixed right-0 top-0 z-50 h-full w-[560px] max-w-[96vw] transform border-l border-slate-200 bg-white shadow-2xl transition-transform",
-          isChatOpen ? "transform-none" : "translate-x-full",
+          isChatOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
@@ -3957,7 +3951,7 @@ export default function BoardDetailPage() {
       <aside
         className={cn(
           "fixed right-0 top-0 z-50 h-full w-[520px] max-w-[96vw] transform border-l border-slate-200 bg-white shadow-2xl transition-transform",
-          isLiveFeedOpen ? "transform-none" : "translate-x-full",
+          isLiveFeedOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
@@ -4002,7 +3996,7 @@ export default function BoardDetailPage() {
                     authorAgent?.name ??
                     resolveHumanActorName(
                       item.actor_name,
-                      currentUserDisplayName,
+                      currentUserDisplayName
                     );
                   const authorRole = authorAgent
                     ? agentRoleLabel(authorAgent)
@@ -4211,7 +4205,7 @@ export default function BoardDetailPage() {
                             "rounded-full p-0.5 text-slate-500 transition",
                             canWrite
                               ? "hover:bg-white hover:text-slate-700"
-                              : "opacity-50 cursor-not-allowed",
+                              : "opacity-50 cursor-not-allowed"
                           )}
                           aria-label="Remove tag"
                           disabled={!canWrite}
@@ -4267,7 +4261,7 @@ export default function BoardDetailPage() {
                           "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs",
                           isDone
                             ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                            : "border-slate-200 bg-slate-50 text-slate-700",
+                            : "border-slate-200 bg-slate-50 text-slate-700"
                         )}
                       >
                         <span className="max-w-[18rem] truncate">{label}</span>
@@ -4284,7 +4278,7 @@ export default function BoardDetailPage() {
                               "rounded-full p-0.5 text-slate-500 transition",
                               canWrite
                                 ? "hover:bg-white hover:text-slate-700"
-                                : "opacity-50 cursor-not-allowed",
+                                : "opacity-50 cursor-not-allowed"
                             )}
                             aria-label="Remove dependency"
                             disabled={!canWrite}
@@ -4598,14 +4592,14 @@ export default function BoardDetailPage() {
                 "rounded-xl border bg-white px-4 py-3 text-sm shadow-lush",
                 toast.tone === "error"
                   ? "border-rose-200 text-rose-700"
-                  : "border-emerald-200 text-emerald-700",
+                  : "border-emerald-200 text-emerald-700"
               )}
             >
               <div className="flex items-start gap-3">
                 <span
                   className={cn(
                     "mt-1 h-2 w-2 rounded-full",
-                    toast.tone === "error" ? "bg-rose-500" : "bg-emerald-500",
+                    toast.tone === "error" ? "bg-rose-500" : "bg-emerald-500"
                   )}
                 />
                 <p className="flex-1 text-sm text-slate-700">{toast.message}</p>

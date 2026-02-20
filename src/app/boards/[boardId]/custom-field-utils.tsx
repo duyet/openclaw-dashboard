@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
 
 import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
 import { parseApiDatetime } from "@/lib/datetime";
@@ -10,7 +10,7 @@ const isRecordObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 
 export const normalizeCustomFieldValues = (
-  value: unknown,
+  value: unknown
 ): TaskCustomFieldValues => {
   if (!isRecordObject(value)) return {};
   const entries = Object.entries(value);
@@ -24,7 +24,7 @@ export const normalizeCustomFieldValues = (
       }
       if (Array.isArray(rawValue)) {
         acc[key] = rawValue.map((item) =>
-          isRecordObject(item) ? normalizeCustomFieldValues(item) : item,
+          isRecordObject(item) ? normalizeCustomFieldValues(item) : item
         );
         return acc;
       }
@@ -89,7 +89,7 @@ const formatDateTimeValue = (value: string): string => {
 
 export const formatCustomFieldDetailValue = (
   definition: TaskCustomFieldDefinitionRead,
-  value: unknown,
+  value: unknown
 ): ReactNode => {
   if (value === null || value === undefined) return "—";
 
@@ -188,7 +188,7 @@ const isCustomFieldValueSet = (value: unknown): boolean => {
 
 export const isCustomFieldVisible = (
   definition: TaskCustomFieldDefinitionRead,
-  value: unknown,
+  value: unknown
 ): boolean => {
   if (definition.ui_visibility === "hidden") return false;
   if (definition.ui_visibility === "if_set")
@@ -198,7 +198,7 @@ export const isCustomFieldVisible = (
 
 export const parseCustomFieldInputValue = (
   definition: TaskCustomFieldDefinitionRead,
-  text: string,
+  text: string
 ): unknown | null => {
   const trimmed = text.trim();
   if (!trimmed) return null;
@@ -248,12 +248,12 @@ export const parseCustomFieldInputValue = (
 
 export const boardCustomFieldValues = (
   definitions: TaskCustomFieldDefinitionRead[],
-  value: unknown,
+  value: unknown
 ): TaskCustomFieldValues => {
   const source = normalizeCustomFieldValues(value);
   return definitions.reduce((acc, definition) => {
     const key = definition.field_key;
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
+    if (Object.hasOwn(source, key)) {
       acc[key] = source[key];
       return acc;
     }
@@ -264,13 +264,12 @@ export const boardCustomFieldValues = (
 
 export const customFieldPayload = (
   definitions: TaskCustomFieldDefinitionRead[],
-  values: TaskCustomFieldValues,
+  values: TaskCustomFieldValues
 ): TaskCustomFieldValues =>
   definitions.reduce((acc, definition) => {
     const key = definition.field_key;
     acc[key] =
-      Object.prototype.hasOwnProperty.call(values, key) &&
-      values[key] !== undefined
+      Object.hasOwn(values, key) && values[key] !== undefined
         ? values[key]
         : null;
     return acc;
@@ -292,19 +291,14 @@ const canonicalizeCustomFieldValue = (value: unknown): string => {
 export const customFieldPatchPayload = (
   definitions: TaskCustomFieldDefinitionRead[],
   currentValues: TaskCustomFieldValues,
-  nextValues: TaskCustomFieldValues,
+  nextValues: TaskCustomFieldValues
 ): TaskCustomFieldValues =>
   definitions.reduce((acc, definition) => {
     const key = definition.field_key;
-    const currentValue = Object.prototype.hasOwnProperty.call(
-      currentValues,
-      key,
-    )
+    const currentValue = Object.hasOwn(currentValues, key)
       ? currentValues[key]
       : null;
-    const nextValue = Object.prototype.hasOwnProperty.call(nextValues, key)
-      ? nextValues[key]
-      : null;
+    const nextValue = Object.hasOwn(nextValues, key) ? nextValues[key] : null;
     if (
       canonicalizeCustomFieldValue(currentValue) ===
       canonicalizeCustomFieldValue(nextValue)
@@ -317,7 +311,7 @@ export const customFieldPatchPayload = (
 
 export const firstMissingRequiredCustomField = (
   definitions: TaskCustomFieldDefinitionRead[],
-  values: TaskCustomFieldValues,
+  values: TaskCustomFieldValues
 ): string | null => {
   for (const definition of definitions) {
     if (definition.required !== true) continue;

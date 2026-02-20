@@ -1,21 +1,19 @@
-import { useMemo, useState } from "react";
-
 import {
   type ColumnDef,
+  getCoreRowModel,
+  getSortedRowModel,
   type OnChangeFn,
   type SortingState,
   type Updater,
-  getCoreRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
+import { useMemo, useState } from "react";
+import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
+import { dateCell } from "@/components/tables/cell-formatters";
 import {
   DataTable,
   type DataTableEmptyState,
 } from "@/components/tables/DataTable";
-import { dateCell } from "@/components/tables/cell-formatters";
-import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
 import { formatCustomFieldDefaultValue } from "./custom-field-form-utils";
 
 type CustomFieldsTableProps = {
@@ -132,7 +130,7 @@ export function CustomFieldsTable({
         cell: ({ row }) => dateCell(row.original.updated_at),
       },
     ],
-    [],
+    []
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library

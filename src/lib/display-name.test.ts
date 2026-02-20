@@ -50,7 +50,7 @@ describe("display-name", () => {
   it("returns default user label when member names are unavailable", () => {
     expect(resolveMemberDisplayName(null)).toBe(DEFAULT_HUMAN_LABEL);
     expect(resolveMemberDisplayName(memberWithUser({ name: "Admin" }))).toBe(
-      DEFAULT_HUMAN_LABEL,
+      DEFAULT_HUMAN_LABEL
     );
   });
 });

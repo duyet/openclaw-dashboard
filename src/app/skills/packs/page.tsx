@@ -2,13 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-
-import { useAuth } from "@/auth/clerk";
-import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
 import type { SkillPackRead } from "@/api/generated/model";
 import {
   getListSkillPacksApiV1SkillsPacksGetQueryKey,
@@ -17,6 +13,8 @@ import {
   useListSkillPacksApiV1SkillsPacksGet,
   useSyncSkillPackApiV1SkillsPacksPackIdSyncPost,
 } from "@/api/generated/skills/skills";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { SkillPacksTable } from "@/components/skills/SkillPacksTable";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
@@ -72,7 +70,7 @@ export default function SkillsPacksPage() {
 
   const packs = useMemo<SkillPackRead[]>(
     () => (packsQuery.data?.status === 200 ? packsQuery.data.data : []),
-    [packsQuery.data],
+    [packsQuery.data]
   );
 
   const deleteMutation =
@@ -87,7 +85,7 @@ export default function SkillsPacksPage() {
           },
         },
       },
-      queryClient,
+      queryClient
     );
   const syncMutation = useSyncSkillPackApiV1SkillsPacksPackIdSyncPost<ApiError>(
     {
@@ -99,7 +97,7 @@ export default function SkillsPacksPage() {
         },
       },
     },
-    queryClient,
+    queryClient
   );
 
   const handleDelete = () => {

@@ -86,22 +86,22 @@ const MAX_BACKOFF_SECONDS = 300;
  */
 function backoffSeconds(attempt: number): number {
   return Math.min(
-    BASE_BACKOFF_SECONDS * Math.pow(2, attempt - 1),
-    MAX_BACKOFF_SECONDS,
+    BASE_BACKOFF_SECONDS * 2 ** (attempt - 1),
+    MAX_BACKOFF_SECONDS
   );
 }
 
 /** Load a webhook row; returns null if missing or disabled. */
 async function fetchWebhook(
   db: D1Database,
-  webhookId: string,
+  webhookId: string
 ): Promise<WebhookRow | null> {
   const row = await db
     .prepare(
       `SELECT id, board_id, enabled, description
          FROM board_webhooks
         WHERE id = ?1
-        LIMIT 1`,
+        LIMIT 1`
     )
     .bind(webhookId)
     .first<WebhookRow>();
@@ -113,14 +113,14 @@ async function fetchWebhook(
 /** Load a webhook payload row; returns null if missing. */
 async function fetchPayload(
   db: D1Database,
-  payloadId: string,
+  payloadId: string
 ): Promise<WebhookPayloadRow | null> {
   return db
     .prepare(
       `SELECT id, webhook_id, payload, headers, content_type
          FROM board_webhook_payloads
         WHERE id = ?1
-        LIMIT 1`,
+        LIMIT 1`
     )
     .bind(payloadId)
     .first<WebhookPayloadRow>();
@@ -132,7 +132,7 @@ async function fetchPayload(
  */
 async function fetchDeliveryUrl(
   kv: KVNamespace,
-  webhookId: string,
+  webhookId: string
 ): Promise<string | null> {
   return kv.get(`webhook:${webhookId}:url`);
 }
@@ -148,7 +148,7 @@ async function fetchDeliveryUrl(
 async function deliverPayload(
   url: string,
   payloadRow: WebhookPayloadRow,
-  attempt: number,
+  attempt: number
 ): Promise<void> {
   const originalHeaders: Record<string, string> = payloadRow.headers
     ? (JSON.parse(payloadRow.headers) as Record<string, string>)
@@ -156,22 +156,22 @@ async function deliverPayload(
 
   const headers: Record<string, string> = {
     ...originalHeaders,
-    'Content-Type': payloadRow.content_type ?? 'application/json',
-    'X-Webhook-Id': payloadRow.webhook_id,
-    'X-Attempt': String(attempt),
+    "Content-Type": payloadRow.content_type ?? "application/json",
+    "X-Webhook-Id": payloadRow.webhook_id,
+    "X-Attempt": String(attempt),
   };
 
-  const body = payloadRow.payload ?? '{}';
+  const body = payloadRow.payload ?? "{}";
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers,
     body,
   });
 
   if (!response.ok) {
     throw new Error(
-      `HTTP ${response.status} ${response.statusText} from ${url}`,
+      `HTTP ${response.status} ${response.statusText} from ${url}`
     );
   }
 }
@@ -199,7 +199,7 @@ export default {
           // Webhook disabled or deleted — discard this delivery.
           console.log(
             `[queue-consumer] Discarding job: webhook not found or disabled` +
-              ` webhookId=${job.webhookId}`,
+              ` webhookId=${job.webhookId}`
           );
           msg.ack();
           continue;
@@ -211,7 +211,7 @@ export default {
           // Payload row gone (e.g. purged) — discard safely.
           console.warn(
             `[queue-consumer] Discarding job: payload not found` +
-              ` payloadId=${job.payloadId}`,
+              ` payloadId=${job.payloadId}`
           );
           msg.ack();
           continue;
@@ -223,7 +223,7 @@ export default {
           // No delivery URL configured — cannot deliver, discard.
           console.warn(
             `[queue-consumer] Discarding job: no delivery URL in KV` +
-              ` webhookId=${job.webhookId}`,
+              ` webhookId=${job.webhookId}`
           );
           msg.ack();
           continue;
@@ -237,7 +237,7 @@ export default {
             ` webhookId=${job.webhookId}` +
             ` payloadId=${job.payloadId}` +
             ` boardId=${job.boardId}` +
-            ` attempt=${attempt}`,
+            ` attempt=${attempt}`
         );
         msg.ack();
       } catch (err) {
@@ -248,7 +248,7 @@ export default {
             ` webhookId=${job.webhookId}` +
             ` payloadId=${job.payloadId}` +
             ` attempt=${attempt}` +
-            ` retryIn=${delay}s : ${detail}`,
+            ` retryIn=${delay}s : ${detail}`
         );
         msg.retry({ delaySeconds: delay });
       }

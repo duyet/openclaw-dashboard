@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import * as RechartsPrimitive from "recharts";
 import type { DefaultLegendContentProps, TooltipContentProps } from "recharts";
+import * as RechartsPrimitive from "recharts";
 
 import { cn } from "@/lib/utils";
 
@@ -65,7 +65,7 @@ function ChartContainer({
   const uniqueId = React.useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
   const [hiddenKeys, setHiddenKeys] = React.useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   );
   const toggleSeries = React.useCallback((key: string) => {
     setHiddenKeys((previous) => {
@@ -80,11 +80,11 @@ function ChartContainer({
   }, []);
   const isSeriesHidden = React.useCallback(
     (key: string) => hiddenKeys.has(key),
-    [hiddenKeys],
+    [hiddenKeys]
   );
   const legendState = React.useMemo(
     () => ({ hiddenKeys, isSeriesHidden, toggleSeries }),
-    [hiddenKeys, isSeriesHidden, toggleSeries],
+    [hiddenKeys, isSeriesHidden, toggleSeries]
   );
   const resolvedChildren =
     typeof children === "function" ? children(legendState) : children;
@@ -99,7 +99,7 @@ function ChartContainer({
           data-chart={chartId}
           className={cn(
             "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
-            className,
+            className
           )}
           {...props}
         >
@@ -120,7 +120,7 @@ function ChartContainer({
  */
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme || config.color,
+    ([, config]) => config.theme || config.color
   );
 
   if (!colorConfig.length) {
@@ -143,7 +143,7 @@ ${colorConfig
   })
   .join("\n")}
 }
-`,
+`
           )
           .join("\n"),
       }}
@@ -229,7 +229,7 @@ function ChartTooltipContent({
     <div
       className={cn(
         "border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
-        className,
+        className
       )}
     >
       {!nestLabel ? tooltipLabel : null}
@@ -246,7 +246,7 @@ function ChartTooltipContent({
                 key={item.dataKey}
                 className={cn(
                   "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
-                  indicator === "dot" && "items-center",
+                  indicator === "dot" && "items-center"
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
@@ -266,7 +266,7 @@ function ChartTooltipContent({
                               "w-0 border-[1.5px] border-dashed bg-transparent":
                                 indicator === "dashed",
                               "my-0.5": nestLabel && indicator === "dashed",
-                            },
+                            }
                           )}
                           style={
                             {
@@ -280,7 +280,7 @@ function ChartTooltipContent({
                     <div
                       className={cn(
                         "flex flex-1 justify-between leading-none",
-                        nestLabel ? "items-end" : "items-center",
+                        nestLabel ? "items-end" : "items-center"
                       )}
                     >
                       <div className="grid gap-1.5">
@@ -315,7 +315,7 @@ function ChartTooltipCard({
       {...props}
       className={cn(
         "border border-gray-200 bg-white px-3 py-2 text-sm shadow-lg",
-        className,
+        className
       )}
       labelClassName={cn("text-sm font-semibold text-gray-900", labelClassName)}
     />
@@ -346,7 +346,7 @@ function ChartLegendContent({
       className={cn(
         "flex items-center justify-center gap-4",
         verticalAlign === "top" ? "pb-3" : "pt-3",
-        className,
+        className
       )}
     >
       {payload
@@ -372,7 +372,7 @@ function ChartLegendContent({
               aria-pressed={!isHidden}
               className={cn(
                 "[&>svg]:text-muted-foreground flex items-center gap-1.5 transition-opacity [&>svg]:h-3 [&>svg]:w-3 cursor-pointer",
-                isHidden && "opacity-50",
+                isHidden && "opacity-50"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (
@@ -388,7 +388,7 @@ function ChartLegendContent({
               <span
                 className={cn(
                   "text-muted-foreground",
-                  isHidden && "line-through text-muted-foreground/70",
+                  isHidden && "line-through text-muted-foreground/70"
                 )}
               >
                 {itemConfig?.label ?? item.value}
@@ -441,7 +441,7 @@ function ChartLegendItem({
       className={cn(
         "flex items-center gap-2 text-gray-600 transition-opacity [&>svg]:h-3 [&>svg]:w-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60",
         isHidden && "opacity-50",
-        className,
+        className
       )}
       {...props}
     >
@@ -463,7 +463,7 @@ function ChartLegendItem({
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,
-  key: string,
+  key: string
 ) {
   if (typeof payload !== "object" || payload === null) {
     return undefined;

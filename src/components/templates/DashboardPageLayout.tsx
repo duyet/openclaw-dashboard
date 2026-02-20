@@ -72,7 +72,7 @@ export function DashboardPageLayout({
             className={cn(
               "border-b border-slate-200 bg-white",
               stickyHeader && "sticky top-0 z-30",
-              headerClassName,
+              headerClassName
             )}
           >
             <div className="px-8 py-6">

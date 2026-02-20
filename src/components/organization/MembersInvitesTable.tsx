@@ -1,11 +1,10 @@
-import { useMemo } from "react";
-
 import {
   type ColumnDef,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Copy } from "lucide-react";
+import { useMemo } from "react";
 
 import type {
   OrganizationInviteRead,
@@ -84,7 +83,7 @@ export function MembersInvitesTable({
       ...members.map((member) => ({ kind: "member" as const, member })),
       ...invites.map((invite) => ({ kind: "invite" as const, invite })),
     ],
-    [invites, members],
+    [invites, members]
   );
 
   const columns = useMemo<ColumnDef<MemberInviteRow>[]>(
@@ -159,11 +158,11 @@ export function MembersInvitesTable({
             {row.original.kind === "member"
               ? summarizeAccess(
                   row.original.member.all_boards_read,
-                  row.original.member.all_boards_write,
+                  row.original.member.all_boards_write
                 )
               : summarizeAccess(
                   row.original.invite.all_boards_read,
-                  row.original.invite.all_boards_write,
+                  row.original.invite.all_boards_write
                 )}
           </span>
         ),
@@ -224,7 +223,7 @@ export function MembersInvitesTable({
       onCopyInvite,
       onManageAccess,
       onRevokeInvite,
-    ],
+    ]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library

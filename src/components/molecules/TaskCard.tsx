@@ -74,7 +74,7 @@ export function TaskCard({
         isDragging && "opacity-60 shadow-none",
         hasPendingApproval && "border-amber-200 bg-amber-50/40",
         isBlocked && "border-rose-200 bg-rose-50/50",
-        needsLeadReview && "border-indigo-200 bg-indigo-50/30",
+        needsLeadReview && "border-indigo-200 bg-indigo-50/30"
       )}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -93,7 +93,7 @@ export function TaskCard({
         <span
           className={cn(
             "absolute left-0 top-0 h-full w-1 rounded-l-lg",
-            leftBarClassName,
+            leftBarClassName
           )}
         />
       ) : null}
@@ -146,7 +146,7 @@ export function TaskCard({
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide",
-              priorityBadge(priority) ?? "bg-slate-100 text-slate-600",
+              priorityBadge(priority) ?? "bg-slate-100 text-slate-600"
             )}
           >
             {priorityLabel}
@@ -162,13 +162,13 @@ export function TaskCard({
           <div
             className={cn(
               "flex items-center gap-2",
-              isOverdue && "font-semibold text-rose-600",
+              isOverdue && "font-semibold text-rose-600"
             )}
           >
             <CalendarClock
               className={cn(
                 "h-4 w-4",
-                isOverdue ? "text-rose-500" : "text-slate-400",
+                isOverdue ? "text-rose-500" : "text-slate-400"
               )}
             />
             <span>{due}</span>

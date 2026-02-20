@@ -1,12 +1,11 @@
-import { useMemo } from "react";
-
 import {
   type ColumnDef,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useMemo } from "react";
 
-import { type BoardRead } from "@/api/generated/model";
+import type { BoardRead } from "@/api/generated/model";
 import { linkifyCell } from "@/components/tables/cell-formatters";
 import { DataTable } from "@/components/tables/DataTable";
 
@@ -83,7 +82,7 @@ export function BoardAccessTable({
         },
       },
     ],
-    [access, disabled, onToggleRead, onToggleWrite],
+    [access, disabled, onToggleRead, onToggleWrite]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library

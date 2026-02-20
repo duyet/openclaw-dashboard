@@ -2,27 +2,25 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
-import {
-  type listBoardsApiV1BoardsGetResponse,
-  updateBoardApiV1BoardsBoardIdPatch,
-  useListBoardsApiV1BoardsGet,
-} from "@/api/generated/boards/boards";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type getBoardGroupApiV1BoardGroupsGroupIdGetResponse,
   useGetBoardGroupApiV1BoardGroupsGroupIdGet,
   useUpdateBoardGroupApiV1BoardGroupsGroupIdPatch,
 } from "@/api/generated/board-groups/board-groups";
+import {
+  type listBoardsApiV1BoardsGetResponse,
+  updateBoardApiV1BoardsBoardIdPatch,
+  useListBoardsApiV1BoardsGet,
+} from "@/api/generated/boards/boards";
 import type {
   BoardGroupRead,
   BoardGroupUpdate,
   BoardRead,
 } from "@/api/generated/model";
+import { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +47,7 @@ export default function EditBoardGroupPage() {
 
   const [boardSearch, setBoardSearch] = useState("");
   const [selectedBoardIds, setSelectedBoardIds] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   );
   const [isAssignmentsSaving, setIsAssignmentsSaving] = useState(false);
   const [assignmentsError, setAssignmentsError] = useState<string | null>(null);
@@ -92,7 +90,7 @@ export default function EditBoardGroupPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const groupBoardsQuery = useListBoardsApiV1BoardsGet<
@@ -106,7 +104,7 @@ export default function EditBoardGroupPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const allBoards = useMemo<BoardRead[]>(() => {
@@ -213,7 +211,7 @@ export default function EditBoardGroupPage() {
       setAssignmentsError(
         `Failed to update ${failures.length} board assignment${
           failures.length === 1 ? "" : "s"
-        }.`,
+        }.`
       );
     }
 
@@ -274,7 +272,7 @@ export default function EditBoardGroupPage() {
 
   const title = useMemo(
     () => baseGroup?.name ?? "Edit group",
-    [baseGroup?.name],
+    [baseGroup?.name]
   );
 
   return (

@@ -98,7 +98,7 @@ export function BoardGoalPanel({
           <p
             className={cn(
               "text-sm",
-              board?.objective ? "text-strong" : "text-muted",
+              board?.objective ? "text-strong" : "text-muted"
             )}
           >
             {board?.objective ||

@@ -1,6 +1,6 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { handleApiError } from '@/lib/errors';
+import { handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/souls

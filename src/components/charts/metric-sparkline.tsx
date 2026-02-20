@@ -1,14 +1,14 @@
 "use client";
 
+import { useId } from "react";
 import {
   Area,
   AreaChart,
   ResponsiveContainer,
-  type TooltipContentProps,
   Tooltip,
+  type TooltipContentProps,
   YAxis,
 } from "recharts";
-import { useId } from "react";
 
 import { cn } from "@/lib/utils";
 

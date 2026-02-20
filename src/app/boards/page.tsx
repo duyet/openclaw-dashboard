@@ -2,31 +2,29 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
-import {
-  type listBoardsApiV1BoardsGetResponse,
-  getListBoardsApiV1BoardsGetQueryKey,
-  useDeleteBoardApiV1BoardsBoardIdDelete,
-  useListBoardsApiV1BoardsGet,
-} from "@/api/generated/boards/boards";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import {
   type listBoardGroupsApiV1BoardGroupsGetResponse,
   useListBoardGroupsApiV1BoardGroupsGet,
 } from "@/api/generated/board-groups/board-groups";
-import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
-import { useUrlSorting } from "@/lib/use-url-sorting";
+import {
+  getListBoardsApiV1BoardsGetQueryKey,
+  type listBoardsApiV1BoardsGetResponse,
+  useDeleteBoardApiV1BoardsBoardIdDelete,
+  useListBoardsApiV1BoardsGet,
+} from "@/api/generated/boards/boards";
 import type { BoardRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { BoardsTable } from "@/components/boards/BoardsTable";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
+import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
+import { useUrlSorting } from "@/lib/use-url-sorting";
 
 const BOARD_SORTABLE_COLUMNS = ["name", "group", "updated_at"];
 
@@ -65,7 +63,7 @@ export default function BoardsPage() {
         refetchInterval: 30_000,
         refetchOnMount: "always",
       },
-    },
+    }
   );
 
   const boards = useMemo(
@@ -73,7 +71,7 @@ export default function BoardsPage() {
       boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
         : [],
-    [boardsQuery.data],
+    [boardsQuery.data]
   );
 
   const groups = useMemo(() => {
@@ -101,7 +99,7 @@ export default function BoardsPage() {
         invalidateQueryKeys: [boardsKey],
       }),
     },
-    queryClient,
+    queryClient
   );
 
   const handleDelete = () => {

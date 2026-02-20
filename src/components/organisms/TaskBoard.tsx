@@ -91,7 +91,7 @@ const columns: Array<{
  *   keep showing as overdue forever).
  */
 const resolveDueState = (
-  task: Task,
+  task: Task
 ): { due: string | undefined; isOverdue: boolean } => {
   const date = parseApiDatetime(task.due_at);
   if (!date) return { due: undefined, isOverdue: false };
@@ -148,7 +148,7 @@ export const TaskBoard = memo(function TaskBoard({
       }
       cardRefs.current.delete(taskId);
     },
-    [],
+    []
   );
 
   /**
@@ -317,7 +317,7 @@ export const TaskBoard = memo(function TaskBoard({
       event.dataTransfer.effectAllowed = "move";
       event.dataTransfer.setData(
         "text/plain",
-        JSON.stringify({ taskId: task.id, status: task.status }),
+        JSON.stringify({ taskId: task.id, status: task.status })
       );
     };
 
@@ -367,7 +367,7 @@ export const TaskBoard = memo(function TaskBoard({
         // Mobile-first: stack columns vertically to avoid horizontal scrolling.
         "grid grid-cols-1 gap-4 overflow-x-hidden pb-6",
         // Desktop/tablet: switch back to horizontally scrollable kanban columns.
-        "sm:grid-flow-col sm:auto-cols-[minmax(260px,320px)] sm:grid-cols-none sm:overflow-x-auto",
+        "sm:grid-flow-col sm:auto-cols-[minmax(260px,320px)] sm:grid-cols-none sm:overflow-x-auto"
       )}
     >
       {columns.map((column) => {
@@ -393,7 +393,7 @@ export const TaskBoard = memo(function TaskBoard({
                   approval_needed: 0,
                   waiting_lead: 0,
                   blocked: 0,
-                },
+                }
               )
             : null;
 
@@ -424,7 +424,7 @@ export const TaskBoard = memo(function TaskBoard({
               "sm:min-h-[calc(100vh-260px)]",
               activeColumn === column.status &&
                 !readOnly &&
-                "ring-2 ring-slate-200",
+                "ring-2 ring-slate-200"
             )}
             onDrop={readOnly ? undefined : handleDrop(column.status)}
             onDragOver={readOnly ? undefined : handleDragOver(column.status)}
@@ -441,7 +441,7 @@ export const TaskBoard = memo(function TaskBoard({
                 <span
                   className={cn(
                     "flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                    column.badge,
+                    column.badge
                   )}
                 >
                   {filteredTasks.length}
@@ -477,7 +477,7 @@ export const TaskBoard = memo(function TaskBoard({
                         "rounded-full border px-2.5 py-1 transition",
                         reviewBucket === option.key
                           ? "border-slate-900 bg-slate-900 text-white"
-                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50",
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                       )}
                       aria-pressed={reviewBucket === option.key}
                     >

@@ -1,14 +1,14 @@
-export type ActorType = 'user' | 'agent';
+export type ActorType = "user" | "agent";
 
 export interface UserActor {
-  type: 'user';
+  type: "user";
   userId: string;
   clerkId: string;
   orgId?: string;
 }
 
 export interface AgentActor {
-  type: 'agent';
+  type: "agent";
   agentId: string;
   orgId?: string;
 }

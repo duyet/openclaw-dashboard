@@ -37,7 +37,11 @@ Always check `NEXT_PUBLIC_AUTH_MODE` before using Clerk APIs. Clerk-specific cod
 |---------|-------------|
 | `make dev` | Next.js dev server (port 3000) |
 | `make cf-dev` | Cloudflare Pages dev with real bindings |
-| `make lint` | ESLint |
+| `make lint` | Biome lint |
+| `make fix` | Biome auto-fix lint + format |
+| `make format` | Biome format (write) |
+| `bun fmt` | Biome format --write . |
+| `bun fix` | Biome check --write . |
 | `make typecheck` | TypeScript check (no emit) |
 | `make test` | Vitest unit tests |
 | `make e2e` | Cypress E2E |
@@ -56,6 +60,16 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - `refactor:` refactoring without behavior change
 - `test:` tests only
 
+## Linter / Formatter
+
+**Biome** (not ESLint / Prettier). Config: `biome.json`.
+
+- `bun fmt` — format all files
+- `bun fix` — fix lint issues + format in one pass
+- `bun lint` — lint only (no writes)
+
+ESLint and Prettier have been removed from the project.
+
 ## What NOT To Do
 
 - Do not create a separate backend service — use Route Handlers in `src/app/api/v1/`
@@ -64,3 +78,4 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - Do not hand-edit files in `drizzle/migrations/` — always use `make db-generate`
 - Do not use `any` in TypeScript without a `// TODO: type this` comment
 - Do not add `console.log` in production code — use structured logging
+- Do not run `eslint` or `prettier` — use `bun fix` / `bun fmt` instead

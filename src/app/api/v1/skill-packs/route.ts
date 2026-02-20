@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { skillPacks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { skillPacks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/skill-packs
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const actor = await requireActorContext(request, env.DB);
 
     if (!actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+      throw new ApiError(403, "No active organization");
     }
 
     const url = new URL(request.url);
@@ -56,19 +56,19 @@ export async function POST(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+    if (actor.type !== "user" || !actor.orgId) {
+      throw new ApiError(403, "No active organization");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const name = ((body.name as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const name = ((body.name as string) || "").trim();
     if (!name) {
-      throw new ApiError(422, 'Skill pack name is required');
+      throw new ApiError(422, "Skill pack name is required");
     }
 
-    const sourceUrl = ((body.source_url as string) || '').trim();
+    const sourceUrl = ((body.source_url as string) || "").trim();
     if (!sourceUrl) {
-      throw new ApiError(422, 'source_url is required');
+      throw new ApiError(422, "source_url is required");
     }
 
     const now = new Date().toISOString();
@@ -80,8 +80,10 @@ export async function POST(request: Request) {
       name,
       description: (body.description as string) || null,
       sourceUrl,
-      branch: (body.branch as string) || 'main',
-      metadata: body.metadata ? body.metadata as Record<string, unknown> : {} as Record<string, unknown>,
+      branch: (body.branch as string) || "main",
+      metadata: body.metadata
+        ? (body.metadata as Record<string, unknown>)
+        : ({} as Record<string, unknown>),
       createdAt: now,
       updatedAt: now,
     });

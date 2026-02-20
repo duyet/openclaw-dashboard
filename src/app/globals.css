@@ -146,10 +146,7 @@ body {
   --warning: #f59e0b;
 
   min-height: 100vh;
-  font-family:
-    var(--font-body),
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-body), -apple-system, sans-serif;
   background: var(--neutral-100);
   color: var(--neutral-800);
   line-height: 1.6;

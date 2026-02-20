@@ -8,20 +8,20 @@
  * Agent tokens are checked first. If no agent token, falls back to
  * user auth (Clerk or local depending on AUTH_MODE).
  */
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import type { Actor } from './types';
-import { resolveAgentAuth } from './agent';
-import { resolveClerkAuth } from './clerk';
-import { resolveLocalAuth } from './local';
-import { ApiError } from '../errors';
-import type { Database } from '../db';
+import type { Database } from "../db";
+import { ApiError } from "../errors";
+import { resolveAgentAuth } from "./agent";
+import { resolveClerkAuth } from "./clerk";
+import { resolveLocalAuth } from "./local";
+import type { Actor } from "./types";
 
 export type { Actor };
 
 // Legacy ActorContext type — kept for backward compatibility with existing routes.
 export type ActorContext = {
-  type: 'user' | 'agent';
+  type: "user" | "agent";
   userId?: string;
   agentId?: string;
   orgId?: string;
@@ -38,7 +38,7 @@ export type ActorContext = {
  */
 export async function resolveActorContext(
   request: Request,
-  d1: D1Database,
+  d1: D1Database
 ): Promise<ActorContext | null> {
   // 1. Check agent token first
   const agentContext = await resolveAgentAuth(request, d1);
@@ -46,9 +46,10 @@ export async function resolveActorContext(
 
   // 2. Determine auth mode
   const authMode =
-    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_AUTH_MODE) || 'clerk';
+    (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_AUTH_MODE) ||
+    "clerk";
 
-  if (authMode === 'local') {
+  if (authMode === "local") {
     return resolveLocalAuth(request, d1);
   }
 
@@ -62,11 +63,11 @@ export async function resolveActorContext(
  */
 export async function requireActorContext(
   request: Request,
-  d1: D1Database,
+  d1: D1Database
 ): Promise<ActorContext> {
   const ctx = await resolveActorContext(request, d1);
   if (!ctx) {
-    throw new ApiError(401, 'Unauthorized');
+    throw new ApiError(401, "Unauthorized");
   }
   return ctx;
 }
@@ -82,10 +83,10 @@ export async function requireActorContext(
  */
 export async function resolveActor(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
   try {
-    const { resolveActorFromDb } = await import('./_resolve');
+    const { resolveActorFromDb } = await import("./_resolve");
     return resolveActorFromDb(request, db);
   } catch {
     return null;
@@ -95,8 +96,11 @@ export async function resolveActor(
 /**
  * Require an authenticated Actor. Throws ApiError(401) if unauthenticated.
  */
-export async function requireActor(request: Request, db: Database): Promise<Actor> {
+export async function requireActor(
+  request: Request,
+  db: Database
+): Promise<Actor> {
   const actor = await resolveActor(request, db);
-  if (!actor) throw new ApiError(401, 'Authentication required');
+  if (!actor) throw new ApiError(401, "Authentication required");
   return actor;
 }

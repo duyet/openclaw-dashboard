@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { organizations, organizationMembers, users } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { organizationMembers, organizations, users } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 // ---------------------------------------------------------------------------
 // Helper: verify actor is a member of the org
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
 async function requireOrgMembership(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  userId: string,
+  userId: string
 ) {
   const rows = await db
     .select()
@@ -21,13 +21,13 @@ async function requireOrgMembership(
     .where(
       and(
         eq(organizationMembers.organizationId, orgId),
-        eq(organizationMembers.userId, userId),
-      ),
+        eq(organizationMembers.userId, userId)
+      )
     )
     .limit(1);
 
   if (rows.length === 0) {
-    throw new ApiError(403, 'Not a member of this organization');
+    throw new ApiError(403, "Not a member of this organization");
   }
 
   return rows[0];
@@ -39,12 +39,12 @@ async function requireOrgMembership(
 async function requireOrgAdmin(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  userId: string,
+  userId: string
 ) {
   const membership = await requireOrgMembership(db, orgId, userId);
 
-  if (membership.role !== 'owner' && membership.role !== 'admin') {
-    throw new ApiError(403, 'Admin or owner role required');
+  if (membership.role !== "owner" && membership.role !== "admin") {
+    throw new ApiError(403, "Admin or owner role required");
   }
 
   return membership;
@@ -56,7 +56,7 @@ async function requireOrgAdmin(
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; memberId: string }> },
+  { params }: { params: Promise<{ orgId: string; memberId: string }> }
 ) {
   try {
     const { orgId, memberId } = await params;
@@ -64,8 +64,8 @@ export async function GET(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Require membership to view member details
@@ -90,13 +90,13 @@ export async function GET(
       .where(
         and(
           eq(organizationMembers.id, memberId),
-          eq(organizationMembers.organizationId, orgId),
-        ),
+          eq(organizationMembers.organizationId, orgId)
+        )
       )
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'Member not found');
+      throw new ApiError(404, "Member not found");
     }
 
     return Response.json(result[0]);
@@ -111,7 +111,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; memberId: string }> },
+  { params }: { params: Promise<{ orgId: string; memberId: string }> }
 ) {
   try {
     const { orgId, memberId } = await params;
@@ -119,8 +119,8 @@ export async function PATCH(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Require admin/owner to update members
@@ -133,35 +133,38 @@ export async function PATCH(
       .where(
         and(
           eq(organizationMembers.id, memberId),
-          eq(organizationMembers.organizationId, orgId),
-        ),
+          eq(organizationMembers.organizationId, orgId)
+        )
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Member not found');
+      throw new ApiError(404, "Member not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const updates: Record<string, unknown> = {};
 
-    if (typeof body.role === 'string') {
-      const validRoles = ['owner', 'admin', 'member'];
+    if (typeof body.role === "string") {
+      const validRoles = ["owner", "admin", "member"];
       if (!validRoles.includes(body.role)) {
-        throw new ApiError(422, `role must be one of: ${validRoles.join(', ')}`);
+        throw new ApiError(
+          422,
+          `role must be one of: ${validRoles.join(", ")}`
+        );
       }
       updates.role = body.role;
     }
 
-    if (typeof body.all_boards_read === 'boolean') {
+    if (typeof body.all_boards_read === "boolean") {
       updates.allBoardsRead = body.all_boards_read;
     }
-    if (typeof body.all_boards_write === 'boolean') {
+    if (typeof body.all_boards_write === "boolean") {
       updates.allBoardsWrite = body.all_boards_write;
     }
 
     if (Object.keys(updates).length === 0) {
-      throw new ApiError(422, 'At least one field must be provided for update');
+      throw new ApiError(422, "At least one field must be provided for update");
     }
 
     updates.updatedAt = new Date().toISOString();
@@ -203,7 +206,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; memberId: string }> },
+  { params }: { params: Promise<{ orgId: string; memberId: string }> }
 ) {
   try {
     const { orgId, memberId } = await params;
@@ -211,8 +214,8 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Require admin/owner to remove members
@@ -225,29 +228,32 @@ export async function DELETE(
       .where(
         and(
           eq(organizationMembers.id, memberId),
-          eq(organizationMembers.organizationId, orgId),
-        ),
+          eq(organizationMembers.organizationId, orgId)
+        )
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Member not found');
+      throw new ApiError(404, "Member not found");
     }
 
     // Prevent removing the last owner
-    if (existing[0].role === 'owner') {
+    if (existing[0].role === "owner") {
       const ownerCount = await db
         .select({ id: organizationMembers.id })
         .from(organizationMembers)
         .where(
           and(
             eq(organizationMembers.organizationId, orgId),
-            eq(organizationMembers.role, 'owner'),
-          ),
+            eq(organizationMembers.role, "owner")
+          )
         );
 
       if (ownerCount.length <= 1) {
-        throw new ApiError(422, 'Cannot remove the last owner of the organization');
+        throw new ApiError(
+          422,
+          "Cannot remove the last owner of the organization"
+        );
       }
     }
 

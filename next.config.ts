@@ -1,8 +1,10 @@
+import { setupDevPlatform } from "@cloudflare/next-on-pages/next-dev";
 import type { NextConfig } from "next";
-import { setupDevPlatform } from '@cloudflare/next-on-pages/next-dev';
 
-if (process.env.NODE_ENV === 'development') {
-  await setupDevPlatform();
+if (process.env.NODE_ENV === "development") {
+  void (async () => {
+    await setupDevPlatform();
+  })();
 }
 
 const nextConfig: NextConfig = {
@@ -19,8 +21,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-  },
+  experimental: {},
 };
 
 export default nextConfig;

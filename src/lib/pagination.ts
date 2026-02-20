@@ -35,25 +35,22 @@ interface PaginationDefaults {
  */
 export function parsePaginationParams(
   url: URL,
-  defaults?: PaginationDefaults,
+  defaults?: PaginationDefaults
 ): PaginationParams {
   const defaultLimit = defaults?.limit ?? 50;
   const maxLimit = defaults?.maxLimit ?? 200;
 
-  const rawLimit = url.searchParams.get('limit');
-  const rawOffset = url.searchParams.get('offset');
+  const rawLimit = url.searchParams.get("limit");
+  const rawOffset = url.searchParams.get("offset");
 
   const parsedLimit = rawLimit !== null ? parseInt(rawLimit, 10) : NaN;
   const parsedOffset = rawOffset !== null ? parseInt(rawOffset, 10) : NaN;
 
   const limit = Math.min(
     Math.max(Number.isFinite(parsedLimit) ? parsedLimit : defaultLimit, 1),
-    maxLimit,
+    maxLimit
   );
-  const offset = Math.max(
-    Number.isFinite(parsedOffset) ? parsedOffset : 0,
-    0,
-  );
+  const offset = Math.max(Number.isFinite(parsedOffset) ? parsedOffset : 0, 0);
 
   return { limit, offset };
 }
@@ -62,10 +59,7 @@ export function parsePaginationParams(
  * Alias for `parsePaginationParams` kept for backward compatibility with
  * existing route handlers that call `parsePagination`.
  */
-export function parsePagination(
-  url: URL,
-  defaultLimit = 50,
-): PaginationParams {
+export function parsePagination(url: URL, defaultLimit = 50): PaginationParams {
   return parsePaginationParams(url, { limit: defaultLimit });
 }
 
@@ -79,7 +73,7 @@ export function parsePagination(
 export function paginatedResponse<T>(
   items: T[],
   total: number,
-  params: PaginationParams,
+  params: PaginationParams
 ): PaginatedResponse<T> {
   return {
     items,
@@ -98,15 +92,15 @@ export function paginatedResponse<T>(
 export function paginatedJsonResponse<T>(
   items: T[],
   total: number,
-  params: PaginationParams,
+  params: PaginationParams
 ): Response {
   return Response.json(
     { items, total, limit: params.limit, offset: params.offset },
     {
       headers: {
-        'X-Total-Count': String(total),
-        'Access-Control-Expose-Headers': 'X-Total-Count',
+        "X-Total-Count": String(total),
+        "Access-Control-Expose-Headers": "X-Total-Count",
       },
-    },
+    }
   );
 }

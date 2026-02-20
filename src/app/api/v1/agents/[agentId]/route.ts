@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { agents, tasks, activityEvents, approvals } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { activityEvents, agents, approvals, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/agents/[agentId]
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ agentId: string }> },
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -28,7 +28,7 @@ export async function GET(
       .limit(1);
 
     if (!result.length) {
-      throw new ApiError(404, 'Agent not found');
+      throw new ApiError(404, "Agent not found");
     }
 
     return Response.json(result[0]);
@@ -43,7 +43,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ agentId: string }> },
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -58,10 +58,10 @@ export async function PATCH(
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Agent not found');
+      throw new ApiError(404, "Agent not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const now = new Date().toISOString();
 
     const updates: Record<string, unknown> = { updatedAt: now };
@@ -77,8 +77,10 @@ export async function PATCH(
       updates.identityProfile = JSON.stringify(body.identity_profile);
     if (body.identity_template !== undefined)
       updates.identityTemplate = body.identity_template;
-    if (body.soul_template !== undefined) updates.soulTemplate = body.soul_template;
-    if (body.is_board_lead !== undefined) updates.isBoardLead = body.is_board_lead;
+    if (body.soul_template !== undefined)
+      updates.soulTemplate = body.soul_template;
+    if (body.is_board_lead !== undefined)
+      updates.isBoardLead = body.is_board_lead;
 
     await db.update(agents).set(updates).where(eq(agents.id, agentId));
 
@@ -100,7 +102,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ agentId: string }> },
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -108,8 +110,8 @@ export async function DELETE(
     const actor = await requireActorContext(request, env.DB);
     const { agentId } = await params;
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can delete agents');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can delete agents");
     }
 
     const existing = await db
@@ -119,7 +121,7 @@ export async function DELETE(
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Agent not found');
+      throw new ApiError(404, "Agent not found");
     }
 
     // Clear agent assignment from tasks

@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardWebhookPayloads, boardWebhooks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boardWebhookPayloads, boardWebhooks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/boards/:boardId/webhooks/:webhookId/payloads
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; webhookId: string }> },
+  { params }: { params: Promise<{ boardId: string; webhookId: string }> }
 ) {
   try {
     const { boardId, webhookId } = await params;
@@ -27,15 +27,12 @@ export async function GET(
       .select({ id: boardWebhooks.id })
       .from(boardWebhooks)
       .where(
-        and(
-          eq(boardWebhooks.id, webhookId),
-          eq(boardWebhooks.boardId, boardId),
-        ),
+        and(eq(boardWebhooks.id, webhookId), eq(boardWebhooks.boardId, boardId))
       )
       .limit(1);
 
     if (webhook.length === 0) {
-      throw new ApiError(404, 'Webhook not found');
+      throw new ApiError(404, "Webhook not found");
     }
 
     const url = new URL(request.url);
@@ -47,8 +44,8 @@ export async function GET(
       .where(
         and(
           eq(boardWebhookPayloads.webhookId, webhookId),
-          eq(boardWebhookPayloads.boardId, boardId),
-        ),
+          eq(boardWebhookPayloads.boardId, boardId)
+        )
       )
       .orderBy(sql`${boardWebhookPayloads.receivedAt} desc`)
       .limit(limit)
@@ -60,8 +57,8 @@ export async function GET(
       .where(
         and(
           eq(boardWebhookPayloads.webhookId, webhookId),
-          eq(boardWebhookPayloads.boardId, boardId),
-        ),
+          eq(boardWebhookPayloads.boardId, boardId)
+        )
       );
 
     const total = countResult[0]?.count ?? 0;

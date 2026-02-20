@@ -1,12 +1,12 @@
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardGroupMemory } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError } from '@/lib/errors';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boardGroupMemory } from "@/lib/db/schema";
+import { handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/board-groups/[groupId]/memory/stream
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ groupId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -23,7 +23,7 @@ export async function GET(
     const { groupId } = await params;
 
     const url = new URL(request.url);
-    const since = url.searchParams.get('since') || new Date().toISOString();
+    const since = url.searchParams.get("since") || new Date().toISOString();
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
@@ -39,8 +39,8 @@ export async function GET(
               .where(
                 and(
                   eq(boardGroupMemory.boardGroupId, groupId),
-                  sql`${boardGroupMemory.createdAt} >= ${lastSeen}`,
-                ),
+                  sql`${boardGroupMemory.createdAt} >= ${lastSeen}`
+                )
               )
               .orderBy(boardGroupMemory.createdAt);
 
@@ -50,7 +50,9 @@ export async function GET(
               seen.add(memory.id);
               if (memory.createdAt > lastSeen) lastSeen = memory.createdAt;
               controller.enqueue(
-                encoder.encode(`event: update\ndata: ${JSON.stringify(memory)}\n\n`),
+                encoder.encode(
+                  `event: update\ndata: ${JSON.stringify(memory)}\n\n`
+                )
               );
             }
 
@@ -66,10 +68,10 @@ export async function GET(
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-        Connection: 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {

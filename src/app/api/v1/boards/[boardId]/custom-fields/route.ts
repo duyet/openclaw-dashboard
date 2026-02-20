@@ -1,12 +1,16 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boards, boardTaskCustomFields, taskCustomFieldDefinitions } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import {
+  boards,
+  boardTaskCustomFields,
+  taskCustomFieldDefinitions,
+} from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/boards/:boardId/custom-fields
@@ -14,7 +18,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { boardId } = await params;
@@ -30,7 +34,7 @@ export async function GET(
       .limit(1);
 
     if (board.length === 0) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
     const url = new URL(request.url);
@@ -41,7 +45,8 @@ export async function GET(
       .select({
         id: boardTaskCustomFields.id,
         boardId: boardTaskCustomFields.boardId,
-        taskCustomFieldDefinitionId: boardTaskCustomFields.taskCustomFieldDefinitionId,
+        taskCustomFieldDefinitionId:
+          boardTaskCustomFields.taskCustomFieldDefinitionId,
         createdAt: boardTaskCustomFields.createdAt,
         fieldKey: taskCustomFieldDefinitions.fieldKey,
         label: taskCustomFieldDefinitions.label,
@@ -55,7 +60,10 @@ export async function GET(
       .from(boardTaskCustomFields)
       .innerJoin(
         taskCustomFieldDefinitions,
-        eq(taskCustomFieldDefinitions.id, boardTaskCustomFields.taskCustomFieldDefinitionId),
+        eq(
+          taskCustomFieldDefinitions.id,
+          boardTaskCustomFields.taskCustomFieldDefinitionId
+        )
       )
       .where(eq(boardTaskCustomFields.boardId, boardId))
       .limit(limit)
@@ -81,7 +89,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { boardId } = await params;
@@ -89,8 +97,8 @@ export async function POST(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can bind custom fields');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can bind custom fields");
     }
 
     // Verify board exists
@@ -101,14 +109,14 @@ export async function POST(
       .limit(1);
 
     if (board.length === 0) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const definitionId = body.task_custom_field_definition_id;
 
-    if (!definitionId || typeof definitionId !== 'string') {
-      throw new ApiError(422, 'task_custom_field_definition_id is required');
+    if (!definitionId || typeof definitionId !== "string") {
+      throw new ApiError(422, "task_custom_field_definition_id is required");
     }
 
     // Verify the definition exists
@@ -119,7 +127,7 @@ export async function POST(
       .limit(1);
 
     if (definition.length === 0) {
-      throw new ApiError(404, 'Custom field definition not found');
+      throw new ApiError(404, "Custom field definition not found");
     }
 
     // Check for duplicate binding
@@ -129,13 +137,13 @@ export async function POST(
       .where(
         and(
           eq(boardTaskCustomFields.boardId, boardId),
-          eq(boardTaskCustomFields.taskCustomFieldDefinitionId, definitionId),
-        ),
+          eq(boardTaskCustomFields.taskCustomFieldDefinitionId, definitionId)
+        )
       )
       .limit(1);
 
     if (existing.length > 0) {
-      throw new ApiError(409, 'Custom field is already bound to this board');
+      throw new ApiError(409, "Custom field is already bound to this board");
     }
 
     const now = new Date().toISOString();

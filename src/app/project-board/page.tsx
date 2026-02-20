@@ -1,5 +1,5 @@
-import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { KanbanBoard } from "@/components/project-board/KanbanBoard";
+import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 
 export default function ProjectBoardPage() {
   return (

@@ -1,14 +1,14 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { tasks, boards, activityEvents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, inArray, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { activityEvents, boards, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
-const ALLOWED_STATUSES = ['inbox', 'in_progress', 'review', 'done'];
+const ALLOWED_STATUSES = ["inbox", "in_progress", "review", "done"];
 
 /**
  * GET /api/v1/boards/[boardId]/tasks
@@ -16,7 +16,7 @@ const ALLOWED_STATUSES = ['inbox', 'in_progress', 'review', 'done'];
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -26,17 +26,17 @@ export async function GET(
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
-    const statusFilter = url.searchParams.get('status');
-    const assignedAgentId = url.searchParams.get('assigned_agent_id');
-    const unassigned = url.searchParams.get('unassigned');
+    const statusFilter = url.searchParams.get("status");
+    const assignedAgentId = url.searchParams.get("assigned_agent_id");
+    const unassigned = url.searchParams.get("unassigned");
 
     // Parse status filter values
     const statusValues: string[] = [];
     if (statusFilter) {
-      const values = statusFilter.split(',').map((s) => s.trim());
+      const values = statusFilter.split(",").map((s) => s.trim());
       for (const v of values) {
         if (!ALLOWED_STATUSES.includes(v)) {
-          throw new ApiError(422, 'Unsupported task status filter.');
+          throw new ApiError(422, "Unsupported task status filter.");
         }
         statusValues.push(v);
       }
@@ -58,7 +58,7 @@ export async function GET(
     if (assignedAgentId) {
       result = result.filter((t) => t.assignedAgentId === assignedAgentId);
     }
-    if (unassigned === 'true') {
+    if (unassigned === "true") {
       result = result.filter((t) => !t.assignedAgentId);
     }
 
@@ -81,7 +81,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -97,13 +97,13 @@ export async function POST(
       .limit(1);
 
     if (!boardResult.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const title = ((body.title as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const title = ((body.title as string) || "").trim();
     if (!title) {
-      throw new ApiError(422, 'Task title is required');
+      throw new ApiError(422, "Task title is required");
     }
 
     const now = new Date().toISOString();
@@ -114,10 +114,20 @@ export async function POST(
       boardId,
       title,
       description: (body.description as string) || null,
-      status: ((body.status as string) || 'inbox') as 'inbox' | 'in_progress' | 'review' | 'done' | 'blocked' | 'cancelled',
-      priority: ((body.priority as string) || 'medium') as 'low' | 'medium' | 'high' | 'critical',
+      status: ((body.status as string) || "inbox") as
+        | "inbox"
+        | "in_progress"
+        | "review"
+        | "done"
+        | "blocked"
+        | "cancelled",
+      priority: ((body.priority as string) || "medium") as
+        | "low"
+        | "medium"
+        | "high"
+        | "critical",
       dueAt: (body.due_at as string) || null,
-      createdByUserId: actor.type === 'user' ? actor.userId || null : null,
+      createdByUserId: actor.type === "user" ? actor.userId || null : null,
       assignedAgentId: (body.assigned_agent_id as string) || null,
       autoCreated: (body.auto_created as boolean) ?? false,
       autoReason: (body.auto_reason as string) || null,
@@ -128,10 +138,10 @@ export async function POST(
     // Record activity event
     await db.insert(activityEvents).values({
       id: crypto.randomUUID(),
-      eventType: 'task.created',
+      eventType: "task.created",
       message: `Task created: ${title}.`,
       taskId,
-      agentId: actor.type === 'agent' ? actor.agentId || null : null,
+      agentId: actor.type === "agent" ? actor.agentId || null : null,
       createdAt: now,
     });
 

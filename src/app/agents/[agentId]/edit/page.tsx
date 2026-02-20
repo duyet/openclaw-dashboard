@@ -2,12 +2,8 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useMemo, useState } from "react";
 import {
   type getAgentApiV1AgentsAgentIdGetResponse,
   useGetAgentApiV1AgentsAgentIdGet,
@@ -18,6 +14,8 @@ import {
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
 import type { AgentRead, AgentUpdate, BoardRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +58,7 @@ const getBoardOptions = (boards: BoardRead[]): SearchableSelectOption[] =>
 
 const mergeIdentityProfile = (
   existing: unknown,
-  patch: IdentityProfile,
+  patch: IdentityProfile
 ): Record<string, unknown> | null => {
   const resolved: Record<string, unknown> =
     existing && typeof existing === "object"
@@ -82,7 +80,7 @@ const mergeIdentityProfile = (
 };
 
 const withIdentityDefaults = (
-  profile: Partial<IdentityProfile> | null | undefined,
+  profile: Partial<IdentityProfile> | null | undefined
 ): IdentityProfile => ({
   role: profile?.role ?? DEFAULT_IDENTITY_PROFILE.role,
   communication_style:
@@ -101,10 +99,10 @@ export default function EditAgentPage() {
   const [name, setName] = useState<string | undefined>(undefined);
   const [boardId, setBoardId] = useState<string | undefined>(undefined);
   const [isGatewayMain, setIsGatewayMain] = useState<boolean | undefined>(
-    undefined,
+    undefined
   );
   const [heartbeatEvery, setHeartbeatEvery] = useState<string | undefined>(
-    undefined,
+    undefined
   );
   const [identityProfile, setIdentityProfile] = useState<
     IdentityProfile | undefined
@@ -216,7 +214,7 @@ export default function EditAgentPage() {
       !loadedAgent.board_id
     ) {
       setError(
-        "Select a board once so we can resolve the gateway main session key.",
+        "Select a board once so we can resolve the gateway main session key."
       );
       return;
     }
@@ -241,7 +239,7 @@ export default function EditAgentPage() {
       } as unknown as Record<string, unknown>,
       identity_profile: mergeIdentityProfile(
         loadedAgent.identity_profile,
-        resolvedIdentityProfile,
+        resolvedIdentityProfile
       ) as unknown as Record<string, unknown> | null,
     };
     if (!resolvedIsGatewayMain) {

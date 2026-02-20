@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardWebhooks, boards, agents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { agents, boards, boardWebhooks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 function webhookEndpointPath(boardId: string, webhookId: string): string {
   return `/api/v1/boards/${boardId}/webhooks/${webhookId}`;
@@ -18,7 +18,7 @@ function webhookEndpointPath(boardId: string, webhookId: string): string {
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -61,7 +61,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -77,13 +77,13 @@ export async function POST(
       .limit(1);
 
     if (!boardResult.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const description = ((body.description as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const description = ((body.description as string) || "").trim();
     if (!description) {
-      throw new ApiError(422, 'Description is required');
+      throw new ApiError(422, "Description is required");
     }
 
     const agentId = (body.agent_id as string) || null;
@@ -97,7 +97,10 @@ export async function POST(
         .limit(1);
 
       if (!agentResult.length) {
-        throw new ApiError(422, 'agent_id must reference an agent on this board.');
+        throw new ApiError(
+          422,
+          "agent_id must reference an agent on this board."
+        );
       }
     }
 
@@ -127,7 +130,7 @@ export async function POST(
         ...webhook,
         endpoint_path: webhookEndpointPath(boardId, webhook.id),
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     return handleApiError(error);

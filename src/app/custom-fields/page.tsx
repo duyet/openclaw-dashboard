@@ -2,20 +2,18 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
 import {
-  type listOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetResponse,
   getListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetQueryKey,
+  type listOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetResponse,
   useDeleteOrgCustomFieldApiV1OrganizationsMeCustomFieldsTaskCustomFieldDefinitionIdDelete,
   useListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGet,
 } from "@/api/generated/org-custom-fields/org-custom-fields";
-import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { CustomFieldsTable } from "@/components/custom-fields/CustomFieldsTable";
 import { extractApiErrorMessage } from "@/components/custom-fields/custom-field-form-utils";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
@@ -55,7 +53,7 @@ export default function CustomFieldsPage() {
       customFieldsQuery.data?.status === 200
         ? (customFieldsQuery.data.data ?? [])
         : [],
-    [customFieldsQuery.data],
+    [customFieldsQuery.data]
   );
   const customFieldsKey =
     getListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetQueryKey();
@@ -69,7 +67,7 @@ export default function CustomFieldsPage() {
             await queryClient.invalidateQueries({ queryKey: customFieldsKey });
           },
         },
-      },
+      }
     );
 
   const handleDelete = () => {
@@ -147,7 +145,7 @@ export default function CustomFieldsPage() {
           deleteMutation.error
             ? extractApiErrorMessage(
                 deleteMutation.error,
-                "Unable to delete custom field.",
+                "Unable to delete custom field."
               )
             : undefined
         }

@@ -2,22 +2,21 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useState } from "react";
 import { useCreateGatewayApiV1GatewaysPost } from "@/api/generated/gateways/gateways";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
+
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { GatewayForm } from "@/components/gateways/GatewayForm";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import {
-  DEFAULT_WORKSPACE_ROOT,
   checkGatewayConnection,
+  DEFAULT_WORKSPACE_ROOT,
   type GatewayCheckStatus,
   validateGatewayUrl,
 } from "@/lib/gateway-form";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 export default function NewGatewayPage() {
   const { isSignedIn } = useAuth();
@@ -34,7 +33,7 @@ export default function NewGatewayPage() {
   const [gatewayCheckStatus, setGatewayCheckStatus] =
     useState<GatewayCheckStatus>("idle");
   const [gatewayCheckMessage, setGatewayCheckMessage] = useState<string | null>(
-    null,
+    null
   );
 
   const [error, setError] = useState<string | null>(null);

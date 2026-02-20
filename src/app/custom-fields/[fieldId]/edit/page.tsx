@@ -2,32 +2,30 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
-import { ApiError } from "@/api/mutator";
+import { useParams, useRouter } from "next/navigation";
+import { useMemo } from "react";
 import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
+import type { TaskCustomFieldDefinitionUpdate } from "@/api/generated/model";
 import {
-  type listOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetResponse,
   getListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetQueryKey,
+  type listOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGetResponse,
   useListOrgCustomFieldsApiV1OrganizationsMeCustomFieldsGet,
   useUpdateOrgCustomFieldApiV1OrganizationsMeCustomFieldsTaskCustomFieldDefinitionIdPatch,
 } from "@/api/generated/org-custom-fields/org-custom-fields";
-import type { TaskCustomFieldDefinitionUpdate } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { CustomFieldForm } from "@/components/custom-fields/CustomFieldForm";
-import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import {
   buildCustomFieldUpdatePayload,
   deriveFormStateFromCustomField,
   extractApiErrorMessage,
   type NormalizedCustomFieldFormValues,
 } from "@/components/custom-fields/custom-field-form-utils";
+import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 export default function EditCustomFieldPage() {
@@ -69,7 +67,7 @@ export default function EditCustomFieldPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const boards = useMemo(
@@ -77,7 +75,7 @@ export default function EditCustomFieldPage() {
       boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
         : [],
-    [boardsQuery.data],
+    [boardsQuery.data]
   );
 
   const updateMutation =
@@ -90,7 +88,7 @@ export default function EditCustomFieldPage() {
     if (customFieldsQuery.error) {
       return extractApiErrorMessage(
         customFieldsQuery.error,
-        "Failed to load custom field.",
+        "Failed to load custom field."
       );
     }
     if (!customFieldsQuery.isLoading && !field)

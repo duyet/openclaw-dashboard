@@ -63,10 +63,10 @@ export function TagForm({
   const [name, setName] = useState(() => resolvedInitial.name);
   const [slug, setSlug] = useState(() => resolvedInitial.slug);
   const [color, setColor] = useState(() =>
-    normalizeColorInput(resolvedInitial.color),
+    normalizeColorInput(resolvedInitial.color)
   );
   const [description, setDescription] = useState(
-    () => resolvedInitial.description,
+    () => resolvedInitial.description
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

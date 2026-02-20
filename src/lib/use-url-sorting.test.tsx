@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useUrlSorting } from "./use-url-sorting";
 
@@ -26,7 +26,7 @@ describe("useUrlSorting", () => {
         allowedColumnIds: ["name", "status"],
         defaultSorting: [{ id: "name", desc: false }],
         paramPrefix: "agents",
-      }),
+      })
     );
 
     expect(result.current.sorting).toEqual([{ id: "name", desc: false }]);
@@ -36,7 +36,7 @@ describe("useUrlSorting", () => {
     window.history.replaceState(
       {},
       "",
-      "/agents?agents_sort=status&agents_dir=desc",
+      "/agents?agents_sort=status&agents_dir=desc"
     );
 
     const { result } = renderHook(() =>
@@ -44,7 +44,7 @@ describe("useUrlSorting", () => {
         allowedColumnIds: ["name", "status"],
         defaultSorting: [{ id: "name", desc: false }],
         paramPrefix: "agents",
-      }),
+      })
     );
 
     expect(result.current.sorting).toEqual([{ id: "status", desc: true }]);
@@ -58,7 +58,7 @@ describe("useUrlSorting", () => {
         allowedColumnIds: ["name", "status"],
         defaultSorting: [{ id: "name", desc: false }],
         paramPrefix: "agents",
-      }),
+      })
     );
 
     act(() => {
@@ -69,7 +69,7 @@ describe("useUrlSorting", () => {
       "/agents?foo=1&agents_sort=status&agents_dir=desc",
       {
         scroll: false,
-      },
+      }
     );
   });
 
@@ -77,7 +77,7 @@ describe("useUrlSorting", () => {
     window.history.replaceState(
       {},
       "",
-      "/agents?foo=1&agents_sort=status&agents_dir=desc",
+      "/agents?foo=1&agents_sort=status&agents_dir=desc"
     );
 
     const { result } = renderHook(() =>
@@ -85,7 +85,7 @@ describe("useUrlSorting", () => {
         allowedColumnIds: ["name", "status"],
         defaultSorting: [{ id: "name", desc: false }],
         paramPrefix: "agents",
-      }),
+      })
     );
 
     act(() => {
@@ -105,7 +105,7 @@ describe("useUrlSorting", () => {
         allowedColumnIds: ["name", "status"],
         defaultSorting: [{ id: "name", desc: false }],
         paramPrefix: "agents",
-      }),
+      })
     );
 
     expect(result.current.sorting).toEqual([]);

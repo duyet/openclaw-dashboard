@@ -9,19 +9,19 @@ describe("task-detail-query", () => {
 
   it("replaces taskId while preserving other params", () => {
     expect(withTaskIdSearchParam("view=list&taskId=old", "task-2")).toBe(
-      "?view=list&taskId=task-2",
+      "?view=list&taskId=task-2"
     );
   });
 
   it("removes taskId while preserving other params", () => {
     expect(withTaskIdSearchParam("view=list&taskId=old", null)).toBe(
-      "?view=list",
+      "?view=list"
     );
   });
 
   it("builds full url with taskId param updates", () => {
     expect(
-      buildUrlWithTaskId("/boards/board-1", "filter=active", "task-1"),
+      buildUrlWithTaskId("/boards/board-1", "filter=active", "task-1")
     ).toBe("/boards/board-1?filter=active&taskId=task-1");
   });
 });

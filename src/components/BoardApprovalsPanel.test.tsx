@@ -1,7 +1,7 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import type React from "react";
+import { describe, expect, it, vi } from "vitest";
 
 import type { ApprovalRead } from "@/api/generated/model";
 import { BoardApprovalsPanel } from "./BoardApprovalsPanel";
@@ -33,7 +33,7 @@ const renderWithQueryClient = (ui: React.ReactNode) => {
     },
   });
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
   );
 };
 
@@ -77,25 +77,25 @@ describe("BoardApprovalsPanel", () => {
     } as ApprovalRead;
 
     renderWithQueryClient(
-      <BoardApprovalsPanel boardId="board-1" approvals={[approval]} />,
+      <BoardApprovalsPanel boardId="board-1" approvals={[approval]} />
     );
 
     expect(
-      screen.getAllByText("Launch onboarding checklist").length,
+      screen.getAllByText("Launch onboarding checklist").length
     ).toBeGreaterThan(0);
     expect(
-      screen.getByText("Create and validate the v1 onboarding checklist."),
+      screen.getByText("Create and validate the v1 onboarding checklist.")
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Needs explicit sign-off before rollout."),
+      screen.getByText("Needs explicit sign-off before rollout.")
     ).toBeInTheDocument();
     expect(screen.getByText("62% score")).toBeInTheDocument();
     expect(screen.getByText(/related tasks/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Launch onboarding checklist" }),
+      screen.getByRole("link", { name: "Launch onboarding checklist" })
     ).toHaveAttribute("href", "/boards/board-1?taskId=task-1");
     expect(
-      screen.getByRole("link", { name: "Publish onboarding checklist" }),
+      screen.getByRole("link", { name: "Publish onboarding checklist" })
     ).toHaveAttribute("href", "/boards/board-1?taskId=task-2");
     expect(screen.getByText(/rubric scores/i)).toBeInTheDocument();
     expect(screen.getByText("Clarity")).toBeInTheDocument();
@@ -121,14 +121,14 @@ describe("BoardApprovalsPanel", () => {
     } as ApprovalRead;
 
     renderWithQueryClient(
-      <BoardApprovalsPanel boardId="board-1" approvals={[approval]} />,
+      <BoardApprovalsPanel boardId="board-1" approvals={[approval]} />
     );
 
     expect(
-      screen.getByRole("link", { name: "Prepare release notes" }),
+      screen.getByRole("link", { name: "Prepare release notes" })
     ).toHaveAttribute("href", "/boards/board-1?taskId=task-a");
     expect(
-      screen.getByRole("link", { name: "Publish release notes" }),
+      screen.getByRole("link", { name: "Publish release notes" })
     ).toHaveAttribute("href", "/boards/board-1?taskId=task-b");
   });
 });

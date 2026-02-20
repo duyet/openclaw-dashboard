@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boards, agents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and, isNull } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, isNull } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { agents, boards } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/boards/[boardId]
@@ -13,7 +13,7 @@ import { eq, and, isNull } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -28,7 +28,7 @@ export async function GET(
       .limit(1);
 
     if (!result.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
     return Response.json(result[0]);
@@ -43,7 +43,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -51,8 +51,8 @@ export async function PATCH(
     const actor = await requireActorContext(request, env.DB);
     const { boardId } = await params;
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can update boards');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can update boards");
     }
 
     const existing = await db
@@ -62,10 +62,10 @@ export async function PATCH(
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const now = new Date().toISOString();
 
     // Validate gateway_id has a main agent if changing
@@ -80,18 +80,21 @@ export async function PATCH(
         if (!mainAgent.length) {
           throw new ApiError(
             422,
-            'gateway must have a gateway main agent before boards can be created or updated',
+            "gateway must have a gateway main agent before boards can be created or updated"
           );
         }
       }
     }
 
     // Validate goal board constraints
-    if (body.board_type === 'goal') {
+    if (body.board_type === "goal") {
       const objective = body.objective ?? existing[0].objective;
       const successMetrics = body.success_metrics ?? existing[0].successMetrics;
       if (!objective || !successMetrics) {
-        throw new ApiError(422, 'Goal boards require objective and success_metrics');
+        throw new ApiError(
+          422,
+          "Goal boards require objective and success_metrics"
+        );
       }
     }
 
@@ -100,13 +103,15 @@ export async function PATCH(
     if (body.slug !== undefined) updates.slug = body.slug;
     if (body.description !== undefined) updates.description = body.description;
     if (body.gateway_id !== undefined) updates.gatewayId = body.gateway_id;
-    if (body.board_group_id !== undefined) updates.boardGroupId = body.board_group_id;
+    if (body.board_group_id !== undefined)
+      updates.boardGroupId = body.board_group_id;
     if (body.board_type !== undefined) updates.boardType = body.board_type;
     if (body.objective !== undefined) updates.objective = body.objective;
     if (body.success_metrics !== undefined)
       updates.successMetrics = JSON.stringify(body.success_metrics);
     if (body.target_date !== undefined) updates.targetDate = body.target_date;
-    if (body.goal_confirmed !== undefined) updates.goalConfirmed = body.goal_confirmed;
+    if (body.goal_confirmed !== undefined)
+      updates.goalConfirmed = body.goal_confirmed;
     if (body.goal_source !== undefined) updates.goalSource = body.goal_source;
     if (body.require_approval_for_done !== undefined)
       updates.requireApprovalForDone = body.require_approval_for_done;
@@ -139,7 +144,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -147,8 +152,8 @@ export async function DELETE(
     const actor = await requireActorContext(request, env.DB);
     const { boardId } = await params;
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can delete boards');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can delete boards");
     }
 
     const existing = await db
@@ -158,7 +163,7 @@ export async function DELETE(
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
     // Delete the board (cascades handled by DB or explicit cleanup)

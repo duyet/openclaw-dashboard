@@ -37,7 +37,7 @@ const resolveClerkToken = async (): Promise<string | null> => {
 
 export const customFetch = async <T>(
   url: string,
-  options: RequestInit,
+  options: RequestInit
 ): Promise<T> => {
   const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
   // Empty baseUrl means use relative URLs (same origin via Next.js route handlers)

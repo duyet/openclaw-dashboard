@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Building2, Plus } from "lucide-react";
-
-import { useAuth } from "@/auth/clerk";
-import { ApiError } from "@/api/mutator";
+import { useEffect, useRef, useState } from "react";
 import {
   type listMyOrganizationsApiV1OrganizationsMeListGetResponse,
   useCreateOrganizationApiV1OrganizationsPost,
   useListMyOrganizationsApiV1OrganizationsMeListGet,
   useSetActiveOrgApiV1OrganizationsMeActivePatch,
 } from "@/api/generated/organizations/organizations";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

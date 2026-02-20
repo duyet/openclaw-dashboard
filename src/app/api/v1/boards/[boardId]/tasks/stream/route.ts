@@ -1,12 +1,12 @@
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { tasks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError } from '@/lib/errors';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { tasks } from "@/lib/db/schema";
+import { handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/boards/[boardId]/tasks/stream
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -23,7 +23,7 @@ export async function GET(
     const { boardId } = await params;
 
     const url = new URL(request.url);
-    const since = url.searchParams.get('since') || new Date().toISOString();
+    const since = url.searchParams.get("since") || new Date().toISOString();
 
     const encoder = new TextEncoder();
 
@@ -40,8 +40,8 @@ export async function GET(
               .where(
                 and(
                   eq(tasks.boardId, boardId),
-                  sql`${tasks.updatedAt} >= ${lastSeen}`,
-                ),
+                  sql`${tasks.updatedAt} >= ${lastSeen}`
+                )
               );
 
             for (const task of taskList) {
@@ -51,7 +51,9 @@ export async function GET(
               seen.add(key);
               lastSeen = task.updatedAt > lastSeen ? task.updatedAt : lastSeen;
               controller.enqueue(
-                encoder.encode(`event: update\ndata: ${JSON.stringify(task)}\n\n`),
+                encoder.encode(
+                  `event: update\ndata: ${JSON.stringify(task)}\n\n`
+                )
               );
             }
 
@@ -67,10 +69,10 @@ export async function GET(
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-        Connection: 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {

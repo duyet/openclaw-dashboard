@@ -2,29 +2,27 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
-import { useCreateBoardApiV1BoardsPost } from "@/api/generated/boards/boards";
+import { useMemo, useState } from "react";
 import {
   type listBoardGroupsApiV1BoardGroupsGetResponse,
   useListBoardGroupsApiV1BoardGroupsGet,
 } from "@/api/generated/board-groups/board-groups";
+import { useCreateBoardApiV1BoardsPost } from "@/api/generated/boards/boards";
 import {
   type listGatewaysApiV1GatewaysGetResponse,
   useListGatewaysApiV1GatewaysGet,
 } from "@/api/generated/gateways/gateways";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import type { BoardGroupRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchableSelect from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 const slugify = (value: string) =>
   value
@@ -98,13 +96,13 @@ export default function NewBoardPage() {
     error ?? gatewaysQuery.error?.message ?? groupsQuery.error?.message ?? null;
 
   const isFormReady = Boolean(
-    name.trim() && description.trim() && displayGatewayId,
+    name.trim() && description.trim() && displayGatewayId
   );
 
   const gatewayOptions = useMemo(
     () =>
       gateways.map((gateway) => ({ value: gateway.id, label: gateway.name })),
-    [gateways],
+    [gateways]
   );
 
   const groupOptions = useMemo(
@@ -112,7 +110,7 @@ export default function NewBoardPage() {
       { value: "none", label: "No group" },
       ...groups.map((group) => ({ value: group.id, label: group.name })),
     ],
-    [groups],
+    [groups]
   );
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

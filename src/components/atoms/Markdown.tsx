@@ -3,9 +3,9 @@
 import {
   Children,
   cloneElement,
+  type HTMLAttributes,
   isValidElement,
   memo,
-  type HTMLAttributes,
   type ReactElement,
   type ReactNode,
 } from "react";
@@ -49,7 +49,7 @@ const renderMentionsInText = (text: string, keyPrefix: string): ReactNode => {
         className="font-semibold text-cyan-700"
       >
         {mention}
-      </span>,
+      </span>
     );
 
     lastIndex = mentionStart + mention.length;
@@ -69,7 +69,7 @@ const renderMentionsInText = (text: string, keyPrefix: string): ReactNode => {
 
 const renderMentions = (
   content: ReactNode,
-  keyPrefix = "mention",
+  keyPrefix = "mention"
 ): ReactNode => {
   if (typeof content === "string") {
     return renderMentionsInText(content, keyPrefix);
@@ -84,7 +84,7 @@ const renderMentions = (
   }
   if (Array.isArray(content)) {
     return Children.map(content, (child, index) =>
-      renderMentions(child, `${keyPrefix}-${index}`),
+      renderMentions(child, `${keyPrefix}-${index}`)
     );
   }
   if (isValidElement(content)) {
@@ -98,7 +98,7 @@ const renderMentions = (
     return cloneElement(
       content as ReactElement<{ children?: ReactNode }>,
       undefined,
-      renderMentions(childProps.children, keyPrefix),
+      renderMentions(childProps.children, keyPrefix)
     );
   }
   return content;
@@ -109,7 +109,7 @@ const MARKDOWN_CODE_COMPONENTS: Components = {
     <pre
       className={cn(
         "my-3 overflow-x-auto rounded-lg bg-slate-950 p-3 text-xs leading-relaxed text-slate-100",
-        className,
+        className
       )}
       {...props}
     />
@@ -135,7 +135,7 @@ const MARKDOWN_CODE_COMPONENTS: Components = {
         <code
           className={cn(
             "rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.85em] text-slate-900",
-            className,
+            className
           )}
           {...props}
         >
@@ -172,7 +172,7 @@ const MARKDOWN_TABLE_COMPONENTS: Components = {
     <th
       className={cn(
         "border border-slate-200 px-3 py-2 text-left text-xs font-semibold",
-        className,
+        className
       )}
       {...props}
     >
@@ -196,7 +196,7 @@ const MARKDOWN_COMPONENTS_BASIC: Components = {
     <a
       className={cn(
         "font-medium text-sky-700 underline decoration-sky-400 underline-offset-2 transition-colors hover:text-sky-800 hover:decoration-sky-600",
-        className,
+        className
       )}
       target="_blank"
       rel="noopener noreferrer"

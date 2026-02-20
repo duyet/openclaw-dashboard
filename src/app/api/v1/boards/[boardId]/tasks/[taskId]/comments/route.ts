@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { activityEvents, tasks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { activityEvents, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/boards/[boardId]/tasks/[taskId]/comments
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -31,8 +31,8 @@ export async function GET(
       .where(
         and(
           eq(activityEvents.taskId, taskId),
-          eq(activityEvents.eventType, 'task.comment'),
-        ),
+          eq(activityEvents.eventType, "task.comment")
+        )
       )
       .orderBy(sql`${activityEvents.createdAt} asc`)
       .limit(limit)
@@ -44,8 +44,8 @@ export async function GET(
       .where(
         and(
           eq(activityEvents.taskId, taskId),
-          eq(activityEvents.eventType, 'task.comment'),
-        ),
+          eq(activityEvents.eventType, "task.comment")
+        )
       );
 
     const total = countResult[0]?.count ?? 0;
@@ -62,7 +62,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -78,13 +78,13 @@ export async function POST(
       .limit(1);
 
     if (!taskResult.length) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const message = ((body.message as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const message = ((body.message as string) || "").trim();
     if (!message) {
-      throw new ApiError(422, 'Comment is required.');
+      throw new ApiError(422, "Comment is required.");
     }
 
     const now = new Date().toISOString();
@@ -92,10 +92,10 @@ export async function POST(
 
     await db.insert(activityEvents).values({
       id: eventId,
-      eventType: 'task.comment',
+      eventType: "task.comment",
       message,
       taskId,
-      agentId: actor.type === 'agent' ? actor.agentId || null : null,
+      agentId: actor.type === "agent" ? actor.agentId || null : null,
       createdAt: now,
     });
 

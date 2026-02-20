@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Lock } from "lucide-react";
+import { useState } from "react";
 
 import { setLocalAuthToken } from "@/auth/localAuth";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,7 @@ export function LocalAuthLogin({ onAuthenticated }: LocalAuthLoginProps) {
     }
     if (cleaned.length < LOCAL_AUTH_TOKEN_MIN_LENGTH) {
       setError(
-        `Bearer token must be at least ${LOCAL_AUTH_TOKEN_MIN_LENGTH} characters.`,
+        `Bearer token must be at least ${LOCAL_AUTH_TOKEN_MIN_LENGTH} characters.`
       );
       return;
     }

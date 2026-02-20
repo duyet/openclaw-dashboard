@@ -1,18 +1,18 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { gateways } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { gateways } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 import {
-  getSessions,
-  getSession,
   createSession,
   deleteSession,
   type GatewayConfig,
-} from '@/lib/services/gateway-rpc';
-import { eq } from 'drizzle-orm';
+  getSession,
+  getSessions,
+} from "@/lib/services/gateway-rpc";
 
 /**
  * Resolve a GatewayConfig from a gateway row.
@@ -23,10 +23,10 @@ function toGatewayConfig(gateway: {
 }): GatewayConfig {
   // Convert HTTP URL to WebSocket URL
   let wsUrl = gateway.url;
-  if (wsUrl.startsWith('https://')) {
-    wsUrl = wsUrl.replace('https://', 'wss://');
-  } else if (wsUrl.startsWith('http://')) {
-    wsUrl = wsUrl.replace('http://', 'ws://');
+  if (wsUrl.startsWith("https://")) {
+    wsUrl = wsUrl.replace("https://", "wss://");
+  } else if (wsUrl.startsWith("http://")) {
+    wsUrl = wsUrl.replace("http://", "ws://");
   }
   return { url: wsUrl, token: gateway.token };
 }
@@ -37,7 +37,7 @@ function toGatewayConfig(gateway: {
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ gatewayId: string }> },
+  { params }: { params: Promise<{ gatewayId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -52,13 +52,13 @@ export async function GET(
       .limit(1);
 
     if (!gatewayResult.length) {
-      throw new ApiError(404, 'Gateway not found');
+      throw new ApiError(404, "Gateway not found");
     }
 
     const config = toGatewayConfig(gatewayResult[0]);
 
     const url = new URL(request.url);
-    const sessionKey = url.searchParams.get('session_key');
+    const sessionKey = url.searchParams.get("session_key");
 
     if (sessionKey) {
       const result = await getSession(config, sessionKey);
@@ -78,7 +78,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ gatewayId: string }> },
+  { params }: { params: Promise<{ gatewayId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -93,19 +93,20 @@ export async function POST(
       .limit(1);
 
     if (!gatewayResult.length) {
-      throw new ApiError(404, 'Gateway not found');
+      throw new ApiError(404, "Gateway not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     if (!body.session_key || !body.agent_name) {
-      throw new ApiError(422, 'session_key and agent_name are required');
+      throw new ApiError(422, "session_key and agent_name are required");
     }
 
     const config = toGatewayConfig(gatewayResult[0]);
     const result = await createSession(config, {
       session_key: body.session_key as string,
       agent_name: body.agent_name as string,
-      workspace_root: (body.workspace_root as string) || gatewayResult[0].workspaceRoot,
+      workspace_root:
+        (body.workspace_root as string) || gatewayResult[0].workspaceRoot,
       identity_template: body.identity_template as string | undefined,
       soul_template: body.soul_template as string | undefined,
     });
@@ -122,7 +123,7 @@ export async function POST(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ gatewayId: string }> },
+  { params }: { params: Promise<{ gatewayId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -137,13 +138,13 @@ export async function DELETE(
       .limit(1);
 
     if (!gatewayResult.length) {
-      throw new ApiError(404, 'Gateway not found');
+      throw new ApiError(404, "Gateway not found");
     }
 
     const url = new URL(request.url);
-    const sessionKey = url.searchParams.get('session_key');
+    const sessionKey = url.searchParams.get("session_key");
     if (!sessionKey) {
-      throw new ApiError(422, 'session_key query parameter is required');
+      throw new ApiError(422, "session_key query parameter is required");
     }
 
     const config = toGatewayConfig(gatewayResult[0]);

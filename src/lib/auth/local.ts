@@ -4,14 +4,15 @@
  * Uses timing-safe comparison via crypto.subtle to verify the bearer
  * token matches the LOCAL_AUTH_TOKEN environment variable.
  */
-import type { ActorContext } from './index';
-import type { Actor } from './types';
-import { getDb } from '../db';
-import type { Database } from '../db';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
 
-const LOCAL_AUTH_USER_CLERK_ID = 'local-auth-user';
+import { eq } from "drizzle-orm";
+import type { Database } from "../db";
+import { getDb } from "../db";
+import { users } from "../db/schema";
+import type { ActorContext } from "./index";
+import type { Actor } from "./types";
+
+const LOCAL_AUTH_USER_CLERK_ID = "local-auth-user";
 
 /**
  * Timing-safe string comparison using crypto.subtle.
@@ -25,16 +26,16 @@ async function timingSafeEqual(a: string, b: string): Promise<boolean> {
 
   // Use HMAC for timing-safe comparison
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     new Uint8Array(32), // fixed key - we only care about timing safety
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign'],
+    ["sign"]
   );
 
   const [sigA, sigB] = await Promise.all([
-    crypto.subtle.sign('HMAC', key, aBytes),
-    crypto.subtle.sign('HMAC', key, bBytes),
+    crypto.subtle.sign("HMAC", key, aBytes),
+    crypto.subtle.sign("HMAC", key, bBytes),
   ]);
 
   const arrA = new Uint8Array(sigA);
@@ -55,18 +56,18 @@ async function timingSafeEqual(a: string, b: string): Promise<boolean> {
  */
 export async function resolveLocalAuth(
   request: Request,
-  d1: D1Database,
+  d1: D1Database
 ): Promise<ActorContext | null> {
-  const authorization = request.headers.get('Authorization');
+  const authorization = request.headers.get("Authorization");
   if (!authorization) return null;
 
   const trimmed = authorization.trim();
-  if (!trimmed.toLowerCase().startsWith('bearer ')) return null;
+  if (!trimmed.toLowerCase().startsWith("bearer ")) return null;
   const token = trimmed.slice(7).trim();
   if (!token) return null;
 
   const expectedToken =
-    typeof process !== 'undefined' ? process.env?.LOCAL_AUTH_TOKEN : undefined;
+    typeof process !== "undefined" ? process.env?.LOCAL_AUTH_TOKEN : undefined;
   if (!expectedToken) return null;
 
   const isValid = await timingSafeEqual(token, expectedToken.trim());
@@ -82,7 +83,7 @@ export async function resolveLocalAuth(
 
   if (existingUser.length > 0) {
     return {
-      type: 'user',
+      type: "user",
       userId: existingUser[0].id,
       orgId: existingUser[0].activeOrganizationId ?? undefined,
     };
@@ -90,7 +91,7 @@ export async function resolveLocalAuth(
 
   // Local user not yet created - bootstrap endpoint will handle this
   return {
-    type: 'user',
+    type: "user",
     userId: undefined,
   };
 }
@@ -101,10 +102,10 @@ export async function resolveLocalAuth(
  */
 export async function verifyLocalToken(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.slice(7).trim();
   if (!token) return null;
 
@@ -113,15 +114,15 @@ export async function verifyLocalToken(
 
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode('compare-key'),
-    { name: 'HMAC', hash: 'SHA-256' },
+    "raw",
+    encoder.encode("compare-key"),
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign'],
+    ["sign"]
   );
   const [sigA, sigB] = await Promise.all([
-    crypto.subtle.sign('HMAC', key, encoder.encode(token)),
-    crypto.subtle.sign('HMAC', key, encoder.encode(localToken)),
+    crypto.subtle.sign("HMAC", key, encoder.encode(token)),
+    crypto.subtle.sign("HMAC", key, encoder.encode(localToken)),
   ]);
   const a32 = new Uint8Array(sigA);
   const b32 = new Uint8Array(sigB);
@@ -133,14 +134,14 @@ export async function verifyLocalToken(
   const user = await db
     .select()
     .from(users)
-    .where(eq(users.clerkUserId, 'local'))
+    .where(eq(users.clerkUserId, "local"))
     .get();
   if (!user) return null;
 
   return {
-    type: 'user',
+    type: "user",
     userId: user.id,
-    clerkId: 'local',
+    clerkId: "local",
     orgId: user.activeOrganizationId ?? undefined,
   } satisfies Actor;
 }

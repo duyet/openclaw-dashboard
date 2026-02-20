@@ -1,12 +1,7 @@
 "use client";
 
+import type { OnChangeFn, SortingState, Updater } from "@tanstack/react-table";
 import { useState } from "react";
-
-import {
-  type OnChangeFn,
-  type SortingState,
-  type Updater,
-} from "@tanstack/react-table";
 
 export const SKILLS_TABLE_EMPTY_ICON = (
   <svg
@@ -36,7 +31,7 @@ export const SKILLS_TABLE_EMPTY_ICON = (
 export const useTableSortingState = (
   sorting: SortingState | undefined,
   onSortingChange: OnChangeFn<SortingState> | undefined,
-  defaultSorting: SortingState,
+  defaultSorting: SortingState
 ): {
   resolvedSorting: SortingState;
   handleSortingChange: OnChangeFn<SortingState>;

@@ -33,7 +33,7 @@ const normalizeMentionHandle = (raw: string): string | null => {
 
 const findMentionTarget = (
   text: string,
-  caret: number,
+  caret: number
 ): MentionTarget | null => {
   if (caret < 0 || caret > text.length) return null;
   const prefix = text.slice(0, caret);
@@ -53,7 +53,7 @@ function BoardChatComposerImpl({
 }: BoardChatComposerProps) {
   const [value, setValue] = useState("");
   const [mentionTarget, setMentionTarget] = useState<MentionTarget | null>(
-    null,
+    null
   );
   const [activeMentionIndex, setActiveMentionIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -75,7 +75,7 @@ function BoardChatComposerImpl({
     if (!mentionTarget) return [];
     const query = mentionTarget.query;
     const startsWithMatches = mentionOptions.filter((option) =>
-      option.startsWith(query),
+      option.startsWith(query)
     );
     return startsWithMatches.slice(0, MENTION_MAX_OPTIONS);
   }, [mentionOptions, mentionTarget]);
@@ -105,7 +105,7 @@ function BoardChatComposerImpl({
       const nextTarget = findMentionTarget(nextValue, caret);
       setMentionTarget(nextTarget);
     },
-    [],
+    []
   );
 
   const applyMentionSelection = useCallback(
@@ -126,7 +126,7 @@ function BoardChatComposerImpl({
         textarea.setSelectionRange(nextCaret, nextCaret);
       });
     },
-    [mentionTarget, value],
+    [mentionTarget, value]
   );
 
   const send = useCallback(async () => {
@@ -153,19 +153,19 @@ function BoardChatComposerImpl({
             setValue(nextValue);
             refreshMentionTarget(
               nextValue,
-              event.target.selectionStart ?? nextValue.length,
+              event.target.selectionStart ?? nextValue.length
             );
           }}
           onClick={(event) => {
             refreshMentionTarget(
               value,
-              event.currentTarget.selectionStart ?? value.length,
+              event.currentTarget.selectionStart ?? value.length
             );
           }}
           onKeyUp={(event) => {
             refreshMentionTarget(
               value,
-              event.currentTarget.selectionStart ?? value.length,
+              event.currentTarget.selectionStart ?? value.length
             );
           }}
           onBlur={() => {
@@ -180,7 +180,7 @@ function BoardChatComposerImpl({
           onFocus={(event) => {
             refreshMentionTarget(
               value,
-              event.currentTarget.selectionStart ?? value.length,
+              event.currentTarget.selectionStart ?? value.length
             );
           }}
           onKeyDown={(event) => {
@@ -188,7 +188,7 @@ function BoardChatComposerImpl({
               if (event.key === "ArrowDown") {
                 event.preventDefault();
                 setActiveMentionIndex(
-                  (prev) => (prev + 1) % filteredMentionOptions.length,
+                  (prev) => (prev + 1) % filteredMentionOptions.length
                 );
                 return;
               }
@@ -197,7 +197,7 @@ function BoardChatComposerImpl({
                 setActiveMentionIndex(
                   (prev) =>
                     (prev - 1 + filteredMentionOptions.length) %
-                    filteredMentionOptions.length,
+                    filteredMentionOptions.length
                 );
                 return;
               }

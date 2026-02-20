@@ -2,31 +2,32 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, UserPlus, Users } from "lucide-react";
-
-import { ApiError, customFetch } from "@/api/mutator";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
+import type {
+  BoardRead,
+  OrganizationBoardAccessSpec,
+  OrganizationInviteRead,
+} from "@/api/generated/model";
 import {
-  type getMyOrgApiV1OrganizationsMeGetResponse,
-  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
-  type getOrgMemberApiV1OrganizationsMeMembersMemberIdGetResponse,
-  getListMyOrganizationsApiV1OrganizationsMeListGetQueryKey,
-  type listOrgInvitesApiV1OrganizationsMeInvitesGetResponse,
-  type listOrgMembersApiV1OrganizationsMeMembersGetResponse,
   getGetOrgMemberApiV1OrganizationsMeMembersMemberIdGetQueryKey,
+  getListMyOrganizationsApiV1OrganizationsMeListGetQueryKey,
   getListOrgInvitesApiV1OrganizationsMeInvitesGetQueryKey,
   getListOrgMembersApiV1OrganizationsMeMembersGetQueryKey,
+  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
+  type getMyOrgApiV1OrganizationsMeGetResponse,
+  type getOrgMemberApiV1OrganizationsMeMembersMemberIdGetResponse,
+  type listOrgInvitesApiV1OrganizationsMeInvitesGetResponse,
+  type listOrgMembersApiV1OrganizationsMeMembersGetResponse,
   useCreateOrgInviteApiV1OrganizationsMeInvitesPost,
-  useGetMyOrgApiV1OrganizationsMeGet,
   useGetMyMembershipApiV1OrganizationsMeMemberGet,
+  useGetMyOrgApiV1OrganizationsMeGet,
   useGetOrgMemberApiV1OrganizationsMeMembersMemberIdGet,
   useListOrgInvitesApiV1OrganizationsMeInvitesGet,
   useListOrgMembersApiV1OrganizationsMeMembersGet,
@@ -34,15 +35,13 @@ import {
   useUpdateMemberAccessApiV1OrganizationsMeMembersMemberIdAccessPut,
   useUpdateOrgMemberApiV1OrganizationsMeMembersMemberIdPatch,
 } from "@/api/generated/organizations/organizations";
-import type {
-  BoardRead,
-  OrganizationBoardAccessSpec,
-  OrganizationInviteRead,
-} from "@/api/generated/model";
+import { type ApiError, customFetch } from "@/api/mutator";
+import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
+import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { BoardAccessTable } from "@/components/organization/BoardAccessTable";
 import { MembersInvitesTable } from "@/components/organization/MembersInvitesTable";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
+import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
@@ -62,7 +61,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DashboardShell } from "@/components/templates/DashboardShell";
 import { cn } from "@/lib/utils";
 
 type AccessScope = "all" | "custom";
@@ -70,7 +68,7 @@ type AccessScope = "all" | "custom";
 type BoardAccessState = Record<string, { read: boolean; write: boolean }>;
 
 const buildAccessList = (
-  access: BoardAccessState,
+  access: BoardAccessState
 ): OrganizationBoardAccessSpec[] =>
   Object.entries(access)
     .filter(([, entry]) => entry.read || entry.write)
@@ -127,7 +125,7 @@ function BoardAccessEditor({
 
   const updateBoardAccess = (
     boardId: string,
-    next: { read: boolean; write: boolean },
+    next: { read: boolean; write: boolean }
   ) => {
     onAccessChange({
       ...access,
@@ -167,7 +165,7 @@ function BoardAccessEditor({
               "rounded-md px-3 py-1.5 text-xs font-semibold transition",
               scope === "all"
                 ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700",
+                : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => onScopeChange("all")}
             disabled={disabled}
@@ -180,7 +178,7 @@ function BoardAccessEditor({
               "rounded-md px-3 py-1.5 text-xs font-semibold transition",
               scope === "custom"
                 ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700",
+                : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => onScopeChange("custom")}
             disabled={disabled}
@@ -286,7 +284,7 @@ export default function OrganizationPage() {
         enabled: Boolean(isSignedIn),
         refetchOnMount: "always",
       },
-    },
+    }
   );
 
   const boardsQuery = useListBoardsApiV1BoardsGet<
@@ -299,7 +297,7 @@ export default function OrganizationPage() {
         enabled: Boolean(isSignedIn),
         refetchOnMount: "always",
       },
-    },
+    }
   );
 
   const membershipQuery = useGetMyMembershipApiV1OrganizationsMeMemberGet<
@@ -330,7 +328,7 @@ export default function OrganizationPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const members = useMemo(() => {
@@ -413,7 +411,7 @@ export default function OrganizationPage() {
               queryKey: getListOrgInvitesApiV1OrganizationsMeInvitesGetQueryKey(
                 {
                   limit: 200,
-                },
+                }
               ),
             });
             setInviteDialogOpen(false);
@@ -447,20 +445,20 @@ export default function OrganizationPage() {
               queryKey: getListOrgMembersApiV1OrganizationsMeMembersGetQueryKey(
                 {
                   limit: 200,
-                },
+                }
               ),
             });
             if (activeMemberId) {
               queryClient.invalidateQueries({
                 queryKey:
                   getGetOrgMemberApiV1OrganizationsMeMembersMemberIdGetQueryKey(
-                    activeMemberId,
+                    activeMemberId
                   ),
               });
             }
           },
         },
-      },
+      }
     );
 
   const updateMemberRoleMutation =
@@ -483,7 +481,7 @@ export default function OrganizationPage() {
     mutationFn: async () =>
       customFetch<{ data: unknown; status: number; headers: Headers }>(
         "/api/v1/organizations/me",
-        { method: "DELETE" },
+        { method: "DELETE" }
       ),
     onSuccess: async () => {
       setDeleteOrgOpen(false);
@@ -503,7 +501,7 @@ export default function OrganizationPage() {
     mutationFn: async ({ memberId }) =>
       customFetch<{ data: unknown; status: number; headers: Headers }>(
         `/api/v1/organizations/me/members/${memberId}`,
-        { method: "DELETE" },
+        { method: "DELETE" }
       ),
     onSuccess: async () => {
       setRemoveMemberOpen(false);
@@ -670,7 +668,7 @@ export default function OrganizationPage() {
       setAccessDialogOpen(false);
     } catch (err) {
       setAccessError(
-        err instanceof Error ? err.message : "Unable to update member access.",
+        err instanceof Error ? err.message : "Unable to update member access."
       );
     }
   };

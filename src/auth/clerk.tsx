@@ -3,8 +3,6 @@
 // NOTE: We intentionally keep this file very small and dependency-free.
 // It provides CI/secretless-build safe fallbacks for Clerk hooks/components.
 
-import type { ReactNode, ComponentProps } from "react";
-
 import {
   ClerkProvider,
   SignedIn as ClerkSignedIn,
@@ -14,6 +12,7 @@ import {
   useAuth as clerkUseAuth,
   useUser as clerkUseUser,
 } from "@clerk/nextjs";
+import type { ComponentProps, ReactNode } from "react";
 
 import { isLikelyValidClerkPublishableKey } from "@/auth/clerkKey";
 import { getLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
@@ -27,7 +26,7 @@ export function isClerkEnabled(): boolean {
   // <SignedOut/> may render without a <ClerkProvider/> and crash during prerender.
   if (isLocalAuthMode()) return false;
   return isLikelyValidClerkPublishableKey(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   );
 }
 
@@ -54,7 +53,7 @@ export function SignInButton(props: ComponentProps<typeof ClerkSignInButton>) {
 }
 
 export function SignOutButton(
-  props: ComponentProps<typeof ClerkSignOutButton>,
+  props: ComponentProps<typeof ClerkSignOutButton>
 ) {
   if (!isClerkEnabled()) return null;
   return <ClerkSignOutButton {...props} />;

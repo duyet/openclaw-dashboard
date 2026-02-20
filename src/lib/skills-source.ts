@@ -20,7 +20,7 @@ export const normalizeRepoSourceUrl = (sourceUrl: string): string => {
  * Returns `null` for invalid/unsupported URLs.
  */
 export const repoBaseFromSkillSourceUrl = (
-  skillSourceUrl: string,
+  skillSourceUrl: string
 ): string | null => {
   try {
     const parsed = new URL(skillSourceUrl);

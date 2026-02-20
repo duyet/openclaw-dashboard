@@ -1,0 +1,95 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/dist",
+      "!**/build",
+      "!**/coverage",
+      "!**/public",
+      "!**/.wrangler",
+      "!**/.vercel",
+      "!**/src/**/__generated__",
+      "!**/src/**/generated"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80,
+    "formatWithErrors": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noShadowRestrictedNames": "off",
+        "noImplicitAnyLet": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useButtonType": "off",
+        "useKeyWithClickEvents": "off",
+        "useAltText": "off",
+        "useSemanticElements": "off",
+        "noStaticElementInteractions": "off",
+        "useAriaPropsSupportedByRole": "off"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noUselessUndefinedInitialization": "off"
+      },
+      "style": {
+        "noUnusedTemplateLiteral": "off",
+        "noNonNullAssertion": "off",
+        "noHeadElement": "off"
+      },
+      "performance": {
+        "noImgElement": "off",
+        "noDynamicNamespaceImportAccess": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off",
+        "useHookAtTopLevel": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "always",
+      "quoteStyle": "double",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always",
+      "bracketSpacing": true
+    }
+  },
+  "json": {
+    "parser": {
+      "allowTrailingCommas": true
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
+    },
+    "linter": {
+      "enabled": false
+    }
+  }
+}

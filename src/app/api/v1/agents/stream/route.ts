@@ -1,12 +1,12 @@
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { agents } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError } from '@/lib/errors';
-import { sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { agents } from "@/lib/db/schema";
+import { handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/agents/stream
@@ -19,8 +19,8 @@ export async function GET(request: Request) {
     await requireActorContext(request, env.DB);
 
     const url = new URL(request.url);
-    const boardId = url.searchParams.get('board_id');
-    const since = url.searchParams.get('since') || new Date().toISOString();
+    const boardId = url.searchParams.get("board_id");
+    const since = url.searchParams.get("since") || new Date().toISOString();
 
     const encoder = new TextEncoder();
 
@@ -45,9 +45,12 @@ export async function GET(request: Request) {
               if (seen.has(key)) continue;
               if (seen.size > 2000) seen.clear();
               seen.add(key);
-              lastSeen = agent.updatedAt > lastSeen ? agent.updatedAt : lastSeen;
+              lastSeen =
+                agent.updatedAt > lastSeen ? agent.updatedAt : lastSeen;
               controller.enqueue(
-                encoder.encode(`event: update\ndata: ${JSON.stringify(agent)}\n\n`),
+                encoder.encode(
+                  `event: update\ndata: ${JSON.stringify(agent)}\n\n`
+                )
               );
             }
 
@@ -63,10 +66,10 @@ export async function GET(request: Request) {
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-        Connection: 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {

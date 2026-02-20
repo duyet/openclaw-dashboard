@@ -1,5 +1,5 @@
-import { type FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
+import { type FormEvent, useMemo, useState } from "react";
 
 import type { BoardRead } from "@/api/generated/model";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -23,8 +23,8 @@ import {
 import {
   extractApiErrorMessage,
   filterBoardsBySearch,
-  normalizeCustomFieldFormInput,
   type NormalizedCustomFieldFormValues,
+  normalizeCustomFieldFormInput,
 } from "./custom-field-form-utils";
 
 type CustomFieldFormProps = {
@@ -60,13 +60,13 @@ export function CustomFieldForm({
     useState<CustomFieldFormState>(initialFormState);
   const [boardSearch, setBoardSearch] = useState("");
   const [selectedBoardIds, setSelectedBoardIds] = useState<Set<string>>(
-    () => new Set(initialBoardIds),
+    () => new Set(initialBoardIds)
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const filteredBoards = useMemo(
     () => filterBoardsBySearch(boards, boardSearch),
-    [boardSearch, boards],
+    [boardSearch, boards]
   );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

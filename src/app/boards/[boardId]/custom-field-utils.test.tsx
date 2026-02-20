@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 
 import type { TaskCustomFieldDefinitionRead } from "@/api/generated/model";
 import {
   boardCustomFieldValues,
   canonicalizeCustomFieldValues,
-  customFieldPayload,
   customFieldPatchPayload,
+  customFieldPayload,
   firstMissingRequiredCustomField,
   formatCustomFieldDetailValue,
   isCustomFieldVisible,
@@ -15,7 +15,7 @@ import {
 } from "./custom-field-utils";
 
 const buildDefinition = (
-  overrides: Partial<TaskCustomFieldDefinitionRead> = {},
+  overrides: Partial<TaskCustomFieldDefinitionRead> = {}
 ): TaskCustomFieldDefinitionRead => ({
   id: "field-1",
   organization_id: "org-1",
@@ -70,7 +70,7 @@ describe("custom-field-utils", () => {
 
     expect(nextPayload).toEqual({ priority: "high", estimate: 3 });
     expect(
-      customFieldPatchPayload(definitions, currentValues, nextPayload),
+      customFieldPatchPayload(definitions, currentValues, nextPayload)
     ).toEqual({
       estimate: 3,
     });
@@ -92,7 +92,7 @@ describe("custom-field-utils", () => {
     ];
 
     expect(
-      firstMissingRequiredCustomField(definitions, { required_a: "value" }),
+      firstMissingRequiredCustomField(definitions, { required_a: "value" })
     ).toBe("Required B");
   });
 
@@ -100,20 +100,20 @@ describe("custom-field-utils", () => {
     expect(
       parseCustomFieldInputValue(
         buildDefinition({ field_type: "integer" }),
-        "42",
-      ),
+        "42"
+      )
     ).toBe(42);
     expect(
       parseCustomFieldInputValue(
         buildDefinition({ field_type: "boolean" }),
-        "false",
-      ),
+        "false"
+      )
     ).toBe(false);
     expect(
       parseCustomFieldInputValue(
         buildDefinition({ field_type: "json" }),
-        '{"a":1}',
-      ),
+        '{"a":1}'
+      )
     ).toEqual({ a: 1 });
   });
 
@@ -121,14 +121,14 @@ describe("custom-field-utils", () => {
     expect(
       isCustomFieldVisible(
         buildDefinition({ ui_visibility: "hidden" }),
-        "value",
-      ),
+        "value"
+      )
     ).toBe(false);
     expect(
-      isCustomFieldVisible(buildDefinition({ ui_visibility: "if_set" }), ""),
+      isCustomFieldVisible(buildDefinition({ ui_visibility: "if_set" }), "")
     ).toBe(false);
     expect(canonicalizeCustomFieldValues({ b: 2, a: { z: 1, y: 2 } })).toBe(
-      canonicalizeCustomFieldValues({ a: { y: 2, z: 1 }, b: 2 }),
+      canonicalizeCustomFieldValues({ a: { y: 2, z: 1 }, b: 2 })
     );
   });
 
@@ -139,12 +139,12 @@ describe("custom-field-utils", () => {
     });
     const node = formatCustomFieldDetailValue(
       definition,
-      "https://example.com",
+      "https://example.com"
     );
     render(<>{node}</>);
 
     expect(
-      screen.getByRole("link", { name: /https:\/\/example.com/i }),
+      screen.getByRole("link", { name: /https:\/\/example.com/i })
     ).toHaveAttribute("href", "https://example.com/");
   });
 });

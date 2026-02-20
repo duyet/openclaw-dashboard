@@ -1,12 +1,12 @@
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardMemory } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError } from '@/lib/errors';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boardMemory } from "@/lib/db/schema";
+import { handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/boards/[boardId]/memory/stream
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -23,8 +23,8 @@ export async function GET(
     const { boardId } = await params;
 
     const url = new URL(request.url);
-    const since = url.searchParams.get('since') || new Date().toISOString();
-    const isChat = url.searchParams.get('is_chat');
+    const since = url.searchParams.get("since") || new Date().toISOString();
+    const isChat = url.searchParams.get("is_chat");
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
@@ -40,13 +40,13 @@ export async function GET(
               .where(
                 and(
                   eq(boardMemory.boardId, boardId),
-                  sql`${boardMemory.createdAt} >= ${lastSeen}`,
-                ),
+                  sql`${boardMemory.createdAt} >= ${lastSeen}`
+                )
               )
               .orderBy(boardMemory.createdAt);
 
             if (isChat !== null && isChat !== undefined) {
-              const isChatBool = isChat === 'true';
+              const isChatBool = isChat === "true";
               memories = memories.filter((m) => m.isChat === isChatBool);
             }
 
@@ -57,7 +57,9 @@ export async function GET(
               if (memory.createdAt > lastSeen) lastSeen = memory.createdAt;
               const payload = { memory };
               controller.enqueue(
-                encoder.encode(`event: memory\ndata: ${JSON.stringify(payload)}\n\n`),
+                encoder.encode(
+                  `event: memory\ndata: ${JSON.stringify(payload)}\n\n`
+                )
               );
             }
 
@@ -73,10 +75,10 @@ export async function GET(
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-        Connection: 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {

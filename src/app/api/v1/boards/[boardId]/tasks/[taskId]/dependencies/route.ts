@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { taskDependencies, tasks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { taskDependencies, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/boards/[boardId]/tasks/[taskId]/dependencies
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -27,8 +27,8 @@ export async function GET(
       .where(
         and(
           eq(taskDependencies.taskId, taskId),
-          eq(taskDependencies.boardId, boardId),
-        ),
+          eq(taskDependencies.boardId, boardId)
+        )
       );
 
     return Response.json({
@@ -46,7 +46,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -62,21 +62,24 @@ export async function POST(
       .limit(1);
 
     if (!taskResult.length) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
-    if (taskResult[0].status === 'done') {
-      throw new ApiError(409, 'Cannot change task dependencies after a task is done.');
+    if (taskResult[0].status === "done") {
+      throw new ApiError(
+        409,
+        "Cannot change task dependencies after a task is done."
+      );
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const dependsOnTaskId = body.depends_on_task_id as string;
     if (!dependsOnTaskId) {
-      throw new ApiError(422, 'depends_on_task_id is required');
+      throw new ApiError(422, "depends_on_task_id is required");
     }
 
     if (dependsOnTaskId === taskId) {
-      throw new ApiError(422, 'A task cannot depend on itself.');
+      throw new ApiError(422, "A task cannot depend on itself.");
     }
 
     // Validate the dependency target exists on this board
@@ -87,7 +90,10 @@ export async function POST(
       .limit(1);
 
     if (!depTarget.length) {
-      throw new ApiError(422, `Dependency task ${dependsOnTaskId} not found on this board.`);
+      throw new ApiError(
+        422,
+        `Dependency task ${dependsOnTaskId} not found on this board.`
+      );
     }
 
     // Check for duplicate
@@ -98,13 +104,13 @@ export async function POST(
         and(
           eq(taskDependencies.taskId, taskId),
           eq(taskDependencies.dependsOnTaskId, dependsOnTaskId),
-          eq(taskDependencies.boardId, boardId),
-        ),
+          eq(taskDependencies.boardId, boardId)
+        )
       )
       .limit(1);
 
     if (existing.length > 0) {
-      throw new ApiError(409, 'Dependency already exists');
+      throw new ApiError(409, "Dependency already exists");
     }
 
     const now = new Date().toISOString();
@@ -120,7 +126,7 @@ export async function POST(
 
     return Response.json(
       { id: depId, task_id: taskId, depends_on_task_id: dependsOnTaskId },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     return handleApiError(error);
@@ -133,7 +139,7 @@ export async function POST(
  */
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string }> },
+  { params }: { params: Promise<{ boardId: string; taskId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -149,19 +155,23 @@ export async function PUT(
       .limit(1);
 
     if (!taskResult.length) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
-    if (taskResult[0].status === 'done') {
-      throw new ApiError(409, 'Cannot change task dependencies after a task is done.');
+    if (taskResult[0].status === "done") {
+      throw new ApiError(
+        409,
+        "Cannot change task dependencies after a task is done."
+      );
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const dependsOnTaskIds: string[] = (body.depends_on_task_ids as string[]) || [];
+    const body = (await request.json()) as Record<string, unknown>;
+    const dependsOnTaskIds: string[] =
+      (body.depends_on_task_ids as string[]) || [];
 
     // Validate no self-reference
     if (dependsOnTaskIds.includes(taskId)) {
-      throw new ApiError(422, 'A task cannot depend on itself.');
+      throw new ApiError(422, "A task cannot depend on itself.");
     }
 
     // Validate all referenced tasks exist in this board
@@ -172,7 +182,10 @@ export async function PUT(
         .where(and(eq(tasks.id, depId), eq(tasks.boardId, boardId)))
         .limit(1);
       if (!depResult.length) {
-        throw new ApiError(422, `Dependency task ${depId} not found on this board.`);
+        throw new ApiError(
+          422,
+          `Dependency task ${depId} not found on this board.`
+        );
       }
     }
 
@@ -182,8 +195,8 @@ export async function PUT(
       .where(
         and(
           eq(taskDependencies.taskId, taskId),
-          eq(taskDependencies.boardId, boardId),
-        ),
+          eq(taskDependencies.boardId, boardId)
+        )
       );
 
     // Insert new dependencies

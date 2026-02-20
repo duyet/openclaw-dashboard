@@ -1,11 +1,15 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { organizations, organizationMembers, organizationInvites } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import {
+  organizationInvites,
+  organizationMembers,
+  organizations,
+} from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 // ---------------------------------------------------------------------------
 // Helper: verify actor is a member of the org
@@ -13,7 +17,7 @@ import { eq, and } from 'drizzle-orm';
 async function requireOrgMembership(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  userId: string,
+  userId: string
 ) {
   const rows = await db
     .select()
@@ -21,13 +25,13 @@ async function requireOrgMembership(
     .where(
       and(
         eq(organizationMembers.organizationId, orgId),
-        eq(organizationMembers.userId, userId),
-      ),
+        eq(organizationMembers.userId, userId)
+      )
     )
     .limit(1);
 
   if (rows.length === 0) {
-    throw new ApiError(403, 'Not a member of this organization');
+    throw new ApiError(403, "Not a member of this organization");
   }
 
   return rows[0];
@@ -39,12 +43,12 @@ async function requireOrgMembership(
 async function requireOrgAdmin(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  userId: string,
+  userId: string
 ) {
   const membership = await requireOrgMembership(db, orgId, userId);
 
-  if (membership.role !== 'owner' && membership.role !== 'admin') {
-    throw new ApiError(403, 'Admin or owner role required');
+  if (membership.role !== "owner" && membership.role !== "admin") {
+    throw new ApiError(403, "Admin or owner role required");
   }
 
   return membership;
@@ -56,7 +60,7 @@ async function requireOrgAdmin(
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; inviteId: string }> },
+  { params }: { params: Promise<{ orgId: string; inviteId: string }> }
 ) {
   try {
     const { orgId, inviteId } = await params;
@@ -64,8 +68,8 @@ export async function GET(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Require membership to view invite details
@@ -89,13 +93,13 @@ export async function GET(
       .where(
         and(
           eq(organizationInvites.id, inviteId),
-          eq(organizationInvites.organizationId, orgId),
-        ),
+          eq(organizationInvites.organizationId, orgId)
+        )
       )
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'Invite not found');
+      throw new ApiError(404, "Invite not found");
     }
 
     return Response.json(result[0]);
@@ -110,7 +114,7 @@ export async function GET(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; inviteId: string }> },
+  { params }: { params: Promise<{ orgId: string; inviteId: string }> }
 ) {
   try {
     const { orgId, inviteId } = await params;
@@ -118,8 +122,8 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Require admin/owner to cancel invites
@@ -132,13 +136,13 @@ export async function DELETE(
       .where(
         and(
           eq(organizationInvites.id, inviteId),
-          eq(organizationInvites.organizationId, orgId),
-        ),
+          eq(organizationInvites.organizationId, orgId)
+        )
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Invite not found');
+      throw new ApiError(404, "Invite not found");
     }
 
     await db

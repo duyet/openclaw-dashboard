@@ -19,7 +19,7 @@ describe("resolveSignInRedirectUrl", () => {
 
   it("allows safe relative paths", () => {
     expect(resolveSignInRedirectUrl("/dashboard?tab=ops#queue")).toBe(
-      "/dashboard?tab=ops#queue",
+      "/dashboard?tab=ops#queue"
     );
   });
 
@@ -27,7 +27,7 @@ describe("resolveSignInRedirectUrl", () => {
     vi.stubEnv("NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL", "/activity");
 
     expect(resolveSignInRedirectUrl("//evil.example.com/path")).toBe(
-      "/activity",
+      "/activity"
     );
   });
 
@@ -35,7 +35,7 @@ describe("resolveSignInRedirectUrl", () => {
     vi.stubEnv("NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL", "/activity");
 
     expect(resolveSignInRedirectUrl("https://evil.example.com/steal")).toBe(
-      "/activity",
+      "/activity"
     );
   });
 

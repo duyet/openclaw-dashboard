@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { tags } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { tags } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/tags/:tagId
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ tagId: string }> },
+  { params }: { params: Promise<{ tagId: string }> }
 ) {
   try {
     const { tagId } = await params;
@@ -22,7 +22,7 @@ export async function GET(
     const actor = await requireActorContext(request, env.DB);
 
     if (!actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+      throw new ApiError(403, "No active organization");
     }
 
     const result = await db
@@ -32,7 +32,7 @@ export async function GET(
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'Tag not found');
+      throw new ApiError(404, "Tag not found");
     }
 
     return Response.json(result[0]);
@@ -47,7 +47,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ tagId: string }> },
+  { params }: { params: Promise<{ tagId: string }> }
 ) {
   try {
     const { tagId } = await params;
@@ -55,8 +55,8 @@ export async function PATCH(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+    if (actor.type !== "user" || !actor.orgId) {
+      throw new ApiError(403, "No active organization");
     }
 
     const existing = await db
@@ -66,24 +66,24 @@ export async function PATCH(
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Tag not found');
+      throw new ApiError(404, "Tag not found");
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const updates: Record<string, unknown> = {};
 
-    if (typeof body.name === 'string') {
+    if (typeof body.name === "string") {
       const name = body.name.trim();
-      if (!name) throw new ApiError(422, 'Tag name cannot be empty');
+      if (!name) throw new ApiError(422, "Tag name cannot be empty");
       updates.name = name;
     }
-    if (typeof body.slug === 'string') {
+    if (typeof body.slug === "string") {
       updates.slug = body.slug
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
     }
-    if (typeof body.color === 'string') {
+    if (typeof body.color === "string") {
       updates.color = body.color;
     }
     if (body.description !== undefined) {
@@ -91,7 +91,7 @@ export async function PATCH(
     }
 
     if (Object.keys(updates).length === 0) {
-      throw new ApiError(422, 'No valid fields to update');
+      throw new ApiError(422, "No valid fields to update");
     }
 
     updates.updatedAt = new Date().toISOString();
@@ -116,7 +116,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ tagId: string }> },
+  { params }: { params: Promise<{ tagId: string }> }
 ) {
   try {
     const { tagId } = await params;
@@ -124,8 +124,8 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.orgId) {
-      throw new ApiError(403, 'No active organization');
+    if (actor.type !== "user" || !actor.orgId) {
+      throw new ApiError(403, "No active organization");
     }
 
     const existing = await db
@@ -135,7 +135,7 @@ export async function DELETE(
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Tag not found');
+      throw new ApiError(404, "Tag not found");
     }
 
     await db.delete(tags).where(eq(tags.id, tagId));

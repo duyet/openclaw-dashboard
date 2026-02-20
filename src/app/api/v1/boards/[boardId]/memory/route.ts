@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { boardMemory, boards } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { boardMemory, boards } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/boards/[boardId]/memory
@@ -14,7 +14,7 @@ import { eq, and, sql } from 'drizzle-orm';
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -24,7 +24,7 @@ export async function GET(
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
-    const isChat = url.searchParams.get('is_chat');
+    const isChat = url.searchParams.get("is_chat");
 
     let result = await db
       .select()
@@ -36,7 +36,7 @@ export async function GET(
 
     // Filter is_chat in-memory
     if (isChat !== null && isChat !== undefined) {
-      const isChatBool = isChat === 'true';
+      const isChatBool = isChat === "true";
       result = result.filter((m) => m.isChat === isChatBool);
     }
 
@@ -62,7 +62,7 @@ export async function GET(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -78,24 +78,24 @@ export async function POST(
       .limit(1);
 
     if (!boardResult.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const content = ((body.content as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const content = ((body.content as string) || "").trim();
     if (!content) {
-      throw new ApiError(422, 'Content is required');
+      throw new ApiError(422, "Content is required");
     }
 
     const tags: string[] | null = (body.tags as string[]) || null;
-    const isChat = tags ? tags.includes('chat') : false;
+    const isChat = tags ? tags.includes("chat") : false;
 
     let source: string | null = (body.source as string) || null;
     if (isChat && !source) {
-      if (actor.type === 'agent') {
-        source = actor.agentId || 'agent';
+      if (actor.type === "agent") {
+        source = actor.agentId || "agent";
       } else {
-        source = 'User';
+        source = "User";
       }
     }
 
@@ -130,7 +130,7 @@ export async function POST(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string }> },
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -139,25 +139,22 @@ export async function DELETE(
     const { boardId } = await params;
 
     const url = new URL(request.url);
-    const memoryId = url.searchParams.get('id');
+    const memoryId = url.searchParams.get("id");
 
     if (!memoryId) {
-      throw new ApiError(422, 'Memory entry id is required as query param');
+      throw new ApiError(422, "Memory entry id is required as query param");
     }
 
     const existing = await db
       .select({ id: boardMemory.id })
       .from(boardMemory)
       .where(
-        and(
-          eq(boardMemory.id, memoryId),
-          eq(boardMemory.boardId, boardId),
-        ),
+        and(eq(boardMemory.id, memoryId), eq(boardMemory.boardId, boardId))
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Memory entry not found');
+      throw new ApiError(404, "Memory entry not found");
     }
 
     await db.delete(boardMemory).where(eq(boardMemory.id, memoryId));

@@ -1,16 +1,16 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext, resolveActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
 import {
-  boardWebhooks,
-  boardWebhookPayloads,
   boardMemory,
   boards,
-} from '@/lib/db/schema';
-import { requireActorContext, resolveActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and, sql } from 'drizzle-orm';
+  boardWebhookPayloads,
+  boardWebhooks,
+} from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 function webhookEndpointPath(boardId: string, webhookId: string): string {
   return `/api/v1/boards/${boardId}/webhooks/${webhookId}`;
@@ -22,7 +22,7 @@ function webhookEndpointPath(boardId: string, webhookId: string): string {
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; webhookId: string }> },
+  { params }: { params: Promise<{ boardId: string; webhookId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -34,15 +34,12 @@ export async function GET(
       .select()
       .from(boardWebhooks)
       .where(
-        and(
-          eq(boardWebhooks.id, webhookId),
-          eq(boardWebhooks.boardId, boardId),
-        ),
+        and(eq(boardWebhooks.id, webhookId), eq(boardWebhooks.boardId, boardId))
       )
       .limit(1);
 
     if (!result.length) {
-      throw new ApiError(404, 'Webhook not found');
+      throw new ApiError(404, "Webhook not found");
     }
 
     return Response.json({
@@ -60,7 +57,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; webhookId: string }> },
+  { params }: { params: Promise<{ boardId: string; webhookId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -72,18 +69,15 @@ export async function PATCH(
       .select()
       .from(boardWebhooks)
       .where(
-        and(
-          eq(boardWebhooks.id, webhookId),
-          eq(boardWebhooks.boardId, boardId),
-        ),
+        and(eq(boardWebhooks.id, webhookId), eq(boardWebhooks.boardId, boardId))
       )
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Webhook not found');
+      throw new ApiError(404, "Webhook not found");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const now = new Date().toISOString();
     const updates: Record<string, unknown> = { updatedAt: now };
 
@@ -117,7 +111,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; webhookId: string }> },
+  { params }: { params: Promise<{ boardId: string; webhookId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -129,15 +123,12 @@ export async function DELETE(
       .select()
       .from(boardWebhooks)
       .where(
-        and(
-          eq(boardWebhooks.id, webhookId),
-          eq(boardWebhooks.boardId, boardId),
-        ),
+        and(eq(boardWebhooks.id, webhookId), eq(boardWebhooks.boardId, boardId))
       )
       .limit(1);
 
     if (!existing.length) {
-      throw new ApiError(404, 'Webhook not found');
+      throw new ApiError(404, "Webhook not found");
     }
 
     // Delete payloads first
@@ -160,7 +151,7 @@ export async function DELETE(
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; webhookId: string }> },
+  { params }: { params: Promise<{ boardId: string; webhookId: string }> }
 ) {
   try {
     const { env } = getRequestContext();
@@ -177,7 +168,7 @@ export async function POST(
       .limit(1);
 
     if (!boardResult.length) {
-      throw new ApiError(404, 'Board not found');
+      throw new ApiError(404, "Board not found");
     }
 
     // Verify webhook exists and is enabled
@@ -185,25 +176,22 @@ export async function POST(
       .select()
       .from(boardWebhooks)
       .where(
-        and(
-          eq(boardWebhooks.id, webhookId),
-          eq(boardWebhooks.boardId, boardId),
-        ),
+        and(eq(boardWebhooks.id, webhookId), eq(boardWebhooks.boardId, boardId))
       )
       .limit(1);
 
     if (!webhookResult.length) {
-      throw new ApiError(404, 'Webhook not found');
+      throw new ApiError(404, "Webhook not found");
     }
 
     const webhook = webhookResult[0];
 
     if (!webhook.enabled) {
-      throw new ApiError(410, 'Webhook is disabled.');
+      throw new ApiError(410, "Webhook is disabled.");
     }
 
     // Parse the incoming payload
-    const contentType = request.headers.get('content-type');
+    const contentType = request.headers.get("content-type");
     const rawBody = await request.text();
 
     let payloadValue: unknown = {};
@@ -218,9 +206,9 @@ export async function POST(
     for (const [key, value] of request.headers.entries()) {
       const normalized = key.toLowerCase();
       if (
-        normalized === 'content-type' ||
-        normalized === 'user-agent' ||
-        normalized.startsWith('x-')
+        normalized === "content-type" ||
+        normalized === "user-agent" ||
+        normalized.startsWith("x-")
       ) {
         capturedHeaders[normalized] = value;
       }
@@ -237,14 +225,14 @@ export async function POST(
       webhookId,
       payload: payloadValue,
       headers: capturedHeaders as Record<string, string>,
-      sourceIp: request.headers.get('cf-connecting-ip') || null,
+      sourceIp: request.headers.get("cf-connecting-ip") || null,
       contentType,
       receivedAt: now,
     });
 
     // Store as board memory
     const preview =
-      typeof payloadValue === 'string'
+      typeof payloadValue === "string"
         ? payloadValue
         : JSON.stringify(payloadValue, null, 2);
 
@@ -257,12 +245,8 @@ export async function POST(
         `Payload ID: ${payloadId}\n` +
         `Instruction: ${webhook.description}\n\n` +
         `Payload preview:\n${preview}`,
-      tags: [
-        'webhook',
-        `webhook:${webhookId}`,
-        `payload:${payloadId}`,
-      ],
-      source: 'webhook',
+      tags: ["webhook", `webhook:${webhookId}`, `payload:${payloadId}`],
+      source: "webhook",
       isChat: false,
       createdAt: now,
     });
@@ -273,7 +257,7 @@ export async function POST(
         webhook_id: webhookId,
         payload_id: payloadId,
       },
-      { status: 202 },
+      { status: 202 }
     );
   } catch (error) {
     return handleApiError(error);

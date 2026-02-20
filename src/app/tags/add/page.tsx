@@ -3,11 +3,10 @@
 export const dynamic = "force-dynamic";
 
 import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
 import { useCreateTagApiV1TagsPost } from "@/api/generated/tags/tags";
+
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { TagForm } from "@/components/tags/TagForm";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";

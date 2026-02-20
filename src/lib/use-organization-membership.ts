@@ -1,15 +1,15 @@
-import { ApiError } from "@/api/mutator";
 import {
   type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
   useGetMyMembershipApiV1OrganizationsMeMemberGet,
 } from "@/api/generated/organizations/organizations";
+import type { ApiError } from "@/api/mutator";
 
 export const isOrganizationAdminRole = (
-  role: string | null | undefined,
+  role: string | null | undefined
 ): boolean => role === "owner" || role === "admin";
 
 export function useOrganizationMembership(
-  isSignedIn: boolean | null | undefined,
+  isSignedIn: boolean | null | undefined
 ) {
   const membershipQuery = useGetMyMembershipApiV1OrganizationsMeMemberGet<
     getMyMembershipApiV1OrganizationsMeMemberGetResponse,

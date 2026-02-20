@@ -2,20 +2,18 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useState } from "react";
+import { useCreateBoardGroupApiV1BoardGroupsPost } from "@/api/generated/board-groups/board-groups";
 import {
   type listBoardsApiV1BoardsGetResponse,
   updateBoardApiV1BoardsBoardIdPatch,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
-import { useCreateBoardGroupApiV1BoardGroupsPost } from "@/api/generated/board-groups/board-groups";
 import type { BoardRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +36,7 @@ export default function NewBoardGroupPage() {
 
   const [boardSearch, setBoardSearch] = useState("");
   const [selectedBoardIds, setSelectedBoardIds] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set()
   );
 
   const boardsQuery = useListBoardsApiV1BoardsGet<
@@ -52,7 +50,7 @@ export default function NewBoardGroupPage() {
         refetchOnMount: "always",
         retry: false,
       },
-    },
+    }
   );
 
   const boards: BoardRead[] =
@@ -110,7 +108,7 @@ export default function NewBoardGroupPage() {
 
         if (failures.length) {
           router.push(
-            `/board-groups/${groupId}/edit?assign_failed=${failures.length}`,
+            `/board-groups/${groupId}/edit?assign_failed=${failures.length}`
           );
           return;
         }

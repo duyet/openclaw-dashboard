@@ -1,28 +1,25 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
-
-import { useAuth } from "@/auth/clerk";
 import { useQueryClient } from "@tanstack/react-query";
-
 import { CheckCircle2, Clock } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useMemo, useState } from "react";
 import { Cell, Pie, PieChart } from "recharts";
-
-import { ApiError } from "@/api/mutator";
 import {
-  type listApprovalsApiV1BoardsBoardIdApprovalsGetResponse,
   getListApprovalsApiV1BoardsBoardIdApprovalsGetQueryKey,
+  type listApprovalsApiV1BoardsBoardIdApprovalsGetResponse,
   useListApprovalsApiV1BoardsBoardIdApprovalsGet,
   useUpdateApprovalApiV1BoardsBoardIdApprovalsApprovalIdPatch,
 } from "@/api/generated/approvals/approvals";
 import type { ApprovalRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { StatusDot } from "@/components/atoms/StatusDot";
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipCard,
-  type ChartConfig,
 } from "@/components/charts/chart";
 import { Button } from "@/components/ui/button";
 import { apiDatetimeToMs, parseApiDatetime } from "@/lib/datetime";
@@ -87,7 +84,7 @@ const humanizeAction = (value: string) =>
   value
     .split(".")
     .map((part) =>
-      part.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()),
+      part.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
     )
     .join(" · ");
 
@@ -116,7 +113,7 @@ const formatRubricTooltipValue = (
       percent?: number;
       percentLabel?: string;
     };
-  } | null,
+  } | null
 ) => {
   const payload = item?.payload;
   const label =
@@ -209,7 +206,7 @@ const payloadNestedValues = (payload: Approval["payload"], path: string[]) => {
 
 const payloadFirstLinkedTaskValue = (
   payload: Approval["payload"],
-  key: "title" | "description",
+  key: "title" | "description"
 ) => {
   const tasks = payloadAtPath(payload, ["linked_request", "tasks"]);
   if (!Array.isArray(tasks)) return null;
@@ -407,7 +404,7 @@ export function BoardApprovalsPanel({
   const usingExternal = Array.isArray(externalApprovals);
   const approvalsKey = useMemo(
     () => getListApprovalsApiV1BoardsBoardIdApprovalsGetQueryKey(boardId),
-    [boardId],
+    [boardId]
   );
 
   const approvalsQuery = useListApprovalsApiV1BoardsBoardIdApprovalsGet<
@@ -449,7 +446,7 @@ export function BoardApprovalsPanel({
         .sort(
           (a, b) =>
             (apiDatetimeToMs(b.created_at) ?? 0) -
-            (apiDatetimeToMs(a.created_at) ?? 0),
+            (apiDatetimeToMs(a.created_at) ?? 0)
         )[0]?.id;
       if (pendingNext) {
         setSelectedId(pendingNext);
@@ -478,11 +475,11 @@ export function BoardApprovalsPanel({
                   data: {
                     ...previous.data,
                     items: previous.data.items.map((item) =>
-                      item.id === approvalId ? result.data : item,
+                      item.id === approvalId ? result.data : item
                     ),
                   },
                 };
-              },
+              }
             );
           },
           onError: (err) => {
@@ -492,7 +489,7 @@ export function BoardApprovalsPanel({
             setUpdatingId(null);
             queryClient.invalidateQueries({ queryKey: approvalsKey });
           },
-        },
+        }
       );
     },
     [
@@ -504,7 +501,7 @@ export function BoardApprovalsPanel({
       queryClient,
       updateApprovalMutation,
       usingExternal,
-    ],
+    ]
   );
 
   const sortedApprovals = useMemo(() => {
@@ -515,17 +512,17 @@ export function BoardApprovalsPanel({
         return bTime - aTime;
       });
     const pending = sortByTime(
-      approvals.filter((item) => item.status === "pending"),
+      approvals.filter((item) => item.status === "pending")
     );
     const resolved = sortByTime(
-      approvals.filter((item) => item.status !== "pending"),
+      approvals.filter((item) => item.status !== "pending")
     );
     return { pending, resolved };
   }, [approvals]);
 
   const orderedApprovals = useMemo(
     () => [...sortedApprovals.pending, ...sortedApprovals.resolved],
-    [sortedApprovals.pending, sortedApprovals.resolved],
+    [sortedApprovals.pending, sortedApprovals.resolved]
   );
 
   const effectiveSelectedId = useMemo(() => {
@@ -559,7 +556,7 @@ export function BoardApprovalsPanel({
         <div
           className={cn(
             "rounded-xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center",
-            scrollable && "flex h-full items-center justify-center",
+            scrollable && "flex h-full items-center justify-center"
           )}
         >
           <div className="max-w-sm">
@@ -579,13 +576,13 @@ export function BoardApprovalsPanel({
         <div
           className={cn(
             "grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]",
-            scrollable && "h-full",
+            scrollable && "h-full"
           )}
         >
           <div
             className={cn(
               "overflow-hidden rounded-xl border border-slate-200 bg-white",
-              scrollable && "flex min-h-0 flex-col",
+              scrollable && "flex min-h-0 flex-col"
             )}
           >
             <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
@@ -599,28 +596,28 @@ export function BoardApprovalsPanel({
             <div
               className={cn(
                 "divide-y divide-slate-100",
-                scrollable && "min-h-0 overflow-y-auto",
+                scrollable && "min-h-0 overflow-y-auto"
               )}
             >
               {orderedApprovals.map((approval) => {
                 const summary = approvalSummary(
                   approval,
-                  boardLabelById?.[approval.board_id] ?? null,
+                  boardLabelById?.[approval.board_id] ?? null
                 );
                 const isSelected = effectiveSelectedId === approval.id;
                 const isPending = approval.status === "pending";
                 const titleRow = summary.rows.find(
-                  (row) => row.label.toLowerCase() === "title",
+                  (row) => row.label.toLowerCase() === "title"
                 );
                 const fallbackRow = summary.rows.find(
                   (row) =>
                     row.label.toLowerCase() !== "title" &&
-                    row.label.toLowerCase() !== "board",
+                    row.label.toLowerCase() !== "board"
                 );
                 const primaryLabel =
                   titleRow?.value ?? fallbackRow?.value ?? "Untitled";
                 const boardRow = summary.rows.find(
-                  (row) => row.label.toLowerCase() === "board",
+                  (row) => row.label.toLowerCase() === "board"
                 );
                 const boardText =
                   boardRow && boardRow.value !== primaryLabel
@@ -634,7 +631,7 @@ export function BoardApprovalsPanel({
                     className={cn(
                       "w-full px-4 py-4 text-left transition hover:bg-slate-50",
                       isSelected && "bg-amber-50 border-l-2 border-amber-500",
-                      !isPending && "opacity-60",
+                      !isPending && "opacity-60"
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -644,7 +641,7 @@ export function BoardApprovalsPanel({
                       <span
                         className={cn(
                           "rounded-[3px] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em]",
-                          statusBadgeClass(approval.status),
+                          statusBadgeClass(approval.status)
                         )}
                       >
                         {formatStatusLabel(approval.status)}
@@ -674,7 +671,7 @@ export function BoardApprovalsPanel({
           <div
             className={cn(
               "overflow-hidden rounded-xl border border-slate-200 bg-white",
-              scrollable && "flex min-h-0 flex-col",
+              scrollable && "flex min-h-0 flex-col"
             )}
           >
             <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
@@ -692,10 +689,10 @@ export function BoardApprovalsPanel({
               (() => {
                 const summary = approvalSummary(
                   selectedApproval,
-                  boardLabelById?.[selectedApproval.board_id] ?? null,
+                  boardLabelById?.[selectedApproval.board_id] ?? null
                 );
                 const titleRow = summary.rows.find(
-                  (row) => row.label.toLowerCase() === "title",
+                  (row) => row.label.toLowerCase() === "title"
                 );
                 const titleText = titleRow?.value?.trim() ?? "";
                 const descriptionText = summary.description?.trim() ?? "";
@@ -711,7 +708,7 @@ export function BoardApprovalsPanel({
                 });
                 const rubricScoreSource =
                   Object.keys(
-                    normalizeRubricScores(selectedApproval.rubric_scores),
+                    normalizeRubricScores(selectedApproval.rubric_scores)
                   ).length > 0
                     ? normalizeRubricScores(selectedApproval.rubric_scores)
                     : payloadRubricScores(selectedApproval.payload);
@@ -721,11 +718,11 @@ export function BoardApprovalsPanel({
                       .replace(/_/g, " ")
                       .replace(/\b\w/g, (char) => char.toUpperCase()),
                     value,
-                  }),
+                  })
                 );
                 const rubricTotal = rubricEntries.reduce(
                   (total, entry) => total + entry.value,
-                  0,
+                  0
                 );
                 const hasRubric = rubricEntries.length > 0 && rubricTotal > 0;
                 const rubricChartData = rubricEntries.map((entry, index) => {
@@ -748,7 +745,7 @@ export function BoardApprovalsPanel({
                     };
                     return accumulator;
                   },
-                  {},
+                  {}
                 );
 
                 return (
@@ -767,7 +764,7 @@ export function BoardApprovalsPanel({
                         <span
                           className={cn(
                             "rounded-md px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]",
-                            confidenceBadgeClass(selectedApproval.confidence),
+                            confidenceBadgeClass(selectedApproval.confidence)
                           )}
                         >
                           {selectedApproval.confidence}% confidence
@@ -864,7 +861,7 @@ export function BoardApprovalsPanel({
                               key={`${selectedApproval.id}-task-${task.id}`}
                               href={taskHref(
                                 selectedApproval.board_id,
-                                task.id,
+                                task.id
                               )}
                               className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 underline-offset-2 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:underline"
                             >

@@ -26,7 +26,7 @@ export class GatewayError extends Error {
 
   constructor(message: string, code = -1, data?: unknown) {
     super(message);
-    this.name = 'GatewayError';
+    this.name = "GatewayError";
     this.code = code;
     this.data = data;
   }
@@ -37,20 +37,20 @@ export class GatewayError extends Error {
 // ---------------------------------------------------------------------------
 
 interface JsonRpcRequest {
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   id: string;
   method: string;
   params: unknown;
 }
 
 interface JsonRpcSuccessResponse {
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   id: string;
   result: unknown;
 }
 
 interface JsonRpcErrorResponse {
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   id: string;
   error: {
     code: number;
@@ -62,7 +62,7 @@ interface JsonRpcErrorResponse {
 type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse;
 
 function isErrorResponse(r: JsonRpcResponse): r is JsonRpcErrorResponse {
-  return 'error' in r && r.error !== null && typeof r.error === 'object';
+  return "error" in r && r.error !== null && typeof r.error === "object";
 }
 
 // ---------------------------------------------------------------------------
@@ -91,7 +91,7 @@ export async function callGatewayRpc(
   token: string | null | undefined,
   method: string,
   params: unknown,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
+  timeoutMs = DEFAULT_TIMEOUT_MS
 ): Promise<unknown> {
   // Append auth token as a query parameter if provided.
   // The WebSocket API does not allow custom request headers in edge/browser
@@ -99,13 +99,13 @@ export async function callGatewayRpc(
   // option here. Gateways must accept `?token=<value>`.
   let wsUrl = gatewayUrl;
   if (token) {
-    const separator = wsUrl.includes('?') ? '&' : '?';
+    const separator = wsUrl.includes("?") ? "&" : "?";
     wsUrl = `${wsUrl}${separator}token=${encodeURIComponent(token)}`;
   }
 
   const id = crypto.randomUUID();
   const request: JsonRpcRequest = {
-    jsonrpc: '2.0',
+    jsonrpc: "2.0",
     id,
     method,
     params,
@@ -120,7 +120,7 @@ export async function callGatewayRpc(
       if (settled) return;
       settled = true;
       try {
-        ws.close(1000, 'timeout');
+        ws.close(1000, "timeout");
       } catch {
         // Ignore close errors during cleanup.
       }
@@ -140,31 +140,31 @@ export async function callGatewayRpc(
       clearTimeout(timer);
       reject(
         new GatewayError(
-          `Failed to create WebSocket: ${err instanceof Error ? err.message : String(err)}`,
-        ),
+          `Failed to create WebSocket: ${err instanceof Error ? err.message : String(err)}`
+        )
       );
       return;
     }
 
-    ws.addEventListener('open', () => {
+    ws.addEventListener("open", () => {
       try {
         ws.send(JSON.stringify(request));
       } catch (err) {
         done(() =>
           reject(
             new GatewayError(
-              `Failed to send RPC request: ${err instanceof Error ? err.message : String(err)}`,
-            ),
-          ),
+              `Failed to send RPC request: ${err instanceof Error ? err.message : String(err)}`
+            )
+          )
         );
       }
     });
 
-    ws.addEventListener('message', (event: MessageEvent) => {
+    ws.addEventListener("message", (event: MessageEvent) => {
       let envelope: JsonRpcResponse;
       try {
         envelope = JSON.parse(
-          typeof event.data === 'string' ? event.data : '',
+          typeof event.data === "string" ? event.data : ""
         ) as JsonRpcResponse;
       } catch {
         // Not valid JSON — wait for the real response.
@@ -175,7 +175,7 @@ export async function callGatewayRpc(
       if (!envelope || envelope.id !== id) return;
 
       try {
-        ws.close(1000, 'done');
+        ws.close(1000, "done");
       } catch {
         // Ignore.
       }
@@ -186,29 +186,31 @@ export async function callGatewayRpc(
             new GatewayError(
               envelope.error.message,
               envelope.error.code,
-              envelope.error.data,
-            ),
-          ),
+              envelope.error.data
+            )
+          )
         );
       } else {
         done(() => resolve((envelope as JsonRpcSuccessResponse).result));
       }
     });
 
-    ws.addEventListener('error', (event: Event) => {
+    ws.addEventListener("error", (event: Event) => {
       const detail =
-        event instanceof ErrorEvent ? event.message : 'WebSocket error';
-      done(() => reject(new GatewayError(`Gateway connection error: ${detail}`)));
+        event instanceof ErrorEvent ? event.message : "WebSocket error";
+      done(() =>
+        reject(new GatewayError(`Gateway connection error: ${detail}`))
+      );
     });
 
-    ws.addEventListener('close', (event: CloseEvent) => {
+    ws.addEventListener("close", (event: CloseEvent) => {
       // If we close before receiving a response it is an error (unless already settled).
       done(() =>
         reject(
           new GatewayError(
-            `Gateway WebSocket closed before response (code=${event.code})`,
-          ),
-        ),
+            `Gateway WebSocket closed before response (code=${event.code})`
+          )
+        )
       );
     });
   });
@@ -237,28 +239,28 @@ function rpc<T>(
   config: GatewayConfig,
   method: string,
   params: unknown,
-  timeoutMs?: number,
+  timeoutMs?: number
 ): Promise<T> {
   return callGatewayRpc(
     config.url,
     config.token,
     method,
     params,
-    timeoutMs,
+    timeoutMs
   ) as Promise<T>;
 }
 
 // -- Session management --
 
 export function getSessions(config: GatewayConfig): Promise<unknown[]> {
-  return rpc<unknown[]>(config, 'sessions.list', {});
+  return rpc<unknown[]>(config, "sessions.list", {});
 }
 
 export function getSession(
   config: GatewayConfig,
-  sessionKey: string,
+  sessionKey: string
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.get', { session_key: sessionKey });
+  return rpc<unknown>(config, "sessions.get", { session_key: sessionKey });
 }
 
 export function createSession(
@@ -269,31 +271,31 @@ export function createSession(
     workspace_root?: string;
     identity_template?: string;
     soul_template?: string;
-  },
+  }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.create', params);
+  return rpc<unknown>(config, "sessions.create", params);
 }
 
 export function deleteSession(
   config: GatewayConfig,
-  sessionKey: string,
+  sessionKey: string
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.delete', { session_key: sessionKey });
+  return rpc<unknown>(config, "sessions.delete", { session_key: sessionKey });
 }
 
 export function resetSession(
   config: GatewayConfig,
-  sessionKey: string,
+  sessionKey: string
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.reset', { session_key: sessionKey });
+  return rpc<unknown>(config, "sessions.reset", { session_key: sessionKey });
 }
 
 export function bootstrapSession(
   config: GatewayConfig,
   sessionKey: string,
-  params?: { force?: boolean },
+  params?: { force?: boolean }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.bootstrap', {
+  return rpc<unknown>(config, "sessions.bootstrap", {
     session_key: sessionKey,
     ...params,
   });
@@ -305,9 +307,9 @@ export function updateSessionTemplates(
     session_key: string;
     identity_template?: string;
     soul_template?: string;
-  },
+  }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.update_templates', params);
+  return rpc<unknown>(config, "sessions.update_templates", params);
 }
 
 // -- Messaging --
@@ -319,15 +321,15 @@ export function sendMessage(
     agent_name: string;
     message: string;
     deliver?: boolean;
-  },
+  }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'messages.send', params);
+  return rpc<unknown>(config, "messages.send", params);
 }
 
 // -- Runtime info --
 
 export function getRuntimeInfo(config: GatewayConfig): Promise<unknown> {
-  return rpc<unknown>(config, 'runtime.info', {});
+  return rpc<unknown>(config, "runtime.info", {});
 }
 
 // -- Command execution --
@@ -339,18 +341,18 @@ export function executeCommand(
     command: string;
     args?: string[];
     cwd?: string;
-  },
+  }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'commands.execute', params);
+  return rpc<unknown>(config, "commands.execute", params);
 }
 
 // -- Token management --
 
 export function rotateToken(
   config: GatewayConfig,
-  sessionKey: string,
+  sessionKey: string
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'sessions.rotate_token', {
+  return rpc<unknown>(config, "sessions.rotate_token", {
     session_key: sessionKey,
   });
 }
@@ -363,20 +365,20 @@ export function installSkill(
     source_url: string;
     name?: string;
     metadata?: Record<string, unknown>;
-  },
+  }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'skills.install', params);
+  return rpc<unknown>(config, "skills.install", params);
 }
 
 export function uninstallSkill(
   config: GatewayConfig,
-  params: { source_url: string },
+  params: { source_url: string }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'skills.uninstall', params);
+  return rpc<unknown>(config, "skills.uninstall", params);
 }
 
 export function listSkills(config: GatewayConfig): Promise<unknown[]> {
-  return rpc<unknown[]>(config, 'skills.list', {});
+  return rpc<unknown[]>(config, "skills.list", {});
 }
 
 export function syncSkillPack(
@@ -385,7 +387,7 @@ export function syncSkillPack(
     source_url: string;
     branch?: string;
     name?: string;
-  },
+  }
 ): Promise<unknown> {
-  return rpc<unknown>(config, 'skills.sync_pack', params);
+  return rpc<unknown>(config, "skills.sync_pack", params);
 }

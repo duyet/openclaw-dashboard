@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { organizations, organizationMembers } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { organizationMembers, organizations } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 // ---------------------------------------------------------------------------
 // Helper: verify the actor is a member of the org (returns membership row)
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
 async function requireOrgMembership(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  userId: string,
+  userId: string
 ) {
   const rows = await db
     .select()
@@ -21,13 +21,13 @@ async function requireOrgMembership(
     .where(
       and(
         eq(organizationMembers.organizationId, orgId),
-        eq(organizationMembers.userId, userId),
-      ),
+        eq(organizationMembers.userId, userId)
+      )
     )
     .limit(1);
 
   if (rows.length === 0) {
-    throw new ApiError(403, 'Not a member of this organization');
+    throw new ApiError(403, "Not a member of this organization");
   }
 
   return rows[0];
@@ -39,12 +39,12 @@ async function requireOrgMembership(
 async function requireOrgAdmin(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  userId: string,
+  userId: string
 ) {
   const membership = await requireOrgMembership(db, orgId, userId);
 
-  if (membership.role !== 'owner' && membership.role !== 'admin') {
-    throw new ApiError(403, 'Admin or owner role required');
+  if (membership.role !== "owner" && membership.role !== "admin") {
+    throw new ApiError(403, "Admin or owner role required");
   }
 
   return membership;
@@ -55,7 +55,7 @@ async function requireOrgAdmin(
 // ---------------------------------------------------------------------------
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ orgId: string }> },
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
     const { orgId } = await params;
@@ -63,8 +63,8 @@ export async function GET(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Verify membership (any role)
@@ -77,7 +77,7 @@ export async function GET(
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'Organization not found');
+      throw new ApiError(404, "Organization not found");
     }
 
     return Response.json(result[0]);
@@ -91,7 +91,7 @@ export async function GET(
 // ---------------------------------------------------------------------------
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ orgId: string }> },
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
     const { orgId } = await params;
@@ -99,26 +99,29 @@ export async function PATCH(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Require admin/owner
     await requireOrgAdmin(db, orgId, actor.userId);
 
-    const body = await request.json() as Record<string, unknown> as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown> as Record<
+      string,
+      unknown
+    >;
     const updates: Record<string, unknown> = {};
 
-    if (typeof body.name === 'string') {
+    if (typeof body.name === "string") {
       const name = body.name.trim();
       if (!name) {
-        throw new ApiError(422, 'Organization name cannot be empty');
+        throw new ApiError(422, "Organization name cannot be empty");
       }
       updates.name = name;
     }
 
     if (Object.keys(updates).length === 0) {
-      throw new ApiError(422, 'No valid fields to update');
+      throw new ApiError(422, "No valid fields to update");
     }
 
     updates.updatedAt = new Date().toISOString();
@@ -135,7 +138,7 @@ export async function PATCH(
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'Organization not found');
+      throw new ApiError(404, "Organization not found");
     }
 
     return Response.json(result[0]);
@@ -149,7 +152,7 @@ export async function PATCH(
 // ---------------------------------------------------------------------------
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ orgId: string }> },
+  { params }: { params: Promise<{ orgId: string }> }
 ) {
   try {
     const { orgId } = await params;
@@ -157,14 +160,17 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     // Only owners can delete an organization
     const membership = await requireOrgAdmin(db, orgId, actor.userId);
-    if (membership.role !== 'owner') {
-      throw new ApiError(403, 'Only the organization owner can delete an organization');
+    if (membership.role !== "owner") {
+      throw new ApiError(
+        403,
+        "Only the organization owner can delete an organization"
+      );
     }
 
     // Verify the org exists before deleting
@@ -175,12 +181,10 @@ export async function DELETE(
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Organization not found');
+      throw new ApiError(404, "Organization not found");
     }
 
-    await db
-      .delete(organizations)
-      .where(eq(organizations.id, orgId));
+    await db.delete(organizations).where(eq(organizations.id, orgId));
 
     return new Response(null, { status: 204 });
   } catch (error) {

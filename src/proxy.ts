@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 import { isLikelyValidClerkPublishableKey } from "@/auth/clerkKey";
 import { AuthMode } from "@/auth/mode";
@@ -7,7 +7,7 @@ import { AuthMode } from "@/auth/mode";
 const isClerkEnabled = () =>
   process.env.NEXT_PUBLIC_AUTH_MODE !== AuthMode.Local &&
   isLikelyValidClerkPublishableKey(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   );
 
 // Public routes include home and sign-in paths to avoid redirect loops.

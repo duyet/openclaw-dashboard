@@ -1,14 +1,14 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { SignIn } from "@clerk/nextjs";
+import { useSearchParams } from "next/navigation";
 
 import { resolveSignInRedirectUrl } from "@/auth/redirects";
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const forceRedirectUrl = resolveSignInRedirectUrl(
-    searchParams.get("redirect_url"),
+    searchParams.get("redirect_url")
   );
 
   // Dedicated sign-in route for Cypress E2E.

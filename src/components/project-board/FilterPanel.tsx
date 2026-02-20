@@ -88,7 +88,7 @@ export function FilterPanel({
                   "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs transition",
                   selected
                     ? "bg-blue-50 font-medium text-blue-700"
-                    : "text-slate-600 hover:bg-slate-50",
+                    : "text-slate-600 hover:bg-slate-50"
                 )}
               >
                 <span
@@ -96,7 +96,7 @@ export function FilterPanel({
                     "h-2 w-2 rounded-full border",
                     selected
                       ? "border-blue-500 bg-blue-500"
-                      : "border-slate-300 bg-white",
+                      : "border-slate-300 bg-white"
                   )}
                 />
                 <span className="truncate">{board.name}</span>
@@ -126,7 +126,7 @@ export function FilterPanel({
                   "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs transition",
                   selected
                     ? "bg-blue-50 font-medium text-blue-700"
-                    : "text-slate-600 hover:bg-slate-50",
+                    : "text-slate-600 hover:bg-slate-50"
                 )}
               >
                 <span
@@ -134,7 +134,7 @@ export function FilterPanel({
                     "h-2 w-2 rounded-full border",
                     selected
                       ? "border-blue-500 bg-blue-500"
-                      : "border-slate-300 bg-white",
+                      : "border-slate-300 bg-white"
                   )}
                 />
                 {label}
@@ -161,13 +161,13 @@ export function FilterPanel({
                   "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs transition",
                   selected
                     ? "bg-blue-50 font-medium text-blue-700"
-                    : "text-slate-600 hover:bg-slate-50",
+                    : "text-slate-600 hover:bg-slate-50"
                 )}
               >
                 <span
                   className={cn(
                     "h-2 w-2 rounded-full",
-                    selected ? color : "border border-slate-300 bg-white",
+                    selected ? color : "border border-slate-300 bg-white"
                   )}
                 />
                 {label}

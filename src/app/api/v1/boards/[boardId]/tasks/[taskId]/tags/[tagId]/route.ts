@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { tagAssignments, tasks } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { tagAssignments, tasks } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * DELETE /api/v1/boards/:boardId/tasks/:taskId/tags/:tagId
@@ -13,7 +13,9 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string; tagId: string }> },
+  {
+    params,
+  }: { params: Promise<{ boardId: string; taskId: string; tagId: string }> }
 ) {
   try {
     const { boardId, taskId, tagId } = await params;
@@ -29,7 +31,7 @@ export async function DELETE(
       .limit(1);
 
     if (task.length === 0) {
-      throw new ApiError(404, 'Task not found');
+      throw new ApiError(404, "Task not found");
     }
 
     // Find the tag assignment
@@ -37,18 +39,17 @@ export async function DELETE(
       .select({ id: tagAssignments.id })
       .from(tagAssignments)
       .where(
-        and(
-          eq(tagAssignments.taskId, taskId),
-          eq(tagAssignments.tagId, tagId),
-        ),
+        and(eq(tagAssignments.taskId, taskId), eq(tagAssignments.tagId, tagId))
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Tag assignment not found');
+      throw new ApiError(404, "Tag assignment not found");
     }
 
-    await db.delete(tagAssignments).where(eq(tagAssignments.id, existing[0].id));
+    await db
+      .delete(tagAssignments)
+      .where(eq(tagAssignments.id, existing[0].id));
 
     return new Response(null, { status: 204 });
   } catch (error) {

@@ -1,6 +1,7 @@
 describe("Clerk login", () => {
   it("user can sign in via Clerk testing commands", () => {
-    const email = Cypress.env("CLERK_TEST_EMAIL") || "jane+clerk_test@example.com";
+    const email =
+      Cypress.env("CLERK_TEST_EMAIL") || "jane+clerk_test@example.com";
 
     // Prereq per Clerk docs: visit a non-protected page that loads Clerk.
     cy.visit("/sign-in");

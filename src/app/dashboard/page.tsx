@@ -2,34 +2,24 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo } from "react";
+import { Activity, PenSquare, Timer, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
+import { useMemo } from "react";
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { Activity, PenSquare, Timer, Users } from "lucide-react";
-
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
-import { DashboardShell } from "@/components/templates/DashboardShell";
-import DropdownSelect, {
-  type DropdownSelectOption,
-} from "@/components/ui/dropdown-select";
-import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
-import { ApiError } from "@/api/mutator";
 import {
   type listBoardGroupsApiV1BoardGroupsGetResponse,
   useListBoardGroupsApiV1BoardGroupsGet,
@@ -43,6 +33,14 @@ import {
   useDashboardMetricsApiV1MetricsDashboardGet,
 } from "@/api/generated/metrics/metrics";
 import type { DashboardMetricsApiV1MetricsDashboardGetRangeKey } from "@/api/generated/model/dashboardMetricsApiV1MetricsDashboardGetRangeKey";
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
+import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
+import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
+import { DashboardShell } from "@/components/templates/DashboardShell";
+import DropdownSelect, {
+  type DropdownSelectOption,
+} from "@/components/ui/dropdown-select";
 import { parseApiDatetime } from "@/lib/datetime";
 
 type RangeKey = DashboardMetricsApiV1MetricsDashboardGetRangeKey;
@@ -94,7 +92,7 @@ const DASHBOARD_RANGE_OPTIONS: Array<{ value: RangeKey; label: string }> = [
   { value: "1y", label: "1 year" },
 ];
 const DASHBOARD_RANGE_SET = new Set<RangeKey>(
-  DASHBOARD_RANGE_OPTIONS.map((option) => option.value),
+  DASHBOARD_RANGE_OPTIONS.map((option) => option.value)
 );
 const ALL_FILTER_VALUE = "all";
 const DEFAULT_RANGE: RangeKey = "7d";
@@ -140,7 +138,7 @@ function buildSparkline(series: RangeSeries) {
   return {
     values: series.points.map((point) => Number(point.value ?? 0)),
     labels: series.points.map((point) =>
-      formatPeriod(point.period, series.bucket),
+      formatPeriod(point.period, series.bucket)
     ),
     bucket: series.bucket,
   };
@@ -150,7 +148,7 @@ function buildWipSparkline(series: WipRangeSeries, key: keyof WipPoint) {
   return {
     values: series.points.map((point) => Number(point[key] ?? 0)),
     labels: series.points.map((point) =>
-      formatPeriod(point.period, series.bucket),
+      formatPeriod(point.period, series.bucket)
     ),
     bucket: series.bucket,
   };
@@ -290,7 +288,7 @@ export default function DashboardPage() {
         refetchInterval: 30_000,
         refetchOnMount: "always",
       },
-    },
+    }
   );
   const boardGroupsQuery = useListBoardGroupsApiV1BoardGroupsGet<
     listBoardGroupsApiV1BoardGroupsGetResponse,
@@ -303,26 +301,26 @@ export default function DashboardPage() {
         refetchInterval: 30_000,
         refetchOnMount: "always",
       },
-    },
+    }
   );
 
   const boards = useMemo(
     () =>
       boardsQuery.data?.status === 200
         ? [...(boardsQuery.data.data.items ?? [])].sort((a, b) =>
-            a.name.localeCompare(b.name),
+            a.name.localeCompare(b.name)
           )
         : [],
-    [boardsQuery.data],
+    [boardsQuery.data]
   );
   const boardGroups = useMemo(
     () =>
       boardGroupsQuery.data?.status === 200
         ? [...(boardGroupsQuery.data.data.items ?? [])].sort((a, b) =>
-            a.name.localeCompare(b.name),
+            a.name.localeCompare(b.name)
           )
         : [],
-    [boardGroupsQuery.data],
+    [boardGroupsQuery.data]
   );
 
   const filteredBoards = useMemo(
@@ -330,15 +328,15 @@ export default function DashboardPage() {
       selectedGroupId
         ? boards.filter((board) => board.board_group_id === selectedGroupId)
         : boards,
-    [boards, selectedGroupId],
+    [boards, selectedGroupId]
   );
   const selectedBoard = useMemo(
     () => boards.find((board) => board.id === selectedBoardId) ?? null,
-    [boards, selectedBoardId],
+    [boards, selectedBoardId]
   );
   const selectedGroup = useMemo(
     () => boardGroups.find((group) => group.id === selectedGroupId) ?? null,
-    [boardGroups, selectedGroupId],
+    [boardGroups, selectedGroupId]
   );
 
   const boardGroupOptions = useMemo<DropdownSelectOption[]>(
@@ -346,7 +344,7 @@ export default function DashboardPage() {
       { value: ALL_FILTER_VALUE, label: "All groups" },
       ...boardGroups.map((group) => ({ value: group.id, label: group.name })),
     ],
-    [boardGroups],
+    [boardGroups]
   );
   const boardOptions = useMemo<DropdownSelectOption[]>(
     () => [
@@ -356,7 +354,7 @@ export default function DashboardPage() {
         label: board.name,
       })),
     ],
-    [filteredBoards],
+    [filteredBoards]
   );
 
   const metricsQuery = useDashboardMetricsApiV1MetricsDashboardGet<
@@ -374,7 +372,7 @@ export default function DashboardPage() {
         refetchInterval: 15_000,
         refetchOnMount: "always",
       },
-    },
+    }
   );
 
   const metrics =
@@ -382,47 +380,47 @@ export default function DashboardPage() {
 
   const throughputSeries = useMemo(
     () => (metrics ? buildSeries(metrics.throughput.primary) : []),
-    [metrics],
+    [metrics]
   );
   const cycleSeries = useMemo(
     () => (metrics ? buildSeries(metrics.cycle_time.primary) : []),
-    [metrics],
+    [metrics]
   );
   const errorSeries = useMemo(
     () => (metrics ? buildSeries(metrics.error_rate.primary) : []),
-    [metrics],
+    [metrics]
   );
   const wipSeries = useMemo(
     () => (metrics ? buildWipSeries(metrics.wip.primary) : []),
-    [metrics],
+    [metrics]
   );
 
   const cycleSpark = useMemo(
     () => (metrics ? buildSparkline(metrics.cycle_time.primary) : null),
-    [metrics],
+    [metrics]
   );
   const errorSpark = useMemo(
     () => (metrics ? buildSparkline(metrics.error_rate.primary) : null),
-    [metrics],
+    [metrics]
   );
   const wipSpark = useMemo(
     () =>
       metrics ? buildWipSparkline(metrics.wip.primary, "in_progress") : null,
-    [metrics],
+    [metrics]
   );
 
   const activeProgress = useMemo(
     () => (metrics ? Math.min(100, metrics.kpis.active_agents * 12.5) : 0),
-    [metrics],
+    [metrics]
   );
   const wipProgress = useMemo(() => calcProgress(wipSpark?.values), [wipSpark]);
   const errorProgress = useMemo(
     () => calcProgress(errorSpark?.values),
-    [errorSpark],
+    [errorSpark]
   );
   const cycleProgress = useMemo(
     () => calcProgress(cycleSpark?.values),
-    [cycleSpark],
+    [cycleSpark]
   );
 
   return (
@@ -476,7 +474,7 @@ export default function DashboardPage() {
                     }
                     if (selectedBoardId) {
                       const selectedBoardRecord = boards.find(
-                        (board) => board.id === selectedBoardId,
+                        (board) => board.id === selectedBoardId
                       );
                       const boardVisibleInScope = nextGroupId
                         ? selectedBoardRecord?.board_group_id === nextGroupId

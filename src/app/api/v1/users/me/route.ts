@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { users } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * GET /api/v1/users/me
@@ -17,8 +17,8 @@ export async function GET(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     const result = await db
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       .limit(1);
 
     if (result.length === 0) {
-      throw new ApiError(404, 'User not found');
+      throw new ApiError(404, "User not found");
     }
 
     return Response.json(result[0]);
@@ -47,33 +47,37 @@ export async function PATCH(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const allowedFields = [
-      'name', 'preferred_name', 'pronouns', 'timezone',
-      'notes', 'context', 'active_organization_id',
+      "name",
+      "preferred_name",
+      "pronouns",
+      "timezone",
+      "notes",
+      "context",
+      "active_organization_id",
     ] as const;
 
     const updates: Record<string, unknown> = {};
     for (const field of allowedFields) {
       if (field in body) {
         // Map snake_case to camelCase for Drizzle
-        const camelField = field.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        const camelField = field.replace(/_([a-z])/g, (_, c) =>
+          c.toUpperCase()
+        );
         updates[camelField] = body[field];
       }
     }
 
     if (Object.keys(updates).length === 0) {
-      throw new ApiError(422, 'No valid fields to update');
+      throw new ApiError(422, "No valid fields to update");
     }
 
-    await db
-      .update(users)
-      .set(updates)
-      .where(eq(users.id, actor.userId));
+    await db.update(users).set(updates).where(eq(users.id, actor.userId));
 
     const result = await db
       .select()
@@ -97,8 +101,8 @@ export async function DELETE(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     await db.delete(users).where(eq(users.id, actor.userId));

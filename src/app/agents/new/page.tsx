@@ -2,19 +2,16 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useState } from "react";
+import { useCreateAgentApiV1AgentsPost } from "@/api/generated/agents/agents";
 import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
-import { useCreateAgentApiV1AgentsPost } from "@/api/generated/agents/agents";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import type { BoardRead } from "@/api/generated/model";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEFAULT_IDENTITY_PROFILE } from "@/lib/agent-templates";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 type IdentityProfile = {
   role: string;
@@ -56,7 +54,7 @@ const getBoardOptions = (boards: BoardRead[]): SearchableSelectOption[] =>
   }));
 
 const normalizeIdentityProfile = (
-  profile: IdentityProfile,
+  profile: IdentityProfile
 ): IdentityProfile | null => {
   const normalized: IdentityProfile = {
     role: profile.role.trim(),
@@ -134,7 +132,7 @@ export default function NewAgentPage() {
           includeReasoning: false,
         },
         identity_profile: normalizeIdentityProfile(
-          identityProfile,
+          identityProfile
         ) as unknown as Record<string, unknown> | null,
       },
     });

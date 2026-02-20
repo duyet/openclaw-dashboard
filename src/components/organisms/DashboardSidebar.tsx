@@ -1,15 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Activity,
   BarChart3,
   Bot,
   Boxes,
+  Building2,
   CheckCircle2,
   Folder,
-  Building2,
   Kanban,
   LayoutGrid,
   Network,
@@ -17,14 +15,15 @@ import {
   Store,
   Tags,
 } from "lucide-react";
-
-import { useAuth } from "@/auth/clerk";
-import { ApiError } from "@/api/mutator";
-import { useOrganizationMembership } from "@/lib/use-organization-membership";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   type healthzHealthzGetResponse,
   useHealthzHealthzGet,
 } from "@/api/generated/default/default";
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { cn } from "@/lib/utils";
 
 export function DashboardSidebar() {
@@ -39,7 +38,7 @@ export function DashboardSidebar() {
         retry: false,
       },
       request: { cache: "no-store" },
-    },
+    }
   );
 
   const okValue = healthQuery.data?.data?.ok;
@@ -76,7 +75,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname === "/dashboard"
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <BarChart3 className="h-4 w-4" />
@@ -88,7 +87,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/activity")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <Activity className="h-4 w-4" />
@@ -100,7 +99,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/project-board")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <Kanban className="h-4 w-4" />
@@ -120,7 +119,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/board-groups")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <Folder className="h-4 w-4" />
@@ -132,7 +131,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/boards")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -144,7 +143,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/tags")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <Tags className="h-4 w-4" />
@@ -156,7 +155,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/approvals")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <CheckCircle2 className="h-4 w-4" />
@@ -169,7 +168,7 @@ export function DashboardSidebar() {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                     pathname.startsWith("/custom-fields")
                       ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100",
+                      : "hover:bg-slate-100"
                   )}
                 >
                   <Settings className="h-4 w-4" />
@@ -193,7 +192,7 @@ export function DashboardSidebar() {
                       pathname === "/skills" ||
                         pathname.startsWith("/skills/marketplace")
                         ? "bg-blue-100 text-blue-800 font-medium"
-                        : "hover:bg-slate-100",
+                        : "hover:bg-slate-100"
                     )}
                   >
                     <Store className="h-4 w-4" />
@@ -205,7 +204,7 @@ export function DashboardSidebar() {
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                       pathname.startsWith("/skills/packs")
                         ? "bg-blue-100 text-blue-800 font-medium"
-                        : "hover:bg-slate-100",
+                        : "hover:bg-slate-100"
                     )}
                   >
                     <Boxes className="h-4 w-4" />
@@ -227,7 +226,7 @@ export function DashboardSidebar() {
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                   pathname.startsWith("/organization")
                     ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100",
+                    : "hover:bg-slate-100"
                 )}
               >
                 <Building2 className="h-4 w-4" />
@@ -240,7 +239,7 @@ export function DashboardSidebar() {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                     pathname.startsWith("/gateways")
                       ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100",
+                      : "hover:bg-slate-100"
                   )}
                 >
                   <Network className="h-4 w-4" />
@@ -254,7 +253,7 @@ export function DashboardSidebar() {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
                     pathname.startsWith("/agents")
                       ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100",
+                      : "hover:bg-slate-100"
                   )}
                 >
                   <Bot className="h-4 w-4" />
@@ -272,7 +271,7 @@ export function DashboardSidebar() {
               "h-2 w-2 rounded-full",
               systemStatus === "operational" && "bg-emerald-500",
               systemStatus === "degraded" && "bg-rose-500",
-              systemStatus === "unknown" && "bg-slate-300",
+              systemStatus === "unknown" && "bg-slate-300"
             )}
           />
           {statusLabel}

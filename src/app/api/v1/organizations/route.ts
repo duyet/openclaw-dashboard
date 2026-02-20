@@ -1,12 +1,12 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { organizations, organizationMembers } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { parsePagination, paginatedResponse } from '@/lib/pagination';
-import { eq, and, sql } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq, sql } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { organizationMembers, organizations } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
+import { paginatedResponse, parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/organizations
@@ -18,8 +18,8 @@ export async function GET(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
     const url = new URL(request.url);
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       .from(organizations)
       .innerJoin(
         organizationMembers,
-        eq(organizationMembers.organizationId, organizations.id),
+        eq(organizationMembers.organizationId, organizations.id)
       )
       .where(eq(organizationMembers.userId, actor.userId))
       .limit(limit)
@@ -64,15 +64,15 @@ export async function POST(request: Request) {
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user' || !actor.userId) {
-      throw new ApiError(401, 'Unauthorized');
+    if (actor.type !== "user" || !actor.userId) {
+      throw new ApiError(401, "Unauthorized");
     }
 
-    const body = await request.json() as Record<string, unknown>;
-    const name = ((body.name as string) || '').trim();
+    const body = (await request.json()) as Record<string, unknown>;
+    const name = ((body.name as string) || "").trim();
 
     if (!name) {
-      throw new ApiError(422, 'Organization name is required');
+      throw new ApiError(422, "Organization name is required");
     }
 
     // Check for existing org with same name
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (existing.length > 0) {
-      throw new ApiError(409, 'Organization with this name already exists');
+      throw new ApiError(409, "Organization with this name already exists");
     }
 
     const now = new Date().toISOString();
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       id: crypto.randomUUID(),
       organizationId: orgId,
       userId: actor.userId,
-      role: 'owner',
+      role: "owner",
       allBoardsRead: true,
       allBoardsWrite: true,
       createdAt: now,

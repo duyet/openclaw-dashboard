@@ -13,7 +13,7 @@ export class ApiError extends Error {
 
   constructor(status: number, message: string, data?: unknown) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = status;
     this.data = data;
   }
@@ -29,25 +29,25 @@ export class ApiError extends Error {
 export function errorResponse(
   status: number,
   message: string,
-  data?: unknown,
+  data?: unknown
 ): Response {
   return Response.json(
     { detail: message, ...(data !== undefined ? { data } : {}) },
-    { status },
+    { status }
   );
 }
 
 /**
  * 404 Not Found response.
  */
-export function notFound(message = 'Not found'): Response {
+export function notFound(message = "Not found"): Response {
   return errorResponse(404, message);
 }
 
 /**
  * 403 Forbidden response.
  */
-export function forbidden(message = 'Forbidden'): Response {
+export function forbidden(message = "Forbidden"): Response {
   return errorResponse(403, message);
 }
 
@@ -61,7 +61,7 @@ export function badRequest(message: string, data?: unknown): Response {
 /**
  * 401 Unauthorized response.
  */
-export function unauthorized(message = 'Unauthorized'): Response {
+export function unauthorized(message = "Unauthorized"): Response {
   return errorResponse(401, message);
 }
 
@@ -75,6 +75,6 @@ export function handleApiError(error: unknown): Response {
   if (error instanceof ApiError) {
     return errorResponse(error.status, error.message, error.data);
   }
-  console.error('[API Error]', error);
-  return errorResponse(500, 'Internal server error');
+  console.error("[API Error]", error);
+  return errorResponse(500, "Internal server error");
 }

@@ -4,7 +4,7 @@
 // so it can be used from both client and server/edge entrypoints.
 
 export function isLikelyValidClerkPublishableKey(
-  key: string | undefined,
+  key: string | undefined
 ): key is string {
   if (!key) return false;
 

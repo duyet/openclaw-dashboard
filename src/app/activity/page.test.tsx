@@ -1,10 +1,9 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-
-import ActivityPage from "./page";
+import type React from "react";
+import { describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import ActivityPage from "./page";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/activity",
@@ -43,7 +42,7 @@ vi.mock("@clerk/nextjs", () => {
     ),
     SignedIn: () => {
       throw new Error(
-        "@clerk/nextjs SignedIn rendered (unexpected in secretless mode)",
+        "@clerk/nextjs SignedIn rendered (unexpected in secretless mode)"
       );
     },
     SignedOut: () => {
@@ -72,7 +71,7 @@ describe("/activity auth boundary", () => {
         <QueryProvider>
           <ActivityPage />
         </QueryProvider>
-      </AuthProvider>,
+      </AuthProvider>
     );
 
     expect(screen.getByText(/sign in to view the feed/i)).toBeInTheDocument();

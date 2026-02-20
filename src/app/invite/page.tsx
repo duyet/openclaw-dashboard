@@ -2,13 +2,12 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-import { SignInButton, SignedIn, SignedOut, useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useAcceptOrgInviteApiV1OrganizationsInvitesAcceptPost } from "@/api/generated/organizations/organizations";
+
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { BrandMark } from "@/components/atoms/BrandMark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

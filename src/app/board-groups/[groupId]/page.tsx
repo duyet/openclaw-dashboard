@@ -2,11 +2,6 @@
 
 export const dynamic = "force-dynamic";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-
-import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import {
   ArrowUpRight,
   MessageSquare,
@@ -14,13 +9,9 @@ import {
   Settings,
   X,
 } from "lucide-react";
-
-import { ApiError } from "@/api/mutator";
-import {
-  applyBoardGroupHeartbeatApiV1BoardGroupsGroupIdHeartbeatPost,
-  type getBoardGroupSnapshotApiV1BoardGroupsGroupIdSnapshotGetResponse,
-  useGetBoardGroupSnapshotApiV1BoardGroupsGroupIdSnapshotGet,
-} from "@/api/generated/board-groups/board-groups";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createBoardGroupMemoryApiV1BoardGroupsGroupIdMemoryPost,
   type listBoardGroupMemoryApiV1BoardGroupsGroupIdMemoryGetResponse,
@@ -28,26 +19,33 @@ import {
   useListBoardGroupMemoryApiV1BoardGroupsGroupIdMemoryGet,
 } from "@/api/generated/board-group-memory/board-group-memory";
 import {
-  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
-  useGetMyMembershipApiV1OrganizationsMeMemberGet,
-} from "@/api/generated/organizations/organizations";
+  applyBoardGroupHeartbeatApiV1BoardGroupsGroupIdHeartbeatPost,
+  type getBoardGroupSnapshotApiV1BoardGroupsGroupIdSnapshotGetResponse,
+  useGetBoardGroupSnapshotApiV1BoardGroupsGroupIdSnapshotGet,
+} from "@/api/generated/board-groups/board-groups";
 import type {
+  BoardGroupBoardSnapshot,
   BoardGroupHeartbeatApplyResult,
   BoardGroupMemoryRead,
   OrganizationMemberRead,
 } from "@/api/generated/model";
-import type { BoardGroupBoardSnapshot } from "@/api/generated/model";
+import {
+  type getMyMembershipApiV1OrganizationsMeMemberGetResponse,
+  useGetMyMembershipApiV1OrganizationsMeMemberGet,
+} from "@/api/generated/organizations/organizations";
+import type { ApiError } from "@/api/mutator";
+import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { Markdown } from "@/components/atoms/Markdown";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
+import { BoardChatComposer } from "@/components/BoardChatComposer";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
-import { BoardChatComposer } from "@/components/BoardChatComposer";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { usePageActive } from "@/hooks/usePageActive";
 import { createExponentialBackoff } from "@/lib/backoff";
 import { apiDatetimeToMs } from "@/lib/datetime";
 import { formatTimestamp } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
-import { usePageActive } from "@/hooks/usePageActive";
 
 const statusLabel = (value?: string | null) => {
   switch (value) {
@@ -93,13 +91,13 @@ const safeCount = (snapshot: BoardGroupBoardSnapshot, key: string) =>
 
 const canWriteGroupBoards = (
   member: OrganizationMemberRead | null,
-  boardIds: Set<string>,
+  boardIds: Set<string>
 ) => {
   if (!member) return false;
   if (member.all_boards_write) return true;
   if (!member.board_access || boardIds.size === 0) return false;
   return member.board_access.some(
-    (access) => access.can_write && boardIds.has(access.board_id),
+    (access) => access.can_write && boardIds.has(access.board_id)
   );
 };
 
@@ -178,7 +176,7 @@ export default function BoardGroupDetailPage() {
 
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [notesMessages, setNotesMessages] = useState<BoardGroupMemoryRead[]>(
-    [],
+    []
   );
   const notesMessagesRef = useRef<BoardGroupMemoryRead[]>([]);
   const notesEndRef = useRef<HTMLDivElement | null>(null);
@@ -191,7 +189,7 @@ export default function BoardGroupDetailPage() {
   const [includeBoardLeads, setIncludeBoardLeads] = useState(false);
   const [isHeartbeatApplying, setIsHeartbeatApplying] = useState(false);
   const [heartbeatApplyError, setHeartbeatApplyError] = useState<string | null>(
-    null,
+    null
   );
   const [heartbeatApplyResult, setHeartbeatApplyResult] =
     useState<BoardGroupHeartbeatApplyResult | null>(null);
@@ -216,7 +214,7 @@ export default function BoardGroupDetailPage() {
           refetchOnMount: "always",
           retry: false,
         },
-      },
+      }
     );
 
   const snapshot =
@@ -259,7 +257,7 @@ export default function BoardGroupDetailPage() {
   const isAdmin = member?.role === "admin" || member?.role === "owner";
   const canWriteGroup = useMemo(
     () => canWriteGroupBoards(member, boardIdSet),
-    [boardIdSet, member],
+    [boardIdSet, member]
   );
   const canManageHeartbeat = Boolean(isAdmin && canWriteGroup);
 
@@ -276,7 +274,7 @@ export default function BoardGroupDetailPage() {
           refetchOnMount: "always",
           retry: false,
         },
-      },
+      }
     );
 
   const notesHistoryQuery =
@@ -292,7 +290,7 @@ export default function BoardGroupDetailPage() {
           refetchOnMount: "always",
           retry: false,
         },
-      },
+      }
     );
 
   const mergeChatMessages = useCallback(
@@ -314,7 +312,7 @@ export default function BoardGroupDetailPage() {
       });
       return merged;
     },
-    [],
+    []
   );
 
   const mergeNotesMessages = useCallback(
@@ -336,7 +334,7 @@ export default function BoardGroupDetailPage() {
       });
       return merged;
     },
-    [],
+    []
   );
 
   /**
@@ -395,7 +393,7 @@ export default function BoardGroupDetailPage() {
             {
               headers: { Accept: "text/event-stream" },
               signal: abortController.signal,
-            },
+            }
           );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect group chat stream.");
@@ -443,7 +441,7 @@ export default function BoardGroupDetailPage() {
                   setChatMessages((prev) =>
                     mergeChatMessages(prev, [
                       payload.memory as BoardGroupMemoryRead,
-                    ]),
+                    ])
                   );
                 }
               } catch {
@@ -521,7 +519,7 @@ export default function BoardGroupDetailPage() {
             {
               headers: { Accept: "text/event-stream" },
               signal: abortController.signal,
-            },
+            }
           );
         if (streamResult.status !== 200) {
           throw new Error("Unable to connect group notes stream.");
@@ -565,7 +563,7 @@ export default function BoardGroupDetailPage() {
                   setNotesMessages((prev) =>
                     mergeNotesMessages(prev, [
                       payload.memory as BoardGroupMemoryRead,
-                    ]),
+                    ])
                   );
                 }
               } catch {
@@ -625,7 +623,7 @@ export default function BoardGroupDetailPage() {
         const result =
           await createBoardGroupMemoryApiV1BoardGroupsGroupIdMemoryPost(
             groupId,
-            { content: trimmed, tags },
+            { content: trimmed, tags }
           );
         if (result.status !== 200) {
           throw new Error("Unable to send message.");
@@ -637,14 +635,14 @@ export default function BoardGroupDetailPage() {
         return true;
       } catch (err) {
         setChatError(
-          err instanceof Error ? err.message : "Unable to send message.",
+          err instanceof Error ? err.message : "Unable to send message."
         );
         return false;
       } finally {
         setIsChatSending(false);
       }
     },
-    [canWriteGroup, chatBroadcast, groupId, isSignedIn, mergeChatMessages],
+    [canWriteGroup, chatBroadcast, groupId, isSignedIn, mergeChatMessages]
   );
 
   const sendGroupNote = useCallback(
@@ -669,7 +667,7 @@ export default function BoardGroupDetailPage() {
         const result =
           await createBoardGroupMemoryApiV1BoardGroupsGroupIdMemoryPost(
             groupId,
-            { content: trimmed, tags },
+            { content: trimmed, tags }
           );
         if (result.status !== 200) {
           throw new Error("Unable to post.");
@@ -681,14 +679,14 @@ export default function BoardGroupDetailPage() {
         return true;
       } catch (err) {
         setNoteSendError(
-          err instanceof Error ? err.message : "Unable to post.",
+          err instanceof Error ? err.message : "Unable to post."
         );
         return false;
       } finally {
         setIsNoteSending(false);
       }
     },
-    [canWriteGroup, groupId, isSignedIn, mergeNotesMessages, notesBroadcast],
+    [canWriteGroup, groupId, isSignedIn, mergeNotesMessages, notesBroadcast]
   );
 
   const applyHeartbeat = useCallback(async () => {
@@ -711,7 +709,7 @@ export default function BoardGroupDetailPage() {
       const result =
         await applyBoardGroupHeartbeatApiV1BoardGroupsGroupIdHeartbeatPost(
           groupId,
-          { every: trimmed, include_board_leads: includeBoardLeads },
+          { every: trimmed, include_board_leads: includeBoardLeads }
         );
       if (result.status !== 200) {
         throw new Error("Unable to apply heartbeat.");
@@ -719,7 +717,7 @@ export default function BoardGroupDetailPage() {
       setHeartbeatApplyResult(result.data);
     } catch (err) {
       setHeartbeatApplyError(
-        err instanceof Error ? err.message : "Unable to apply heartbeat.",
+        err instanceof Error ? err.message : "Unable to apply heartbeat."
       );
     } finally {
       setIsHeartbeatApplying(false);
@@ -837,7 +835,7 @@ export default function BoardGroupDetailPage() {
                           "rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
                           perBoardLimit === value
                             ? "bg-slate-900 text-white"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                         )}
                         onClick={() => setPerBoardLimit(value)}
                       >
@@ -862,7 +860,7 @@ export default function BoardGroupDetailPage() {
                               ? "bg-slate-900 text-white"
                               : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                             !canManageHeartbeat &&
-                              "opacity-50 cursor-not-allowed",
+                              "opacity-50 cursor-not-allowed"
                           )}
                           disabled={!canManageHeartbeat}
                           onClick={() => {
@@ -883,7 +881,7 @@ export default function BoardGroupDetailPage() {
                       heartbeatEvery
                         ? "border-slate-200"
                         : "border-rose-300 focus:border-rose-400 focus:ring-2 focus:ring-rose-100",
-                      !canManageHeartbeat && "opacity-60 cursor-not-allowed",
+                      !canManageHeartbeat && "opacity-60 cursor-not-allowed"
                     )}
                     placeholder="10"
                     inputMode="numeric"
@@ -899,7 +897,7 @@ export default function BoardGroupDetailPage() {
                     }
                     className={cn(
                       "h-8 rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-900 shadow-sm",
-                      !canManageHeartbeat && "opacity-60 cursor-not-allowed",
+                      !canManageHeartbeat && "opacity-60 cursor-not-allowed"
                     )}
                     disabled={!canManageHeartbeat}
                   >
@@ -1037,7 +1035,7 @@ export default function BoardGroupDetailPage() {
                                       <span
                                         className={cn(
                                           "inline-flex flex-shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold",
-                                          statusTone(task.status),
+                                          statusTone(task.status)
                                         )}
                                       >
                                         {statusLabel(task.status)}
@@ -1045,7 +1043,7 @@ export default function BoardGroupDetailPage() {
                                       <span
                                         className={cn(
                                           "inline-flex flex-shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold",
-                                          priorityTone(task.priority),
+                                          priorityTone(task.priority)
                                         )}
                                       >
                                         {task.priority}
@@ -1101,7 +1099,7 @@ export default function BoardGroupDetailPage() {
       <aside
         className={cn(
           "fixed right-0 top-0 z-50 h-full w-[560px] max-w-[96vw] transform border-l border-slate-200 bg-white shadow-2xl transition-transform",
-          isChatOpen ? "transform-none" : "translate-x-full",
+          isChatOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
@@ -1188,7 +1186,7 @@ export default function BoardGroupDetailPage() {
       <aside
         className={cn(
           "fixed right-0 top-0 z-50 h-full w-[560px] max-w-[96vw] transform border-l border-slate-200 bg-white shadow-2xl transition-transform",
-          isNotesOpen ? "transform-none" : "translate-x-full",
+          isNotesOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">

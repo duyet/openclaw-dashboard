@@ -1,13 +1,11 @@
-import type { ReactNode } from "react";
+import { flexRender, type Row, type Table } from "@tanstack/react-table";
 import Link from "next/link";
-
-import { type Row, type Table, flexRender } from "@tanstack/react-table";
-
+import type { ReactNode } from "react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   TableEmptyStateRow,
   TableLoadingRow,
 } from "@/components/ui/table-state";
-import { Button, buttonVariants } from "@/components/ui/button";
 
 export type DataTableEmptyState = {
   icon: ReactNode;
@@ -109,7 +107,7 @@ export function DataTable<TData>({
                       <span>
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext(),
+                          header.getContext()
                         )}
                       </span>
                       {header.column.getIsSorted() === "asc" ? (
@@ -123,7 +121,7 @@ export function DataTable<TData>({
                   ) : (
                     flexRender(
                       header.column.columnDef.header,
-                      header.getContext(),
+                      header.getContext()
                     )
                   )}
                 </th>

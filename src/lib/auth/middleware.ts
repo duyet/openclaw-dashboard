@@ -27,11 +27,11 @@
  * Edge-runtime safe: uses only `crypto.subtle`, no Node.js built-ins.
  */
 
-import type { Actor } from './types';
-import type { Database } from '../db';
-import { schema } from '../db';
-import { eq, isNotNull } from 'drizzle-orm';
-import { unauthorized } from '../errors';
+import { eq, isNotNull } from "drizzle-orm";
+import type { Database } from "../db";
+import { schema } from "../db";
+import { unauthorized } from "../errors";
+import type { Actor } from "./types";
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -39,18 +39,18 @@ import { unauthorized } from '../errors';
 
 /** Extract the raw token from an "Authorization: Bearer <token>" header. */
 function extractBearerToken(request: Request): string | null {
-  const header = request.headers.get('Authorization');
+  const header = request.headers.get("Authorization");
   if (!header) return null;
   const trimmed = header.trim();
-  if (!trimmed.toLowerCase().startsWith('bearer ')) return null;
+  if (!trimmed.toLowerCase().startsWith("bearer ")) return null;
   const token = trimmed.slice(7).trim();
   return token || null;
 }
 
 /** Decode URL-safe base64 (no padding) to Uint8Array. */
 function base64UrlDecode(input: string): Uint8Array {
-  const padded = input + '='.repeat((4 - (input.length % 4)) % 4);
-  const standard = padded.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = input + "=".repeat((4 - (input.length % 4)) % 4);
+  const standard = padded.replace(/-/g, "+").replace(/_/g, "/");
   const binary = atob(standard);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -83,15 +83,15 @@ async function timingSafeEqualStrings(a: string, b: string): Promise<boolean> {
   // Use a random key per call so the HMAC output is unpredictable to attackers.
   const keyBytes = crypto.getRandomValues(new Uint8Array(32));
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     keyBytes,
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign'],
+    ["sign"]
   );
   const [sigA, sigB] = await Promise.all([
-    crypto.subtle.sign('HMAC', key, encoder.encode(a)),
-    crypto.subtle.sign('HMAC', key, encoder.encode(b)),
+    crypto.subtle.sign("HMAC", key, encoder.encode(a)),
+    crypto.subtle.sign("HMAC", key, encoder.encode(b)),
   ]);
   return timingSafeEqualBytes(new Uint8Array(sigA), new Uint8Array(sigB));
 }
@@ -103,12 +103,12 @@ async function timingSafeEqualStrings(a: string, b: string): Promise<boolean> {
  */
 async function verifyPbkdf2Token(
   token: string,
-  storedHash: string,
+  storedHash: string
 ): Promise<boolean> {
-  const parts = storedHash.split('$');
+  const parts = storedHash.split("$");
   if (parts.length !== 4) return false;
   const [algorithm, iterationsStr, saltB64, digestB64] = parts;
-  if (algorithm !== 'pbkdf2_sha256') return false;
+  if (algorithm !== "pbkdf2_sha256") return false;
 
   const iterations = parseInt(iterationsStr, 10);
   if (!Number.isFinite(iterations) || iterations <= 0) return false;
@@ -118,16 +118,21 @@ async function verifyPbkdf2Token(
 
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(token),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveBits'],
+    ["deriveBits"]
   );
   const derivedBits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: salt as unknown as BufferSource, iterations, hash: 'SHA-256' },
+    {
+      name: "PBKDF2",
+      salt: salt as unknown as BufferSource,
+      iterations,
+      hash: "SHA-256",
+    },
     keyMaterial,
-    256, // 32 bytes
+    256 // 32 bytes
   );
 
   return timingSafeEqualBytes(new Uint8Array(derivedBits), expectedDigest);
@@ -145,9 +150,9 @@ async function verifyPbkdf2Token(
  */
 async function resolveAgentActor(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
-  const rawToken = request.headers.get('X-Agent-Token');
+  const rawToken = request.headers.get("X-Agent-Token");
   if (!rawToken) return null;
   const token = rawToken.trim();
   if (!token) return null;
@@ -173,7 +178,7 @@ async function resolveAgentActor(
         .run()
         .catch(() => undefined);
 
-      return { type: 'agent', agentId: agent.id };
+      return { type: "agent", agentId: agent.id };
     }
   }
 
@@ -188,7 +193,7 @@ async function resolveAgentActor(
  */
 async function resolveClerkActor(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
   const token = extractBearerToken(request);
   if (!token) return null;
@@ -197,7 +202,7 @@ async function resolveClerkActor(
   if (!secretKey) return null;
 
   try {
-    const { verifyToken } = await import('@clerk/nextjs/server');
+    const { verifyToken } = await import("@clerk/nextjs/server");
     const payload = await verifyToken(token, { secretKey });
     if (!payload?.sub) return null;
 
@@ -211,7 +216,7 @@ async function resolveClerkActor(
     if (!rows[0]) return null;
 
     return {
-      type: 'user',
+      type: "user",
       userId: rows[0].id,
       clerkId: clerkUserId,
       orgId: rows[0].activeOrganizationId ?? undefined,
@@ -231,7 +236,7 @@ async function resolveClerkActor(
  */
 async function resolveLocalActor(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
   const token = extractBearerToken(request);
   if (!token) return null;
@@ -246,15 +251,15 @@ async function resolveLocalActor(
   const rows = await db
     .select()
     .from(schema.users)
-    .where(eq(schema.users.clerkUserId, 'local'))
+    .where(eq(schema.users.clerkUserId, "local"))
     .limit(1);
 
   if (!rows[0]) return null;
 
   return {
-    type: 'user',
+    type: "user",
     userId: rows[0].id,
-    clerkId: 'local',
+    clerkId: "local",
     orgId: rows[0].activeOrganizationId ?? undefined,
   };
 }
@@ -270,7 +275,7 @@ async function resolveLocalActor(
  */
 export async function resolveAuth(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor | null> {
   // 1. Agent token has highest priority.
   const agentActor = await resolveAgentActor(request, db);
@@ -278,11 +283,9 @@ export async function resolveAuth(
 
   // 2. Dispatch to user strategy based on AUTH_MODE.
   const authMode =
-    process.env.AUTH_MODE ??
-    process.env.NEXT_PUBLIC_AUTH_MODE ??
-    'clerk';
+    process.env.AUTH_MODE ?? process.env.NEXT_PUBLIC_AUTH_MODE ?? "clerk";
 
-  if (authMode === 'local') {
+  if (authMode === "local") {
     return resolveLocalActor(request, db);
   }
 
@@ -306,7 +309,7 @@ export async function resolveAuth(
  */
 export async function authenticate(
   request: Request,
-  db: Database,
+  db: Database
 ): Promise<Actor> {
   const actor = await resolveAuth(request, db);
   if (!actor) {

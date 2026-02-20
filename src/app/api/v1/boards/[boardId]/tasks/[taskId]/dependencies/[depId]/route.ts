@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { taskDependencies } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { taskDependencies } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 /**
  * DELETE /api/v1/boards/:boardId/tasks/:taskId/dependencies/:depId
@@ -13,7 +13,9 @@ import { eq, and } from 'drizzle-orm';
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ boardId: string; taskId: string; depId: string }> },
+  {
+    params,
+  }: { params: Promise<{ boardId: string; taskId: string; depId: string }> }
 ) {
   try {
     const { boardId, taskId, depId } = await params;
@@ -28,13 +30,13 @@ export async function DELETE(
         and(
           eq(taskDependencies.id, depId),
           eq(taskDependencies.taskId, taskId),
-          eq(taskDependencies.boardId, boardId),
-        ),
+          eq(taskDependencies.boardId, boardId)
+        )
       )
       .limit(1);
 
     if (existing.length === 0) {
-      throw new ApiError(404, 'Dependency not found');
+      throw new ApiError(404, "Dependency not found");
     }
 
     await db.delete(taskDependencies).where(eq(taskDependencies.id, depId));

@@ -1,11 +1,11 @@
-export const runtime = 'edge';
+export const runtime = "edge";
 
-import { getRequestContext } from '@cloudflare/next-on-pages';
-import { getDb } from '@/lib/db';
-import { organizationBoardAccess, organizationMembers } from '@/lib/db/schema';
-import { requireActorContext } from '@/lib/auth';
-import { handleApiError, ApiError } from '@/lib/errors';
-import { eq, and } from 'drizzle-orm';
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { and, eq } from "drizzle-orm";
+import { requireActorContext } from "@/lib/auth";
+import { getDb } from "@/lib/db";
+import { organizationBoardAccess, organizationMembers } from "@/lib/db/schema";
+import { ApiError, handleApiError } from "@/lib/errors";
 
 // ---------------------------------------------------------------------------
 // Helper: verify the access record belongs to a member of this org
@@ -13,7 +13,7 @@ import { eq, and } from 'drizzle-orm';
 async function getVerifiedAccess(
   db: ReturnType<typeof getDb>,
   orgId: string,
-  accessId: string,
+  accessId: string
 ) {
   const access = await db
     .select()
@@ -22,7 +22,7 @@ async function getVerifiedAccess(
     .limit(1);
 
   if (access.length === 0) {
-    throw new ApiError(404, 'Board access record not found');
+    throw new ApiError(404, "Board access record not found");
   }
 
   // Verify the access record's member belongs to this org
@@ -32,13 +32,16 @@ async function getVerifiedAccess(
     .where(
       and(
         eq(organizationMembers.id, access[0].organizationMemberId),
-        eq(organizationMembers.organizationId, orgId),
-      ),
+        eq(organizationMembers.organizationId, orgId)
+      )
     )
     .limit(1);
 
   if (member.length === 0) {
-    throw new ApiError(404, 'Board access record not found in this organization');
+    throw new ApiError(
+      404,
+      "Board access record not found in this organization"
+    );
   }
 
   return access[0];
@@ -50,7 +53,7 @@ async function getVerifiedAccess(
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; accessId: string }> },
+  { params }: { params: Promise<{ orgId: string; accessId: string }> }
 ) {
   try {
     const { orgId, accessId } = await params;
@@ -72,7 +75,7 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; accessId: string }> },
+  { params }: { params: Promise<{ orgId: string; accessId: string }> }
 ) {
   try {
     const { orgId, accessId } = await params;
@@ -80,24 +83,27 @@ export async function PATCH(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can update board access');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can update board access");
     }
 
     await getVerifiedAccess(db, orgId, accessId);
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
     const updates: Record<string, unknown> = {};
 
-    if (typeof body.can_read === 'boolean') {
+    if (typeof body.can_read === "boolean") {
       updates.canRead = body.can_read;
     }
-    if (typeof body.can_write === 'boolean') {
+    if (typeof body.can_write === "boolean") {
       updates.canWrite = body.can_write;
     }
 
     if (Object.keys(updates).length === 0) {
-      throw new ApiError(422, 'At least one of can_read or can_write must be provided');
+      throw new ApiError(
+        422,
+        "At least one of can_read or can_write must be provided"
+      );
     }
 
     updates.updatedAt = new Date().toISOString();
@@ -125,7 +131,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ orgId: string; accessId: string }> },
+  { params }: { params: Promise<{ orgId: string; accessId: string }> }
 ) {
   try {
     const { orgId, accessId } = await params;
@@ -133,8 +139,8 @@ export async function DELETE(
     const db = getDb(env.DB);
     const actor = await requireActorContext(request, env.DB);
 
-    if (actor.type !== 'user') {
-      throw new ApiError(403, 'Only users can remove board access');
+    if (actor.type !== "user") {
+      throw new ApiError(403, "Only users can remove board access");
     }
 
     await getVerifiedAccess(db, orgId, accessId);

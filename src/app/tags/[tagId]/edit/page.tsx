@@ -2,17 +2,16 @@
 
 export const dynamic = "force-dynamic";
 
-import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-import { useAuth } from "@/auth/clerk";
-
-import { ApiError } from "@/api/mutator";
+import { useMemo } from "react";
 import {
   type getTagApiV1TagsTagIdGetResponse,
   useGetTagApiV1TagsTagIdGet,
   useUpdateTagApiV1TagsTagIdPatch,
 } from "@/api/generated/tags/tags";
+
+import type { ApiError } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { TagForm } from "@/components/tags/TagForm";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
@@ -44,7 +43,7 @@ export default function EditTagPage() {
 
   const tag = useMemo(
     () => (tagQuery.data?.status === 200 ? tagQuery.data.data : null),
-    [tagQuery.data],
+    [tagQuery.data]
   );
 
   return (

@@ -1,9 +1,8 @@
 "use client";
 
 import { CalendarClock } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 import { parseApiDatetime } from "@/lib/datetime";
+import { cn } from "@/lib/utils";
 
 import { AssigneeChip } from "./AssigneeChip";
 
@@ -44,7 +43,7 @@ export function ProjectTaskCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md",
+        "rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -54,7 +53,7 @@ export function ProjectTaskCard({
         <span
           className={cn(
             "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-            priorityStyles[priority] ?? priorityStyles.medium,
+            priorityStyles[priority] ?? priorityStyles.medium
           )}
         >
           {priority}
@@ -72,15 +71,13 @@ export function ProjectTaskCard({
           <span
             className={cn(
               "flex items-center gap-1 text-[11px]",
-              isOverdue
-                ? "font-semibold text-rose-600"
-                : "text-slate-500",
+              isOverdue ? "font-semibold text-rose-600" : "text-slate-500"
             )}
           >
             <CalendarClock
               className={cn(
                 "h-3.5 w-3.5",
-                isOverdue ? "text-rose-500" : "text-slate-400",
+                isOverdue ? "text-rose-500" : "text-slate-400"
               )}
             />
             {isOverdue ? `Overdue` : dueLabel}

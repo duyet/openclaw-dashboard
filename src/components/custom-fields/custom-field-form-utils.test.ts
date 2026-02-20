@@ -11,7 +11,7 @@ import {
 } from "./custom-field-form-utils";
 
 const buildField = (
-  overrides: Partial<TaskCustomFieldDefinitionRead> = {},
+  overrides: Partial<TaskCustomFieldDefinitionRead> = {}
 ): TaskCustomFieldDefinitionRead => ({
   id: "field-1",
   organization_id: "org-1",
@@ -51,13 +51,13 @@ describe("parseCustomFieldDefaultValue", () => {
 
   it("returns validation errors for invalid defaults", () => {
     expect(parseCustomFieldDefaultValue("integer", "42.5").error).toMatch(
-      /valid integer/i,
+      /valid integer/i
     );
     expect(parseCustomFieldDefaultValue("boolean", "yes").error).toMatch(
-      /true or false/i,
+      /true or false/i
     );
     expect(parseCustomFieldDefaultValue("json", '"string"').error).toMatch(
-      /object or array/i,
+      /object or array/i
     );
   });
 });
@@ -161,7 +161,7 @@ describe("formatCustomFieldDefaultValue", () => {
   it("formats objects as minified or pretty json", () => {
     expect(formatCustomFieldDefaultValue({ a: 1 })).toBe('{"a":1}');
     expect(formatCustomFieldDefaultValue({ a: 1 }, { pretty: true })).toBe(
-      '{\n  "a": 1\n}',
+      '{\n  "a": 1\n}'
     );
   });
 });
