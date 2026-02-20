@@ -1379,7 +1379,7 @@ export default function BoardDetailPage() {
           if (done) break;
           // Consider the stream healthy once we receive any bytes (including pings)
           // and reset the backoff so a later disconnect doesn't wait the full max.
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
           buffer += decoder.decode(value, { stream: true });
@@ -1494,7 +1494,7 @@ export default function BoardDetailPage() {
         while (!isCancelled) {
           const { value, done } = await reader.read();
           if (done) break;
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
           buffer += decoder.decode(value, { stream: true });
@@ -1679,7 +1679,7 @@ export default function BoardDetailPage() {
         while (!isCancelled) {
           const { value, done } = await reader.read();
           if (done) break;
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
           buffer += decoder.decode(value, { stream: true });
@@ -1850,7 +1850,7 @@ export default function BoardDetailPage() {
         while (!isCancelled) {
           const { value, done } = await reader.read();
           if (done) break;
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
           buffer += decoder.decode(value, { stream: true });
@@ -3264,8 +3264,7 @@ export default function BoardDetailPage() {
                             </div>
                           </div>
                           <div className="px-5 py-4">
-                            {groupSnapshot.boards &&
-                            groupSnapshot.boards.length ? (
+                            {groupSnapshot.boards?.length ? (
                               <div className="grid gap-4 md:grid-cols-2">
                                 {groupSnapshot.boards.map((item) => (
                                   <div
@@ -3306,7 +3305,7 @@ export default function BoardDetailPage() {
                                       </span>
                                     </div>
 
-                                    {item.tasks && item.tasks.length ? (
+                                    {item.tasks?.length ? (
                                       <ul className="mt-3 space-y-2">
                                         {item.tasks.slice(0, 3).map((task) => (
                                           <li

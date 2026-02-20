@@ -4,7 +4,7 @@ import { getRequestContext } from "@cloudflare/next-on-pages";
 import { and, eq } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { organizationMembers, organizations, users } from "@/lib/db/schema";
+import { organizationMembers, users } from "@/lib/db/schema";
 import { ApiError, handleApiError } from "@/lib/errors";
 
 // ---------------------------------------------------------------------------

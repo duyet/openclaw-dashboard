@@ -806,7 +806,7 @@ export default function ActivityPage() {
           while (!cancelled) {
             const { value, done } = await reader.read();
             if (done) break;
-            if (value && value.length) {
+            if (value?.length) {
               backoff.reset();
             }
             buffer += decoder.decode(value, { stream: true });
@@ -955,7 +955,7 @@ export default function ActivityPage() {
           while (!cancelled) {
             const { value, done } = await reader.read();
             if (done) break;
-            if (value && value.length) {
+            if (value?.length) {
               backoff.reset();
             }
             buffer += decoder.decode(value, { stream: true });
@@ -1089,7 +1089,7 @@ export default function ActivityPage() {
           while (!cancelled) {
             const { value, done } = await reader.read();
             if (done) break;
-            if (value && value.length) {
+            if (value?.length) {
               backoff.reset();
             }
             buffer += decoder.decode(value, { stream: true });
@@ -1203,7 +1203,7 @@ export default function ActivityPage() {
         while (!cancelled) {
           const { value, done } = await reader.read();
           if (done) break;
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
           buffer += decoder.decode(value, { stream: true });

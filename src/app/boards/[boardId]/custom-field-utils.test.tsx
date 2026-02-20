@@ -141,7 +141,7 @@ describe("custom-field-utils", () => {
       definition,
       "https://example.com"
     );
-    render(<>{node}</>);
+    render(node);
 
     expect(
       screen.getByRole("link", { name: /https:\/\/example.com/i })

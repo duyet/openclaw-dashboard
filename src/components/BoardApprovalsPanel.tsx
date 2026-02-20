@@ -291,19 +291,19 @@ const approvalRelatedTasks = (approval: Approval): RelatedTaskSummary[] => {
     if (!Array.isArray(tasks)) return;
     for (const task of tasks) {
       if (!isRecord(task)) continue;
-      const rawTitle = task["title"];
+      const rawTitle = task.title;
       const title = typeof rawTitle === "string" ? rawTitle.trim() : "";
       if (!title) continue;
       orderedTitles.push(title);
       const taskId =
-        typeof task["task_id"] === "string"
-          ? task["task_id"]
-          : typeof task["taskId"] === "string"
-            ? task["taskId"]
-            : typeof task["id"] === "string"
-              ? task["id"]
+        typeof task.task_id === "string"
+          ? task.task_id
+          : typeof task.taskId === "string"
+            ? task.taskId
+            : typeof task.id === "string"
+              ? task.id
               : null;
-      if (taskId && taskId.trim()) {
+      if (taskId?.trim()) {
         titleByTaskId.set(taskId, title);
       }
     }

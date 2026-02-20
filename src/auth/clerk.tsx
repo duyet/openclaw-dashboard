@@ -32,7 +32,7 @@ export function isClerkEnabled(): boolean {
 
 export function SignedIn(props: { children: ReactNode }) {
   if (isLocalAuthMode()) {
-    return hasLocalAuthToken() ? <>{props.children}</> : null;
+    return hasLocalAuthToken() ? props.children : null;
   }
   if (!isClerkEnabled()) return null;
   return <ClerkSignedIn>{props.children}</ClerkSignedIn>;
@@ -40,7 +40,7 @@ export function SignedIn(props: { children: ReactNode }) {
 
 export function SignedOut(props: { children: ReactNode }) {
   if (isLocalAuthMode()) {
-    return hasLocalAuthToken() ? null : <>{props.children}</>;
+    return hasLocalAuthToken() ? null : props.children;
   }
   if (!isClerkEnabled()) return <>{props.children}</>;
   return <ClerkSignedOut>{props.children}</ClerkSignedOut>;

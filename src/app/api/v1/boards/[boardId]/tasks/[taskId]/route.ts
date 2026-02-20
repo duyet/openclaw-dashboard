@@ -1,12 +1,11 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { and, eq, or, sql } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import {
   activityEvents,
-  approvals,
   approvalTaskLinks,
   tagAssignments,
   taskCustomFieldValues,

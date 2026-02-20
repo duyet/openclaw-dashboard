@@ -412,7 +412,7 @@ export default function BoardGroupDetailPage() {
 
           // Consider the stream healthy once we receive any bytes (including pings)
           // and reset the backoff so a later disconnect doesn't wait the full max.
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
 
@@ -535,7 +535,7 @@ export default function BoardGroupDetailPage() {
         while (!isCancelled) {
           const { value, done } = await reader.read();
           if (done) break;
-          if (value && value.length) {
+          if (value?.length) {
             backoff.reset();
           }
           buffer += decoder.decode(value, { stream: true });

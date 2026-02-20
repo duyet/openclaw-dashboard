@@ -43,7 +43,7 @@ export async function GET(
       .where(eq(tagAssignments.taskId, taskId));
 
     // Fetch full tag details
-    const tagIds = assignments.map((a) => a.tagId);
+    const _tagIds = assignments.map((a) => a.tagId);
     const tagDetails: Array<{
       assignmentId: string;
       tagId: string;

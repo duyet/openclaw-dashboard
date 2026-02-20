@@ -21,7 +21,7 @@ export default defineConfig({
       runMode: 2,
       openMode: 0,
     },
-    setupNodeEvents(on, config) {
+    setupNodeEvents(_on, config) {
       return clerkSetup({ config });
     },
   },

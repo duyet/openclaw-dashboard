@@ -33,7 +33,7 @@ async function verifyPbkdf2Token(
   const [algorithm, iterationsStr, saltB64, digestB64] = parts;
   if (algorithm !== "pbkdf2_sha256") return false;
   const iterations = parseInt(iterationsStr, 10);
-  if (isNaN(iterations) || iterations <= 0) return false;
+  if (Number.isNaN(iterations) || iterations <= 0) return false;
 
   const salt = base64UrlDecode(saltB64);
   const expectedDigest = base64UrlDecode(digestB64);

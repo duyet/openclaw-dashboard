@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { generateAgentToken, hashAgentToken } from "@/lib/auth/agent";
 import { getDb } from "@/lib/db";
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const _actor = await requireActorContext(request, env.DB);
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const _actor = await requireActorContext(request, env.DB);
 
     const body = (await request.json()) as Record<string, unknown>;
     const name = ((body.name as string) || "").trim();
