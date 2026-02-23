@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       is_active: row.id === actor.orgId,
     }));
 
-    return Response.json({ data, status: 200 });
+    return Response.json(data);
   } catch (error) {
     return handleApiError(error);
   }
