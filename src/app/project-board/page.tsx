@@ -1,3 +1,5 @@
+"use client";
+
 import { KanbanBoard } from "@/components/project-board/KanbanBoard";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 
