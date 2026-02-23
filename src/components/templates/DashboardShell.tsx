@@ -14,12 +14,18 @@ import { BrandMark } from "@/components/atoms/BrandMark";
 import { OrgSwitcher } from "@/components/organisms/OrgSwitcher";
 import { UserMenu } from "@/components/organisms/UserMenu";
 import { isOnboardingComplete } from "@/lib/onboarding";
+import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { isSignedIn } = useAuth();
   const isOnboardingPath = pathname === "/onboarding";
+
+  const { member } = useOrganizationMembership(isSignedIn);
+  const displayRole = member?.role
+    ? member.role.charAt(0).toUpperCase() + member.role.slice(1)
+    : null;
 
   const meQuery = useGetMeApiV1UsersMeGet<
     getMeApiV1UsersMeGetResponse,
@@ -87,7 +93,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
                 <p className="text-sm font-semibold text-slate-900">
                   {displayName}
                 </p>
-                <p className="text-xs text-slate-500">Operator</p>
+                {displayRole && (
+                  <p className="text-xs text-slate-500">{displayRole}</p>
+                )}
               </div>
               <UserMenu displayName={displayName} displayEmail={displayEmail} />
             </div>
