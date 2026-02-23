@@ -4,12 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { type ReactNode, useEffect } from "react";
 
 import { isLikelyValidClerkPublishableKey } from "@/auth/clerkKey";
-import {
-  clearLocalAuthToken,
-  getLocalAuthToken,
-  isLocalAuthMode,
-} from "@/auth/localAuth";
-import { LocalAuthLogin } from "@/components/organisms/LocalAuthLogin";
+import { clearLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const localMode = isLocalAuthMode();
@@ -21,9 +16,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [localMode]);
 
   if (localMode) {
-    if (!getLocalAuthToken()) {
-      return <LocalAuthLogin />;
-    }
     return <>{children}</>;
   }
 

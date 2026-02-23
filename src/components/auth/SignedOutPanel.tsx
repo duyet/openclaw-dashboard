@@ -1,5 +1,7 @@
+import { isLocalAuthMode } from "@/auth/localAuth";
 import { SignInButton } from "@/auth/clerk";
 
+import { LocalAuthLogin } from "@/components/organisms/LocalAuthLogin";
 import { Button } from "@/components/ui/button";
 
 type SignedOutPanelProps = {
@@ -19,6 +21,17 @@ export function SignedOutPanel({
   buttonLabel = "Sign in",
   buttonTestId,
 }: SignedOutPanelProps) {
+  if (isLocalAuthMode()) {
+    return (
+      <div className="col-span-2 flex min-h-[calc(100vh-64px)] items-center justify-center bg-slate-50 p-10 text-center">
+        <div className="rounded-xl border border-slate-200 bg-white px-8 py-6 shadow-sm">
+          <p className="mb-4 text-sm text-slate-600">{message}</p>
+          <LocalAuthLogin />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="col-span-2 flex min-h-[calc(100vh-64px)] items-center justify-center bg-slate-50 p-10 text-center">
       <div className="rounded-xl border border-slate-200 bg-white px-8 py-6 shadow-sm">
