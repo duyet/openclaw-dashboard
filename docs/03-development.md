@@ -43,7 +43,7 @@ NEXT_PUBLIC_AUTH_MODE=local
 LOCAL_AUTH_TOKEN=<token of at least 50 characters>
 ```
 
-See [Production notes](../production/README.md) for the full environment variable reference.
+See [Production notes](./production/README.md) for the full environment variable reference.
 
 ## Database migration workflow
 

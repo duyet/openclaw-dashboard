@@ -4,6 +4,8 @@
  * All helpers are edge-runtime compatible (no Node.js built-ins).
  */
 
+import { GatewayError } from "@/lib/services/gateway-rpc";
+
 /**
  * Application-level API error with HTTP status code and optional data payload.
  */
@@ -69,11 +71,15 @@ export function unauthorized(message = "Unauthorized"): Response {
  * Handle an unknown error and return an appropriate Response.
  *
  * - ApiError instances produce the specified status code and message.
+ * - GatewayError instances produce 502 Bad Gateway with the error message.
  * - All other errors produce a 500 Internal Server Error.
  */
 export function handleApiError(error: unknown): Response {
   if (error instanceof ApiError) {
     return errorResponse(error.status, error.message, error.data);
+  }
+  if (error instanceof GatewayError) {
+    return errorResponse(502, error.message);
   }
   console.error("[API Error]", error);
   return errorResponse(500, "Internal server error");
