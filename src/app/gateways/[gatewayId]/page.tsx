@@ -4,7 +4,7 @@ export const runtime = "edge";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   getListAgentsApiV1AgentsGetQueryKey,
   type listAgentsApiV1AgentsGetResponse,
@@ -27,8 +27,8 @@ import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout"
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { formatTimestamp } from "@/lib/formatters";
-import { checkGatewayConnection } from "@/lib/gateway-form";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import { useGatewayConnectionStatus } from "@/lib/use-gateway-connection-status";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
 const maskToken = (value?: string | null) => {
@@ -111,31 +111,10 @@ export default function GatewayDetailPage() {
   // Browser-side gateway connectivity check via direct WebSocket.
   // The gateway may be on an internal network (Tailscale) unreachable from
   // Cloudflare edge, so we check from the browser instead.
-  const [isConnected, setIsConnected] = useState<boolean | null>(null);
-  const [isStatusChecking, setIsStatusChecking] = useState(false);
-  const statusTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const runStatusCheck = useCallback(async () => {
-    if (!gateway) return;
-    setIsStatusChecking(true);
-    const result = await checkGatewayConnection({
-      gatewayUrl: gateway.url,
-      gatewayToken: gateway.token ?? "",
+  const { isConnected, isChecking: isStatusChecking } =
+    useGatewayConnectionStatus(gateway?.url, gateway?.token, {
+      enabled: Boolean(isSignedIn && isAdmin && gateway),
     });
-    setIsConnected(result.ok);
-    setIsStatusChecking(false);
-  }, [gateway]);
-
-  useEffect(() => {
-    if (!isSignedIn || !isAdmin || !gateway) return;
-    void runStatusCheck();
-    statusTimerRef.current = setInterval(() => {
-      void runStatusCheck();
-    }, 15_000);
-    return () => {
-      if (statusTimerRef.current) clearInterval(statusTimerRef.current);
-    };
-  }, [isSignedIn, isAdmin, gateway, runStatusCheck]);
 
   const agents = useMemo(
     () =>
