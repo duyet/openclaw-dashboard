@@ -90,7 +90,8 @@ export default function EditGatewayPage() {
     Boolean(resolvedName.trim()) &&
     Boolean(resolvedGatewayUrl.trim()) &&
     Boolean(resolvedWorkspaceRoot.trim()) &&
-    gatewayCheckStatus === "success";
+    !validateGatewayUrl(resolvedGatewayUrl) &&
+    gatewayCheckStatus !== "checking";
 
   const runGatewayCheck = async () => {
     const validationError = validateGatewayUrl(resolvedGatewayUrl);

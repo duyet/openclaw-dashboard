@@ -25,6 +25,12 @@ export type ActorContext = {
   userId?: string;
   agentId?: string;
   orgId?: string;
+  /** Clerk user ID — present when JWT is valid but no DB user exists yet. */
+  clerkId?: string;
+  /** Email from Clerk JWT claims (may be undefined if not in token). */
+  clerkEmail?: string;
+  /** Display name from Clerk JWT claims (may be undefined if not in token). */
+  clerkName?: string;
 };
 
 /**

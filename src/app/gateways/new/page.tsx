@@ -55,7 +55,8 @@ export default function NewGatewayPage() {
     Boolean(name.trim()) &&
     Boolean(gatewayUrl.trim()) &&
     Boolean(workspaceRoot.trim()) &&
-    gatewayCheckStatus === "success";
+    !validateGatewayUrl(gatewayUrl) &&
+    gatewayCheckStatus !== "checking";
 
   const runGatewayCheck = async () => {
     const validationError = validateGatewayUrl(gatewayUrl);

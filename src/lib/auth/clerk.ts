@@ -71,11 +71,16 @@ export async function resolveClerkAuth(
       };
     }
 
-    // User not found - will be created via bootstrap endpoint
-    // Return a minimal context with the clerk ID
+    // User not found — pass Clerk claims so bootstrap can create the record.
+    const claims = payload as Record<string, unknown>;
     return {
       type: "user",
       userId: undefined, // No DB user yet
+      clerkId: clerkUserId,
+      clerkEmail: (claims.email ?? claims.primary_email_address) as
+        | string
+        | undefined,
+      clerkName: (claims.name ?? claims.first_name) as string | undefined,
     };
   } catch {
     // JWT verification failed
