@@ -3,6 +3,7 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
   env: {
+    AUTH_MODE: process.env.NEXT_PUBLIC_AUTH_MODE ?? "clerk",
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     // Optional overrides.
