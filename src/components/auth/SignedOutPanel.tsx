@@ -25,7 +25,11 @@ export function SignedOutPanel({
   buttonTestId,
 }: SignedOutPanelProps) {
   if (isLocalAuthMode()) {
-    return <LocalAuthLogin />;
+    return (
+      <div className="fixed inset-0 z-50">
+        <LocalAuthLogin />
+      </div>
+    );
   }
 
   return (

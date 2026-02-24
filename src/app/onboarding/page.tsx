@@ -10,13 +10,8 @@ import {
 } from "@/api/generated/users/users";
 
 import type { ApiError } from "@/api/mutator";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  useAuth,
-  useUser,
-} from "@/auth/clerk";
+import { SignedIn, SignedOut, useAuth, useUser } from "@/auth/clerk";
+import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,27 +106,11 @@ export default function OnboardingPage() {
   return (
     <DashboardShell>
       <SignedOut>
-        <div className="lg:col-span-2 flex min-h-[70vh] items-center justify-center">
-          <div className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-6 py-5">
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-                Mission Control profile
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Sign in to configure your profile and timezone.
-              </p>
-            </div>
-            <div className="px-6 py-6">
-              <SignInButton
-                mode="modal"
-                forceRedirectUrl="/onboarding"
-                signUpForceRedirectUrl="/onboarding"
-              >
-                <Button size="lg">Sign in</Button>
-              </SignInButton>
-            </div>
-          </div>
-        </div>
+        <SignedOutPanel
+          message="Sign in to configure your profile and timezone."
+          forceRedirectUrl="/onboarding"
+          signUpForceRedirectUrl="/onboarding"
+        />
       </SignedOut>
       <SignedIn>
         <div className="lg:col-span-2 flex min-h-[70vh] items-center justify-center">
