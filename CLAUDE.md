@@ -22,11 +22,13 @@ Always use `bun`. Never use `npm`, `yarn`, or `pnpm`.
 
 Dual-mode auth controlled by `NEXT_PUBLIC_AUTH_MODE`:
 - `local` — token-based (min 50 chars), stored in `sessionStorage`. No external service.
-- `clerk` — Clerk.dev for production.
+- `clerk` — [Clerk.dev](https://clerk.dev) for production multi-tenant auth.
 
-Clerk-specific code lives in `src/auth/clerk/`.
+Clerk-specific code lives in `src/auth/clerk/`. Abstraction layer in `src/auth/clerk.tsx` wraps all Clerk hooks/components so they degrade gracefully in local mode.
 
-CRITICAL middleware pattern — top-level ternary on a build-time constant to tree-shake Clerk in local mode:
+### Middleware (CRITICAL — do NOT change the pattern)
+
+Top-level ternary on a build-time constant to tree-shake Clerk in local mode:
 
 ```typescript
 export default process.env.NEXT_PUBLIC_AUTH_MODE === "local"
@@ -34,9 +36,29 @@ export default process.env.NEXT_PUBLIC_AUTH_MODE === "local"
   : clerkMiddleware(async (auth, request) => { ... });
 ```
 
-`clerkMiddleware` validates `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` at module init. If absent, it crashes the entire edge worker. The ternary lets webpack eliminate the Clerk runtime when not needed.
+`clerkMiddleware()` validates `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` at module init. If absent, it crashes the entire edge worker. The ternary lets webpack eliminate the Clerk runtime when not needed.
 
-`NEXT_PUBLIC_*` vars are inlined at BUILD TIME by webpack. Setting them in `wrangler.toml [vars]` has no effect on these vars.
+### Environment variable rules
+
+- `NEXT_PUBLIC_*` vars are inlined at **BUILD TIME** by webpack. Setting them in `wrangler.toml [vars]` has no effect.
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` → must be present when `bun run cf:build` runs (GitHub secret, injected in CI).
+- `CLERK_SECRET_KEY` → runtime-only, read by API routes via `process.env`. Set as a **Cloudflare Pages secret** (not in wrangler.toml, not in CI build env).
+
+### Secrets setup
+
+| Secret | Where to set | Type | Why |
+|--------|-------------|------|-----|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | **GitHub Actions secret** | Build-time | Inlined by webpack during `cf:build` |
+| `CLERK_SECRET_KEY` | **Cloudflare Pages secret** | Runtime | Read by edge API routes for JWT verification |
+| `CLOUDFLARE_API_TOKEN` | **GitHub Actions secret** | CI | Wrangler deploy permission |
+| `CLOUDFLARE_ACCOUNT_ID` | **GitHub Actions secret** | CI | Wrangler deploy target |
+
+### Clerk integration patterns
+
+- Uses `clerkMiddleware()` from `@clerk/nextjs/server` (NOT deprecated `authMiddleware()`).
+- Server-side JWT verification via `verifyToken()` with dynamic import to prevent init crashes.
+- Client-side token: `window.Clerk.session.getToken()` in `src/api/mutator.ts`.
+- Public routes: `/`, `/sign-in(.*)`, `/sign-up(.*)`, health checks, webhook ingest.
 
 ## Common Commands
 
@@ -73,7 +95,7 @@ ESLint and Prettier have been removed from the project.
 
 ## Gateway Integration
 
-- Gateways use JSON-RPC 2.0 over WebSocket. Client: `src/lib/services/gateway-rpc.ts`.
+- Gateways use OpenClaw WebSocket RPC over WebSocket. Client: `src/lib/services/gateway-rpc.ts`.
 - Gateway status checks are client-side (browser WebSocket in `src/lib/gateway-form.ts`).
 - API routes that interact with saved gateways perform WebSocket RPC from the edge worker.
 - `GatewayConfig: { url: string, token: string | null }`

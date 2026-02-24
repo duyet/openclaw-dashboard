@@ -14,7 +14,7 @@ Centralized operations and governance platform for AI agents — built on Next.j
 
 Mission Control gives operators a single interface for work orchestration, AI agent lifecycle management, approval-driven governance, gateway connectivity, and API-backed automation across multi-tenant organizations.
 
-The system is designed around the constraint that AI agents and openclaw gateways may run on private networks (e.g. behind Tailscale) that are unreachable from the Cloudflare edge. Gateway connectivity checks are therefore performed client-side: the browser opens a WebSocket connection directly to the gateway using JSON-RPC 2.0.
+The system is designed around the constraint that AI agents and openclaw gateways may run on private networks (e.g. behind Tailscale) that are unreachable from the Cloudflare edge. Gateway connectivity checks are therefore performed client-side: the browser opens a WebSocket connection directly to the gateway using WebSocket RPC.
 
 There is no separate backend service. All API logic lives in Next.js Route Handlers under `src/app/api/v1/` and runs on the Cloudflare edge.
 
@@ -28,7 +28,7 @@ There is no separate backend service. All API logic lives in Next.js Route Handl
 | Board management | Boards, board groups, tasks (Kanban), approvals, webhooks, custom fields |
 | Project board | Kanban view with per-column task management |
 | Agent management | Provision, monitor, and decommission AI agents; heartbeat tracking; board lead designation |
-| Gateway management | Register openclaw gateways; client-side WebSocket connectivity check via JSON-RPC 2.0 |
+| Gateway management | Register openclaw gateways; client-side WebSocket connectivity check via WebSocket RPC |
 | Skills marketplace | Browse, install, and manage skills and skill packs per gateway |
 | Approval workflows | Confidence-scored approval queue with rubric breakdowns; approve/reject from the UI |
 | Activity feed | Immutable audit trail of agent and task events across boards |
@@ -257,7 +257,7 @@ make db-migrate
 
 ## Gateway Integration
 
-OpenClaw gateways expose a **JSON-RPC 2.0** endpoint over WebSocket. Mission Control communicates with gateways to:
+OpenClaw gateways expose a **WebSocket RPC** endpoint over WebSocket. Mission Control communicates with gateways to:
 
 - Check connectivity status
 - List installed skills
@@ -313,12 +313,38 @@ CI runs on GitHub Actions on every push and pull request.
 | `e2e` | After `check` | Cypress smoke tests (`continue-on-error: true` — full E2E requires Clerk secrets) |
 | `deploy` | Push to `main` only | Cloudflare Pages deployment via Wrangler |
 
-### Required secrets (repository settings)
+### Required secrets
+
+#### GitHub Actions secrets (repository settings)
 
 | Secret | Description |
 |--------|-------------|
-| `CLOUDFLARE_API_TOKEN` | API token with Pages:Edit permission |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Pages:Edit permission |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key — inlined at build time by webpack |
+
+Set these at **https://github.com/duyet/openclaw-dashboard/settings/secrets/actions** or via CLI:
+
+```bash
+gh secret set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY -b "pk_test_..."
+```
+
+#### Cloudflare Pages secrets (runtime)
+
+| Secret | Description |
+|--------|-------------|
+| `CLERK_SECRET_KEY` | Clerk secret key — read by edge API routes for JWT verification |
+
+Set via wrangler CLI or the Cloudflare dashboard:
+
+```bash
+npx wrangler pages secret put CLERK_SECRET_KEY --project-name=openclaw-mission-control
+# Paste your sk_test_... or sk_live_... key when prompted
+```
+
+Or via dashboard: **Cloudflare > Pages > openclaw-mission-control > Settings > Environment Variables > Production > Add variable** (encrypted).
+
+> **Why the split?** `NEXT_PUBLIC_*` vars are inlined by webpack at build time — they must be in the CI environment when `cf:build` runs. `CLERK_SECRET_KEY` is a server-only runtime secret read by API routes via `process.env` — it belongs in Cloudflare Pages secrets, not in the build.
 
 ### One migration per PR
 
@@ -336,7 +362,7 @@ make deploy
 
 This runs `bunx @cloudflare/next-on-pages` to produce `.vercel/output/static/` and then deploys via `bunx wrangler pages deploy`. D1, KV, and any Queue bindings must be provisioned and referenced in `wrangler.toml` before deploying.
 
-The deployed auth mode is controlled by the `NEXT_PUBLIC_AUTH_MODE` environment variable baked in at build time. The production deployment currently uses `local` auth (see `wrangler.toml`).
+The deployed auth mode is controlled by the `NEXT_PUBLIC_AUTH_MODE` environment variable baked in at build time. The CI deploy job builds with `NEXT_PUBLIC_AUTH_MODE=clerk` and injects `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` from GitHub secrets. The `CLERK_SECRET_KEY` runtime secret must be set separately in Cloudflare Pages (see [Required secrets](#required-secrets)).
 
 ---
 
