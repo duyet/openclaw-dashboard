@@ -2,34 +2,41 @@
 
 ## Architecture
 
-- **No separate backend.** All API logic lives in `src/app/api/v1/` as Next.js Route Handlers.
-- Deployed to **Cloudflare Pages** with edge runtime. Do not use Node.js built-ins (fs, path, etc.) in API routes or middleware.
+- No separate backend. All API logic lives in `src/app/api/v1/` as Next.js Route Handlers.
+- Deployed to Cloudflare Pages with edge runtime. Do not use Node.js built-ins in API routes or middleware.
 - Path alias: `@/` maps to `src/`.
+- Gateway connectivity checks happen client-side (browser WebSocket), NOT through API routes, because gateways may be on internal Tailscale networks unreachable from the CF edge.
 
 ## Package Manager
 
-Always use **bun**. Never use `npm`, `yarn`, or `pnpm`.
-
-```bash
-bun install          # install deps
-bun run <script>     # run package.json script
-bunx <tool>          # run binary
-```
+Always use `bun`. Never use `npm`, `yarn`, or `pnpm`.
 
 ## Database
 
-- **Cloudflare D1** (SQLite) via **Drizzle ORM**
-- Schema: `src/lib/db/schema.ts`
-- Migrations: `drizzle/migrations/` — **never hand-edit migration files**
-- Workflow: edit schema → `make db-generate` → `make db-migrate` → commit both schema and migration
+- Cloudflare D1 (SQLite) via Drizzle ORM.
+- Schema: `src/lib/db/schema.ts` (29 tables).
+- Migrations: `drizzle/migrations/` — never hand-edit migration files.
+- Workflow: edit schema → `make db-generate` → `make db-migrate` → commit both schema and migration.
 
 ## Authentication
 
 Dual-mode auth controlled by `NEXT_PUBLIC_AUTH_MODE`:
-- `local` — token-based, no external service (for dev/self-hosted)
-- `clerk` — Clerk.dev (for production)
+- `local` — token-based (min 50 chars), stored in `sessionStorage`. No external service.
+- `clerk` — Clerk.dev for production.
 
-Always check `NEXT_PUBLIC_AUTH_MODE` before using Clerk APIs. Clerk-specific code lives in `src/auth/clerk/`.
+Clerk-specific code lives in `src/auth/clerk/`.
+
+CRITICAL middleware pattern — top-level ternary on a build-time constant to tree-shake Clerk in local mode:
+
+```typescript
+export default process.env.NEXT_PUBLIC_AUTH_MODE === "local"
+  ? (_request) => NextResponse.next()
+  : clerkMiddleware(async (auth, request) => { ... });
+```
+
+`clerkMiddleware` validates `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` at module init. If absent, it crashes the entire edge worker. The ternary lets webpack eliminate the Clerk runtime when not needed.
+
+`NEXT_PUBLIC_*` vars are inlined at BUILD TIME by webpack. Setting them in `wrangler.toml [vars]` has no effect on these vars.
 
 ## Common Commands
 
@@ -52,17 +59,11 @@ Always check `NEXT_PUBLIC_AUTH_MODE` before using Clerk APIs. Clerk-specific cod
 
 ## Commit Style
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat:` new feature
-- `fix:` bug fix
-- `chore:` maintenance
-- `docs:` documentation
-- `refactor:` refactoring without behavior change
-- `test:` tests only
+Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`.
 
 ## Linter / Formatter
 
-**Biome** (not ESLint / Prettier). Config: `biome.json`.
+Biome (not ESLint / Prettier). Config: `biome.json`.
 
 - `bun fmt` — format all files
 - `bun fix` — fix lint issues + format in one pass
@@ -70,12 +71,38 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ESLint and Prettier have been removed from the project.
 
+## Gateway Integration
+
+- Gateways use JSON-RPC 2.0 over WebSocket. Client: `src/lib/services/gateway-rpc.ts`.
+- Gateway status checks are client-side (browser WebSocket in `src/lib/gateway-form.ts`).
+- API routes that interact with saved gateways perform WebSocket RPC from the edge worker.
+- `GatewayConfig: { url: string, token: string | null }`
+
+## Cloudflare Pages Specifics
+
+- Dynamic pages with `[param]`: must have `export const runtime = "edge"`.
+- Static pages (no params): do NOT need `runtime` export — pre-rendered at build time.
+- API routes: all need `export const runtime = "edge"`.
+- Pages with `"use client"`: directive FIRST, then `runtime` export.
+- Build: `bunx @cloudflare/next-on-pages`.
+
+## Project Structure
+
+```
+src/app/                        — pages and API routes
+src/app/api/v1/                 — all API endpoints
+src/lib/                        — shared utilities, auth, db, services
+src/lib/db/schema.ts            — Drizzle schema (29 tables)
+src/lib/services/gateway-rpc.ts — WebSocket JSON-RPC client
+src/components/                 — React components (atoms, molecules, organisms, ui)
+```
+
 ## What NOT To Do
 
-- Do not create a separate backend service — use Route Handlers in `src/app/api/v1/`
-- Do not use `npm`, `yarn`, or `pnpm` — always `bun`
-- Do not use Node.js built-ins (`fs`, `crypto`, `path`) in edge routes or middleware
-- Do not hand-edit files in `drizzle/migrations/` — always use `make db-generate`
-- Do not use `any` in TypeScript without a `// TODO: type this` comment
-- Do not add `console.log` in production code — use structured logging
-- Do not run `eslint` or `prettier` — use `bun fix` / `bun fmt` instead
+- Do not create a separate backend service — use Route Handlers in `src/app/api/v1/`.
+- Do not use `npm`, `yarn`, or `pnpm` — always `bun`.
+- Do not use Node.js built-ins (`fs`, `crypto`, `path`) in edge routes or middleware.
+- Do not hand-edit files in `drizzle/migrations/` — always use `make db-generate`.
+- Do not use `any` in TypeScript without a `// TODO: type this` comment.
+- Do not add `console.log` in production code — use structured logging.
+- Do not run `eslint` or `prettier` — use `bun fix` / `bun fmt` instead.
