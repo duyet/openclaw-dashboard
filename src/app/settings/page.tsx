@@ -63,11 +63,7 @@ export default function SettingsPage() {
     ? (timezone ?? "")
     : (profile?.timezone ?? "");
 
-  const timezones = useMemo(() => getSupportedTimezones(), []);
-  const timezoneOptions = useMemo(
-    () => timezones.map((value) => ({ value, label: value })),
-    [timezones]
-  );
+  const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
 
   const updateMeMutation = useUpdateMeApiV1UsersMePatch<ApiError>({
     mutation: {

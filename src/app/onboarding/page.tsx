@@ -69,12 +69,7 @@ export default function OnboardingPage() {
     [resolvedName, resolvedTimezone]
   );
 
-  const timezones = useMemo(() => getSupportedTimezones(), []);
-
-  const timezoneOptions = useMemo(
-    () => timezones.map((tz) => ({ value: tz, label: tz })),
-    [timezones]
-  );
+  const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
 
   useEffect(() => {
     if (profile && isOnboardingComplete(profile)) {
