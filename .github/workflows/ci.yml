@@ -100,8 +100,11 @@ jobs:
 
   # Deploy to Cloudflare Pages on push to main only.
   # Required GitHub secrets:
-  #   CLOUDFLARE_API_TOKEN  — Cloudflare API token with Pages:Edit permission
-  #   CLOUDFLARE_ACCOUNT_ID — Cloudflare account ID
+  #   CLOUDFLARE_API_TOKEN                — Cloudflare API token with Pages:Edit permission
+  #   CLOUDFLARE_ACCOUNT_ID               — Cloudflare account ID
+  #   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY   — Clerk publishable key (build-time)
+  # Required Cloudflare Pages secrets (set via dashboard or wrangler):
+  #   CLERK_SECRET_KEY                    — Clerk secret key (runtime)
   deploy:
     runs-on: ubuntu-latest
     needs: check
@@ -123,9 +126,8 @@ jobs:
         run: bun run cf:build
         env:
           # NEXT_PUBLIC_* vars are inlined at build time by Next.js.
-          # Setting this here ensures the local-auth code path is baked in,
-          # so the middleware skips Clerk (which would fail without a key).
-          NEXT_PUBLIC_AUTH_MODE: local
+          NEXT_PUBLIC_AUTH_MODE: clerk
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
