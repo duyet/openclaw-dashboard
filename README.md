@@ -4,9 +4,9 @@ Centralized operations and governance platform for AI agents — built on Next.j
 
 [![CI](https://github.com/duyet/openclaw-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/duyet/openclaw-dashboard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Deployed on Cloudflare Pages](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Pages-F38020?logo=cloudflare)](https://openclaw-mission-control-cqu.pages.dev)
+[![Deployed on Cloudflare Pages](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Pages-F38020?logo=cloudflare)](https://claw.duyet.net)
 
-**Live:** https://openclaw-mission-control-cqu.pages.dev
+**Live:** https://claw.duyet.net
 
 ---
 
