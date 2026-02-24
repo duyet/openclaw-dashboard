@@ -6,7 +6,7 @@ import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { skillPacks } from "@/lib/db/schema";
 import { ApiError, handleApiError } from "@/lib/errors";
-import { paginatedResponse, parsePagination } from "@/lib/pagination";
+import { parsePagination } from "@/lib/pagination";
 
 /**
  * GET /api/v1/skills/packs
@@ -40,7 +40,12 @@ export async function GET(request: Request) {
 
     const total = countResult[0]?.count ?? 0;
 
-    return Response.json(paginatedResponse(result, total, { limit, offset }));
+    return Response.json(result, {
+      headers: {
+        "X-Total-Count": String(total),
+        "Access-Control-Expose-Headers": "X-Total-Count",
+      },
+    });
   } catch (error) {
     return handleApiError(error);
   }
