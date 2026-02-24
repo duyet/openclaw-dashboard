@@ -4,7 +4,7 @@ export const runtime = "edge";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getListAgentsApiV1AgentsGetQueryKey,
   type listAgentsApiV1AgentsGetResponse,
@@ -16,9 +16,7 @@ import {
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
 import {
-  type gatewaysStatusApiV1GatewaysStatusGetResponse,
   type getGatewayApiV1GatewaysGatewayIdGetResponse,
-  useGatewaysStatusApiV1GatewaysStatusGet,
   useGetGatewayApiV1GatewaysGatewayIdGet,
 } from "@/api/generated/gateways/gateways";
 import type { AgentRead } from "@/api/generated/model";
@@ -29,6 +27,7 @@ import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout"
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { formatTimestamp } from "@/lib/formatters";
+import { checkGatewayConnection } from "@/lib/gateway-form";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 
@@ -109,22 +108,34 @@ export default function GatewayDetailPage() {
     queryClient
   );
 
-  const statusParams = gateway
-    ? {
-        gateway_url: gateway.url,
-        gateway_token: gateway.token ?? undefined,
-      }
-    : {};
+  // Browser-side gateway connectivity check via direct WebSocket.
+  // The gateway may be on an internal network (Tailscale) unreachable from
+  // Cloudflare edge, so we check from the browser instead.
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [isStatusChecking, setIsStatusChecking] = useState(false);
+  const statusTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const statusQuery = useGatewaysStatusApiV1GatewaysStatusGet<
-    gatewaysStatusApiV1GatewaysStatusGetResponse,
-    ApiError
-  >(statusParams, {
-    query: {
-      enabled: Boolean(isSignedIn && isAdmin && gateway),
-      refetchInterval: 15_000,
-    },
-  });
+  const runStatusCheck = useCallback(async () => {
+    if (!gateway) return;
+    setIsStatusChecking(true);
+    const result = await checkGatewayConnection({
+      gatewayUrl: gateway.url,
+      gatewayToken: gateway.token ?? "",
+    });
+    setIsConnected(result.ok);
+    setIsStatusChecking(false);
+  }, [gateway]);
+
+  useEffect(() => {
+    if (!isSignedIn || !isAdmin || !gateway) return;
+    void runStatusCheck();
+    statusTimerRef.current = setInterval(() => {
+      void runStatusCheck();
+    }, 15_000);
+    return () => {
+      if (statusTimerRef.current) clearInterval(statusTimerRef.current);
+    };
+  }, [isSignedIn, isAdmin, gateway, runStatusCheck]);
 
   const agents = useMemo(
     () =>
@@ -140,10 +151,6 @@ export default function GatewayDetailPage() {
         : [],
     [boardsQuery.data]
   );
-
-  const status =
-    statusQuery.data?.status === 200 ? statusQuery.data.data : null;
-  const isConnected = status?.connected ?? false;
 
   const title = useMemo(
     () => (gateway?.name ? gateway.name : "Gateway"),
@@ -199,7 +206,7 @@ export default function GatewayDetailPage() {
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <span
                       className={`h-2 w-2 rounded-full ${
-                        statusQuery.isLoading
+                        isStatusChecking && isConnected === null
                           ? "bg-slate-300"
                           : isConnected
                             ? "bg-emerald-500"
@@ -207,7 +214,7 @@ export default function GatewayDetailPage() {
                       }`}
                     />
                     <span>
-                      {statusQuery.isLoading
+                      {isStatusChecking && isConnected === null
                         ? "Checking"
                         : isConnected
                           ? "Online"
