@@ -18,6 +18,8 @@ import { NextResponse } from "next/server";
  * Routes that should bypass all authentication (Clerk mode only).
  */
 const isPublicRoute = createRouteMatcher([
+  // Landing page
+  "/",
   // Health check endpoints
   "/api/v1/health(.*)",
   "/api/v1/healthz(.*)",
@@ -26,8 +28,9 @@ const isPublicRoute = createRouteMatcher([
   "/api/v1/auth/bootstrap(.*)",
   // Webhook ingest endpoints (authenticated via webhook-specific token)
   "/api/v1/boards/:boardId/webhooks/:webhookId/ingest(.*)",
-  // Sign-in page
+  // Sign-in / sign-up pages
   "/sign-in(.*)",
+  "/sign-up(.*)",
 ]);
 
 /**
