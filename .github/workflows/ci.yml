@@ -126,7 +126,9 @@ jobs:
         run: bun run cf:build
         env:
           # NEXT_PUBLIC_* vars are inlined at build time by Next.js.
-          NEXT_PUBLIC_AUTH_MODE: clerk
+          # Falls back to local auth when NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY secret is not set,
+          # preventing Clerk from crashing the edge worker on missing key.
+          NEXT_PUBLIC_AUTH_MODE: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 'clerk' || 'local' }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
 
       - name: Deploy to Cloudflare Pages
