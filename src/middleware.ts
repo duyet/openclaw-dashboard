@@ -11,7 +11,7 @@
  * key (which would crash the edge worker on every request).
  */
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
@@ -45,13 +45,34 @@ function hasAgentToken(request: NextRequest): boolean {
 // Clerk. Using a top-level ternary on the build-time constant means webpack
 // can dead-code-eliminate the clerkMiddleware() call, so Clerk never attempts
 // to validate the (absent) publishable key when building for local/CI.
+//
+// The IIFE creates the handler once (not per request) while keeping
+// clerkMiddleware() inside the non-local branch so webpack can tree-shake it.
 export default process.env.NEXT_PUBLIC_AUTH_MODE === "local"
   ? (_request: NextRequest) => NextResponse.next()
-  : clerkMiddleware(async (auth, request) => {
-      if (hasAgentToken(request)) return NextResponse.next();
-      if (isPublicRoute(request)) return NextResponse.next();
-      await auth.protect();
-    });
+  : (() => {
+      const handler = clerkMiddleware(async (auth, request) => {
+        if (hasAgentToken(request)) return NextResponse.next();
+        if (isPublicRoute(request)) return NextResponse.next();
+        await auth.protect();
+      });
+      // Clerk throws "handshake status without redirect" when CLERK_SECRET_KEY
+      // is missing at edge runtime and a ?__clerk_handshake request arrives.
+      // Catch it and redirect to sign-in instead of returning a 500.
+      return async (request: NextRequest, event: NextFetchEvent) => {
+        try {
+          return await handler(request, event);
+        } catch (err) {
+          if (
+            err instanceof Error &&
+            err.message.includes("handshake status")
+          ) {
+            return NextResponse.redirect(new URL("/sign-in", request.url));
+          }
+          throw err;
+        }
+      };
+    })();
 
 export const config = {
   matcher: [
