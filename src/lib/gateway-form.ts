@@ -12,12 +12,9 @@ export const validateGatewayUrl = (value: string) => {
     if (url.protocol !== "ws:" && url.protocol !== "wss:") {
       return "Gateway URL must start with ws:// or wss://.";
     }
-    if (!url.port) {
-      return "Gateway URL must include an explicit port.";
-    }
     return null;
   } catch {
-    return "Enter a valid gateway URL including port.";
+    return "Enter a valid gateway URL (e.g. wss://host or wss://host:port).";
   }
 };
 
