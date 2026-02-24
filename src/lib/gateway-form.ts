@@ -21,8 +21,13 @@ export const validateGatewayUrl = (value: string) => {
  *
  * The gateway may live on an internal network (e.g. Tailscale) that is
  * reachable from the user's browser but NOT from the Cloudflare edge worker.
- * So we open a WebSocket directly from the browser, send a lightweight
- * JSON-RPC `sessions.list` call, and check that we get a valid response.
+ * So we open a WebSocket directly from the browser and wait for the gateway
+ * to respond.
+ *
+ * The gateway protocol sends a `connect.challenge` event after a successful
+ * connection + auth. Receiving this event is sufficient proof that the
+ * gateway is reachable and the token is valid (an invalid token results in
+ * an immediate close with code 1008).
  */
 export async function checkGatewayConnection(params: {
   gatewayUrl: string;
@@ -52,7 +57,6 @@ export async function checkGatewayConnection(params: {
 
   return new Promise((resolve) => {
     let settled = false;
-    const id = crypto.randomUUID();
 
     const timer = setTimeout(() => {
       if (settled) return;
@@ -85,39 +89,40 @@ export async function checkGatewayConnection(params: {
       return;
     }
 
-    ws.addEventListener("open", () => {
-      try {
-        ws.send(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id,
-            method: "sessions.list",
-            params: {},
-          })
-        );
-      } catch {
-        done({ ok: false, message: "Failed to send RPC request." });
-      }
-    });
-
     ws.addEventListener("message", (event: MessageEvent) => {
       try {
         const data = JSON.parse(
           typeof event.data === "string" ? event.data : ""
         );
-        if (data?.id !== id) return;
-        try {
-          ws.close(1000, "done");
-        } catch {
-          // ignore
-        }
-        if (data.error) {
-          done({
-            ok: false,
-            message: data.error.message ?? "Gateway returned an error.",
-          });
-        } else {
+
+        // The gateway sends a connect.challenge event after successful
+        // auth. This proves reachability + valid token.
+        if (data?.type === "event" && data?.event === "connect.challenge") {
+          try {
+            ws.close(1000, "done");
+          } catch {
+            // ignore
+          }
           done({ ok: true, message: "Gateway reachable." });
+          return;
+        }
+
+        // Also accept a direct JSON-RPC response (older gateways that
+        // skip the challenge handshake).
+        if (data?.jsonrpc === "2.0") {
+          try {
+            ws.close(1000, "done");
+          } catch {
+            // ignore
+          }
+          if (data.error) {
+            done({
+              ok: false,
+              message: data.error.message ?? "Gateway returned an error.",
+            });
+          } else {
+            done({ ok: true, message: "Gateway reachable." });
+          }
         }
       } catch {
         // Not valid JSON — wait for the real response
