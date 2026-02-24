@@ -56,18 +56,19 @@ export default process.env.NEXT_PUBLIC_AUTH_MODE === "local"
         if (isPublicRoute(request)) return NextResponse.next();
         await auth.protect();
       });
-      // Clerk throws "handshake status without redirect" when CLERK_SECRET_KEY
-      // is missing at edge runtime and a ?__clerk_handshake request arrives.
-      // Catch it and redirect to sign-in instead of returning a 500.
+      // Any error during ?__clerk_handshake processing (e.g. "handshake status
+      // without redirect" or "Missing secretKey") becomes a graceful redirect to
+      // sign-in instead of crashing with 500.
       return async (request: NextRequest, event: NextFetchEvent) => {
+        const isHandshake =
+          request.nextUrl.searchParams.has("__clerk_handshake");
         try {
           return await handler(request, event);
         } catch (err) {
-          if (
-            err instanceof Error &&
-            err.message.includes("handshake status")
-          ) {
-            return NextResponse.redirect(new URL("/sign-in", request.url));
+          if (isHandshake) {
+            return NextResponse.redirect(
+              new URL("/sign-in", request.nextUrl.origin)
+            );
           }
           throw err;
         }
