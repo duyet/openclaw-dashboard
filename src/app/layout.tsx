@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ToastProvider } from "@/components/providers/ToastProvider";
 import { GlobalLoader } from "@/components/ui/global-loader";
 
 export const metadata: Metadata = {
@@ -41,10 +42,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         className={`${bodyFont.variable} ${headingFont.variable} ${displayFont.variable} min-h-screen bg-app text-strong antialiased`}
       >
         <AuthProvider>
-          <QueryProvider>
-            <GlobalLoader />
-            {children}
-          </QueryProvider>
+          <ToastProvider>
+            <QueryProvider>
+              <GlobalLoader />
+              {children}
+            </QueryProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

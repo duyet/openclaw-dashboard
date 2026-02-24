@@ -71,17 +71,40 @@ export async function resolveClerkAuth(
       };
     }
 
-    // User not found — pass Clerk claims so bootstrap can create the record.
+    // User not found — auto-bootstrap: create user + org on first access.
     const claims = payload as Record<string, unknown>;
-    return {
-      type: "user",
-      userId: undefined, // No DB user yet
-      clerkId: clerkUserId,
-      clerkEmail: (claims.email ?? claims.primary_email_address) as
-        | string
-        | undefined,
-      clerkName: (claims.name ?? claims.first_name) as string | undefined,
-    };
+    const clerkEmail = (claims.email ?? claims.primary_email_address) as
+      | string
+      | undefined;
+    const clerkName = (claims.name ?? claims.first_name) as string | undefined;
+
+    try {
+      const { bootstrapClerkUser } = await import("./bootstrap-user");
+      const newUser = await bootstrapClerkUser(db, {
+        type: "user",
+        clerkId: clerkUserId,
+        clerkEmail,
+        clerkName,
+      });
+      return {
+        type: "user",
+        userId: newUser.id,
+        orgId: newUser.activeOrganizationId ?? undefined,
+        clerkId: clerkUserId,
+        clerkEmail,
+        clerkName,
+      };
+    } catch {
+      // If bootstrap fails, fall back to claims-only context so the
+      // explicit /auth/bootstrap endpoint can still be used.
+      return {
+        type: "user",
+        userId: undefined,
+        clerkId: clerkUserId,
+        clerkEmail,
+        clerkName,
+      };
+    }
   } catch {
     // JWT verification failed
     return null;

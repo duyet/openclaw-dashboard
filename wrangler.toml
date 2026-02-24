@@ -5,7 +5,9 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
-NEXT_PUBLIC_AUTH_MODE = "local"
+# NEXT_PUBLIC_AUTH_MODE is a build-time variable (inlined by webpack).
+# Set it in .env.local for local dev, or as a GitHub Actions secret for CI.
+# Setting it here has no effect.
 LOCAL_AUTH_TOKEN = "change-me-to-a-secure-token-at-least-50-chars-long-please"
 
 [[d1_databases]]

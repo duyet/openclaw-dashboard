@@ -165,7 +165,7 @@ export default function OnboardingPage() {
                 </div>
 
                 {errorMessage ? (
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
                     {errorMessage}
                   </div>
                 ) : null}
