@@ -14,6 +14,7 @@ LOCAL_AUTH_TOKEN = "change-me-to-a-secure-token-at-least-50-chars-long-please"
 binding = "DB"
 database_name = "openclaw-mission-control"
 database_id = "656eb2a0-00e3-4dac-a384-8b086ae80151"
+migrations_dir = "drizzle/migrations"
 
 [[kv_namespaces]]
 binding = "KV"

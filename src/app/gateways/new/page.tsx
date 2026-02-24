@@ -39,7 +39,7 @@ export default function NewGatewayPage() {
   const createMutation = useCreateGatewayApiV1GatewaysPost<ApiError>({
     mutation: {
       onSuccess: (result) => {
-        if (result.status === 200) {
+        if (result.status === 201) {
           router.push(`/gateways/${result.data.id}`);
         }
       },

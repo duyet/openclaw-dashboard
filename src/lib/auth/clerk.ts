@@ -37,6 +37,10 @@ export async function resolveClerkAuth(
   const token = extractBearerToken(request);
   if (!token) return null;
 
+  // Phase 1: verify JWT — errors here mean unauthenticated (return null).
+  let clerkUserId: string;
+  let clerkEmail: string | undefined;
+  let clerkName: string | undefined;
   try {
     // Dynamic import to avoid issues when Clerk is not configured
     const { verifyToken } = await import("@clerk/nextjs/server");
@@ -47,67 +51,65 @@ export async function resolveClerkAuth(
         : undefined;
     if (!secretKey) return null;
 
-    const payload = await verifyToken(token, {
-      secretKey,
-    });
-
+    const payload = await verifyToken(token, { secretKey });
     if (!payload?.sub) return null;
 
-    const clerkUserId = payload.sub;
-    const db = getDb(d1);
-
-    // Look up user by clerk_user_id
-    const existingUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.clerkUserId, clerkUserId))
-      .limit(1);
-
-    if (existingUser.length > 0) {
-      return {
-        type: "user",
-        userId: existingUser[0].id,
-        orgId: existingUser[0].activeOrganizationId ?? undefined,
-      };
-    }
-
-    // User not found — auto-bootstrap: create user + org on first access.
+    clerkUserId = payload.sub;
     const claims = payload as Record<string, unknown>;
-    const clerkEmail = (claims.email ?? claims.primary_email_address) as
+    clerkEmail = (claims.email ?? claims.primary_email_address) as
       | string
       | undefined;
-    const clerkName = (claims.name ?? claims.first_name) as string | undefined;
-
-    try {
-      const { bootstrapClerkUser } = await import("./bootstrap-user");
-      const newUser = await bootstrapClerkUser(db, {
-        type: "user",
-        clerkId: clerkUserId,
-        clerkEmail,
-        clerkName,
-      });
-      return {
-        type: "user",
-        userId: newUser.id,
-        orgId: newUser.activeOrganizationId ?? undefined,
-        clerkId: clerkUserId,
-        clerkEmail,
-        clerkName,
-      };
-    } catch {
-      // If bootstrap fails, fall back to claims-only context so the
-      // explicit /auth/bootstrap endpoint can still be used.
-      return {
-        type: "user",
-        userId: undefined,
-        clerkId: clerkUserId,
-        clerkEmail,
-        clerkName,
-      };
-    }
+    clerkName = (claims.name ?? claims.first_name) as string | undefined;
   } catch {
-    // JWT verification failed
+    // JWT verification failed — caller is unauthenticated.
     return null;
+  }
+
+  // Phase 2: DB lookup — errors here are infrastructure failures, let them
+  // bubble up so the route handler returns 500 instead of 401.
+  const db = getDb(d1);
+
+  const existingUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.clerkUserId, clerkUserId))
+    .limit(1);
+
+  if (existingUser.length > 0) {
+    return {
+      type: "user",
+      userId: existingUser[0].id,
+      orgId: existingUser[0].activeOrganizationId ?? undefined,
+    };
+  }
+
+  // User not found — auto-bootstrap: create user + org on first access.
+  try {
+    const { bootstrapClerkUser } = await import("./bootstrap-user");
+    const newUser = await bootstrapClerkUser(db, {
+      type: "user",
+      clerkId: clerkUserId,
+      clerkEmail,
+      clerkName,
+    });
+    return {
+      type: "user",
+      userId: newUser.id,
+      orgId: newUser.activeOrganizationId ?? undefined,
+      clerkId: clerkUserId,
+      clerkEmail,
+      clerkName,
+    };
+  } catch {
+    // If bootstrap fails, fall back to claims-only context so the
+    // explicit /auth/bootstrap endpoint can still be used.
+    return {
+      type: "user",
+      userId: undefined,
+      clerkId: clerkUserId,
+      clerkEmail,
+      clerkName,
+    };
   }
 }
 

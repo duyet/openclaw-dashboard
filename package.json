@@ -17,8 +17,8 @@
     "cf:dev": "wrangler pages dev .vercel/output/static --d1 DB --kv KV --queue WEBHOOK_QUEUE",
     "cf:build": "bunx @cloudflare/next-on-pages",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply openclaw-mc --local",
-    "db:migrate:local": "wrangler d1 migrations apply openclaw-mc --local"
+    "db:migrate": "wrangler d1 migrations apply openclaw-mission-control --local",
+    "db:migrate:local": "wrangler d1 migrations apply openclaw-mission-control --local"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.3",

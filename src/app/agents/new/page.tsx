@@ -90,7 +90,7 @@ export default function NewAgentPage() {
   const createAgentMutation = useCreateAgentApiV1AgentsPost<ApiError>({
     mutation: {
       onSuccess: (result) => {
-        if (result.status === 200) {
+        if (result.status === 201) {
           router.push(`/agents/${result.data.id}`);
         }
       },

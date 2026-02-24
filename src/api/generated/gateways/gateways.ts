@@ -1674,7 +1674,7 @@ export function useListGatewaysApiV1GatewaysGet<
  */
 export type createGatewayApiV1GatewaysPostResponse200 = {
   data: GatewayRead;
-  status: 200;
+  status: 201;
 };
 
 export type createGatewayApiV1GatewaysPostResponse422 = {

@@ -5,5 +5,5 @@ export const runtime = "edge";
  * GET /healthz
  */
 export async function GET() {
-  return Response.json({ status: "ok", timestamp: new Date().toISOString() });
+  return Response.json({ ok: true });
 }

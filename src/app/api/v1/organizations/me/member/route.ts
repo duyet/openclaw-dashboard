@@ -40,8 +40,8 @@ export async function GET(request: Request) {
       .where(
         and(
           eq(organizationMembers.userId, actor.userId),
-          eq(organizationMembers.organizationId, actor.orgId),
-        ),
+          eq(organizationMembers.organizationId, actor.orgId)
+        )
       )
       .limit(1);
 

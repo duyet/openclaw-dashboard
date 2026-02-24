@@ -14,6 +14,7 @@ import type {
   BoardOnboardingReadMessages,
   BoardRead,
 } from "@/api/generated/model";
+import { useAuth } from "@/auth/clerk";
 import { Button } from "@/components/ui/button";
 import {
   DialogFooter,
@@ -139,6 +140,7 @@ export function BoardOnboardingChat({
   onConfirmed: (board: BoardRead) => void;
 }) {
   const isPageActive = usePageActive();
+  const { isSignedIn } = useAuth();
   const [session, setSession] = useState<BoardOnboardingRead | null>(null);
   const [loading, setLoading] = useState(false);
   const [awaitingAssistantFingerprint, setAwaitingAssistantFingerprint] =
@@ -242,8 +244,9 @@ export function BoardOnboardingChat({
   }, [boardId]);
 
   useEffect(() => {
+    if (!isSignedIn) return;
     void startSession();
-  }, [startSession]);
+  }, [isSignedIn, startSession]);
 
   const shouldPollSession =
     isPageActive && (loading || isAwaitingAgent || (!question && !draft));

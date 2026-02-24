@@ -252,7 +252,7 @@ export function useListAgentsApiV1AgentsGet<
  */
 export type createAgentApiV1AgentsPostResponse200 = {
   data: AgentRead;
-  status: 200;
+  status: 201;
 };
 
 export type createAgentApiV1AgentsPostResponse422 = {

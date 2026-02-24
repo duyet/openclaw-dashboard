@@ -67,7 +67,7 @@ export default function NewBoardPage() {
   const createBoardMutation = useCreateBoardApiV1BoardsPost<ApiError>({
     mutation: {
       onSuccess: (result) => {
-        if (result.status === 200) {
+        if (result.status === 201) {
           router.push(`/boards/${result.data.id}/edit?onboarding=1`);
         }
       },

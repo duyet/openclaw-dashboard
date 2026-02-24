@@ -251,7 +251,7 @@ export function useListBoardsApiV1BoardsGet<
  */
 export type createBoardApiV1BoardsPostResponse200 = {
   data: BoardRead;
-  status: 200;
+  status: 201;
 };
 
 export type createBoardApiV1BoardsPostResponse422 = {

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       .from(organizationMembers)
       .innerJoin(
         organizations,
-        eq(organizationMembers.organizationId, organizations.id),
+        eq(organizationMembers.organizationId, organizations.id)
       )
       .where(eq(organizationMembers.userId, actor.userId));
 
