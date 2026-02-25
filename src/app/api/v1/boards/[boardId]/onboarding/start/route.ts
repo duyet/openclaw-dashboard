@@ -6,6 +6,7 @@ import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { boardOnboardingSessions, boards } from "@/lib/db/schema";
 import { ApiError, handleApiError } from "@/lib/errors";
+import { callOnboardingAI } from "@/lib/onboarding-ai";
 
 /**
  * POST /api/v1/boards/:boardId/onboarding/start
@@ -64,6 +65,30 @@ export async function POST(
       createdAt: now,
       updatedAt: now,
     });
+
+    // Call AI for the first question
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (apiKey) {
+      try {
+        const aiResult = await callOnboardingAI([], apiKey);
+        if (aiResult.type === "question") {
+          const firstMessage = {
+            role: "assistant",
+            content: aiResult.content,
+            timestamp: new Date().toISOString(),
+          };
+          await db
+            .update(boardOnboardingSessions)
+            .set({
+              messages: [firstMessage],
+              updatedAt: new Date().toISOString(),
+            })
+            .where(eq(boardOnboardingSessions.id, sessionId));
+        }
+      } catch {
+        // Non-fatal: UI will keep polling and can retry
+      }
+    }
 
     const result = await db
       .select()

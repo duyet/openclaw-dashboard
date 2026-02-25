@@ -6,6 +6,7 @@ import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { boardOnboardingSessions } from "@/lib/db/schema";
 import { ApiError, handleApiError } from "@/lib/errors";
+import { callOnboardingAI } from "@/lib/onboarding-ai";
 
 /**
  * POST /api/v1/boards/:boardId/onboarding/answer
@@ -69,6 +70,46 @@ export async function POST(
       .update(boardOnboardingSessions)
       .set({ messages: updatedMessages, updatedAt: now })
       .where(eq(boardOnboardingSessions.id, existing.id));
+
+    // Call AI to get the next question or complete draft
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    let finalMessages: Array<Record<string, unknown>> = updatedMessages;
+    let draftGoal: Record<string, unknown> | null = null;
+
+    if (apiKey) {
+      try {
+        const aiMessages = updatedMessages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: String(m.content),
+          }));
+
+        const aiResult = await callOnboardingAI(aiMessages, apiKey);
+
+        if (aiResult.type === "complete") {
+          draftGoal = aiResult.draft as unknown as Record<string, unknown>;
+        } else {
+          const assistantMsg = {
+            role: "assistant",
+            content: aiResult.content,
+            timestamp: new Date().toISOString(),
+          };
+          finalMessages = [...updatedMessages, assistantMsg];
+        }
+
+        await db
+          .update(boardOnboardingSessions)
+          .set({
+            messages: finalMessages,
+            draftGoal,
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(boardOnboardingSessions.id, existing.id));
+      } catch {
+        // Non-fatal: UI will keep polling and can retry
+      }
+    }
 
     const result = await db
       .select()

@@ -17,6 +17,7 @@
         "cmdk": "^1.1.1",
         "drizzle-orm": "^0.44",
         "next": "^15.3.4",
+        "openai": "^6.24.0",
         "react": "19.2.4",
         "react-dom": "19.2.4",
         "react-is": "^19.2.4",
@@ -1418,6 +1419,8 @@
     "once": ["once@1.4.0", "", { "dependencies": { "wrappy": "1" } }, "sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w=="],
 
     "onetime": ["onetime@5.1.2", "", { "dependencies": { "mimic-fn": "^2.1.0" } }, "sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg=="],
+
+    "openai": ["openai@6.24.0", "", { "peerDependencies": { "ws": "^8.18.0", "zod": "^3.25 || ^4.0" }, "optionalPeers": ["ws", "zod"], "bin": { "openai": "bin/cli" } }, "sha512-WLR+qki3S4c9ZHilR42GDTxEpTrMFeWfcFNg1RMELW0ZCCBJMDDlqVV+QQEM5KN2hjUyZu45QpgJmln/0ykFRg=="],
 
     "orval": ["orval@8.4.2", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@orval/angular": "8.4.2", "@orval/axios": "8.4.2", "@orval/core": "8.4.2", "@orval/fetch": "8.4.2", "@orval/hono": "8.4.2", "@orval/mcp": "8.4.2", "@orval/mock": "8.4.2", "@orval/query": "8.4.2", "@orval/solid-start": "8.4.2", "@orval/swr": "8.4.2", "@orval/zod": "8.4.2", "@scalar/json-magic": "^0.11.4", "@scalar/openapi-parser": "^0.24.13", "@scalar/openapi-types": "0.5.3", "chalk": "^5.6.2", "chokidar": "^5.0.0", "commander": "^14.0.2", "enquirer": "^2.4.1", "execa": "^9.6.1", "find-up": "8.0.0", "fs-extra": "^11.3.2", "jiti": "^2.6.1", "js-yaml": "4.1.1", "remeda": "^2.33.6", "string-argv": "^0.3.2", "tsconfck": "^3.1.6", "typedoc": "^0.28.15", "typedoc-plugin-coverage": "^4.0.2", "typedoc-plugin-markdown": "^4.9.0" }, "peerDependencies": { "prettier": ">=3.0.0" }, "optionalPeers": ["prettier"], "bin": "./dist/bin/orval.mjs" }, "sha512-DU5BzfHUbPQ9zDjPB0lJpeqHoXSKJoXl2Hmbhj0sUq1QNCgLR7HRmMUkT9DcMtBPh7pKYCAun2Ks74+/YdWq8g=="],
 
