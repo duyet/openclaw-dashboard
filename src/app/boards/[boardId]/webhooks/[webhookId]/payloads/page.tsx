@@ -109,13 +109,13 @@ export default function WebhookPayloadsPage() {
       isAdmin={isAdmin}
       adminOnlyMessage="Only organization owners and admins can view webhook payloads."
     >
-      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-foreground">
               {payloadTitle}
             </h2>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-foreground/80">
               {webhook?.description ?? "Loading webhook details..."}
             </p>
           </div>
@@ -129,15 +129,15 @@ export default function WebhookPayloadsPage() {
         </div>
 
         {webhook ? (
-          <div className="rounded-md bg-slate-50 px-3 py-2">
-            <code className="break-all text-xs text-slate-700">
+          <div className="rounded-md bg-muted/40 px-3 py-2">
+            <code className="break-all text-xs text-foreground/90">
               {webhook.endpoint_url ?? webhook.endpoint_path}
             </code>
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2">
-          <p className="text-sm text-slate-700">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-3 py-2">
+          <p className="text-sm text-foreground/90">
             {total} payload{total === 1 ? "" : "s"} total
           </p>
           <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function WebhookPayloadsPage() {
             >
               Previous
             </Button>
-            <span className="text-xs text-slate-600">
+            <span className="text-xs text-foreground/80">
               Page {currentPage} of {pageCount}
             </span>
             <Button
@@ -170,11 +170,11 @@ export default function WebhookPayloadsPage() {
         ) : null}
 
         {isLoading ? (
-          <p className="text-sm text-slate-500">Loading payloads...</p>
+          <p className="text-sm text-muted-foreground">Loading payloads...</p>
         ) : null}
 
         {!isLoading && payloads.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-600">
+          <p className="rounded-lg border border-dashed border-border/60 px-4 py-3 text-sm text-foreground/80">
             No payloads received for this webhook yet.
           </p>
         ) : null}
@@ -183,17 +183,17 @@ export default function WebhookPayloadsPage() {
           {payloads.map((payload: BoardWebhookPayloadRead) => (
             <div
               key={payload.id}
-              className="space-y-3 rounded-lg border border-slate-200 px-4 py-4"
+              className="space-y-3 rounded-lg border border-border px-4 py-4"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-slate-900">
+                <span className="text-sm font-semibold text-foreground">
                   Payload {payload.id.slice(0, 8)}
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-muted-foreground">
                   {new Date(payload.received_at).toLocaleString()}
                 </span>
               </div>
-              <div className="grid gap-2 text-xs text-slate-600 md:grid-cols-2">
+              <div className="grid gap-2 text-xs text-foreground/80 md:grid-cols-2">
                 <p>
                   Content type:{" "}
                   <code>{payload.content_type ?? "not provided"}</code>

@@ -153,17 +153,17 @@ function BoardAccessEditor({
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Board access
         </p>
-        <div className="mt-3 inline-flex rounded-xl border border-slate-200 bg-slate-100 p-1">
+        <div className="mt-3 inline-flex rounded-xl border border-border bg-muted/40 p-1">
           <button
             type="button"
             className={cn(
               "rounded-md px-3 py-1.5 text-xs font-semibold transition",
               scope === "all"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground/90"
             )}
             onClick={() => onScopeChange("all")}
             disabled={disabled}
@@ -175,8 +175,8 @@ function BoardAccessEditor({
             className={cn(
               "rounded-md px-3 py-1.5 text-xs font-semibold transition",
               scope === "custom"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground/90"
             )}
             onClick={() => onScopeChange("custom")}
             disabled={disabled}
@@ -187,8 +187,8 @@ function BoardAccessEditor({
       </div>
 
       {scope === "all" ? (
-        <div className="flex flex-wrap items-center gap-6 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm">
-          <label className="flex items-center gap-2 text-slate-600">
+        <div className="flex flex-wrap items-center gap-6 rounded-xl border border-border bg-card px-4 py-2.5 text-sm">
+          <label className="flex items-center gap-2 text-foreground/80">
             <input
               type="checkbox"
               className="h-4 w-4"
@@ -198,7 +198,7 @@ function BoardAccessEditor({
             />
             Read
           </label>
-          <label className="flex items-center gap-2 text-slate-600">
+          <label className="flex items-center gap-2 text-foreground/80">
             <input
               type="checkbox"
               className="h-4 w-4"
@@ -208,18 +208,18 @@ function BoardAccessEditor({
             />
             Write
           </label>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-muted-foreground">
             Write access implies read permissions.
           </span>
         </div>
       ) : (
         <div>
           {boards.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
               {emptyMessage ?? "No boards available yet."}
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-slate-200">
+            <div className="overflow-hidden rounded-xl border border-border">
               <BoardAccessTable
                 boards={boards}
                 access={access}
@@ -698,13 +698,13 @@ export default function OrganizationPage() {
       </SignedOut>
       <SignedIn>
         <DashboardSidebar />
-        <main className="flex-1 overflow-y-auto bg-slate-50">
-          <div className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+        <main className="flex-1 overflow-y-auto bg-muted/40">
+          <div className="sticky top-0 z-30 border-b border-border bg-card">
             <div className="px-8 py-6">
               <div className="flex flex-wrap items-center justify-between gap-6">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                       Organization
                     </h1>
                     <Badge
@@ -715,24 +715,24 @@ export default function OrganizationPage() {
                       {orgName}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Manage members and board access across your workspace.
                   </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                     <span>
-                      <strong className="text-slate-900">
+                      <strong className="text-foreground">
                         {members.length}
                       </strong>{" "}
                       members
                     </span>
                     <span>
-                      <strong className="text-slate-900">
+                      <strong className="text-foreground">
                         {boards.length}
                       </strong>{" "}
                       boards
                     </span>
                     <span>
-                      <strong className="text-slate-900">
+                      <strong className="text-foreground">
                         {invites.length}
                       </strong>{" "}
                       pending
@@ -772,17 +772,17 @@ export default function OrganizationPage() {
           </div>
 
           <div className="px-8 py-8">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-900">
+                  <h2 className="text-sm font-semibold text-foreground">
                     Members & invites
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Invite teammates and tune their board permissions.
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-500">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Users className="h-4 w-4" />
                   {members.length + invites.length} total
                 </div>
@@ -825,7 +825,7 @@ export default function OrganizationPage() {
             <form className="space-y-5" onSubmit={handleInviteSubmit}>
               <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Email address
                   </label>
                   <Input
@@ -837,7 +837,7 @@ export default function OrganizationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Role
                   </label>
                   <Select value={inviteRole} onValueChange={setInviteRole}>
@@ -889,7 +889,7 @@ export default function OrganizationPage() {
               </DialogFooter>
             </form>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
               Only organization admins can invite new members.
             </div>
           )}
@@ -906,26 +906,26 @@ export default function OrganizationPage() {
           </DialogHeader>
 
           {memberDetailsQuery.isLoading ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
               Loading member access...
             </div>
           ) : memberDetailsQuery.data?.status === 200 ? (
             <div className="space-y-6">
-              <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-                <p className="text-sm font-semibold text-slate-900">
+              <div className="rounded-xl border border-border bg-card px-5 py-4">
+                <p className="text-sm font-semibold text-foreground">
                   {memberDetailsQuery.data.data.user?.name ||
                     memberDetailsQuery.data.data.user?.preferred_name ||
                     memberDetailsQuery.data.data.user?.email ||
                     memberDetailsQuery.data.data.user_id}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {memberDetailsQuery.data.data.user?.email ??
                     "No email on file"}
                 </p>
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Role
                 </label>
                 <Select
@@ -963,7 +963,7 @@ export default function OrganizationPage() {
               ) : null}
             </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
               Unable to load member access.
             </div>
           )}

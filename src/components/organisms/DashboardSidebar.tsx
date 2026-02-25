@@ -59,24 +59,24 @@ export function DashboardSidebar() {
         : "System degraded";
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
+    <aside className="flex h-full w-64 flex-col border-r border-border bg-card">
       <div className="flex-1 px-3 py-4">
-        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Navigation
         </p>
         <nav className="mt-3 space-y-4 text-sm">
           <div>
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Overview
             </p>
             <div className="mt-1 space-y-1">
               <Link
                 href="/dashboard"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname === "/dashboard"
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <BarChart3 className="h-4 w-4" />
@@ -85,10 +85,10 @@ export function DashboardSidebar() {
               <Link
                 href="/activity"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/activity")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <Activity className="h-4 w-4" />
@@ -97,10 +97,10 @@ export function DashboardSidebar() {
               <Link
                 href="/project-board"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/project-board")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <Kanban className="h-4 w-4" />
@@ -109,10 +109,10 @@ export function DashboardSidebar() {
               <Link
                 href="/calendar"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/calendar")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <CalendarDays className="h-4 w-4" />
@@ -122,17 +122,17 @@ export function DashboardSidebar() {
           </div>
 
           <div>
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Boards
             </p>
             <div className="mt-1 space-y-1">
               <Link
                 href="/board-groups"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/board-groups")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <Folder className="h-4 w-4" />
@@ -141,10 +141,10 @@ export function DashboardSidebar() {
               <Link
                 href="/boards"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/boards")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -153,10 +153,10 @@ export function DashboardSidebar() {
               <Link
                 href="/tags"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/tags")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <Tags className="h-4 w-4" />
@@ -165,10 +165,10 @@ export function DashboardSidebar() {
               <Link
                 href="/approvals"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/approvals")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <CheckCircle2 className="h-4 w-4" />
@@ -178,10 +178,10 @@ export function DashboardSidebar() {
                 <Link
                   href="/custom-fields"
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                     pathname.startsWith("/custom-fields")
-                      ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100"
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-accent"
                   )}
                 >
                   <Settings className="h-4 w-4" />
@@ -194,18 +194,18 @@ export function DashboardSidebar() {
           <div>
             {isAdmin ? (
               <>
-                <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                   Skills
                 </p>
                 <div className="mt-1 space-y-1">
                   <Link
                     href="/skills/marketplace"
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                       pathname === "/skills" ||
                         pathname.startsWith("/skills/marketplace")
-                        ? "bg-blue-100 text-blue-800 font-medium"
-                        : "hover:bg-slate-100"
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-accent"
                     )}
                   >
                     <Store className="h-4 w-4" />
@@ -214,10 +214,10 @@ export function DashboardSidebar() {
                   <Link
                     href="/skills/packs"
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                       pathname.startsWith("/skills/packs")
-                        ? "bg-blue-100 text-blue-800 font-medium"
-                        : "hover:bg-slate-100"
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-accent"
                     )}
                   >
                     <Boxes className="h-4 w-4" />
@@ -229,17 +229,17 @@ export function DashboardSidebar() {
           </div>
 
           <div>
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               Administration
             </p>
             <div className="mt-1 space-y-1">
               <Link
                 href="/organization"
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                   pathname.startsWith("/organization")
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "hover:bg-slate-100"
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "hover:bg-accent"
                 )}
               >
                 <Building2 className="h-4 w-4" />
@@ -249,10 +249,10 @@ export function DashboardSidebar() {
                 <Link
                   href="/gateways"
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                     pathname.startsWith("/gateways")
-                      ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100"
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-accent"
                   )}
                 >
                   <Network className="h-4 w-4" />
@@ -263,10 +263,10 @@ export function DashboardSidebar() {
                 <Link
                   href="/agents"
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-foreground/90 transition",
                     pathname.startsWith("/agents")
-                      ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100"
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-accent"
                   )}
                 >
                   <Bot className="h-4 w-4" />
@@ -277,14 +277,14 @@ export function DashboardSidebar() {
           </div>
         </nav>
       </div>
-      <div className="border-t border-slate-200 p-4">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+      <div className="border-t border-border p-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span
             className={cn(
               "h-2 w-2 rounded-full",
               systemStatus === "operational" && "bg-emerald-500",
               systemStatus === "degraded" && "bg-rose-500",
-              systemStatus === "unknown" && "bg-slate-300"
+              systemStatus === "unknown" && "bg-muted-foreground/40"
             )}
           />
           {statusLabel}

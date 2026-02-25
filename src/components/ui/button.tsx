@@ -6,18 +6,18 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         primary:
-          "bg-[color:var(--accent)] text-white shadow-sm hover:bg-[color:var(--accent-strong)]",
+          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
         secondary:
-          "border border-[color:var(--border)] bg-[color:var(--surface)] text-strong hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]",
+          "border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
         outline:
-          "border border-[color:var(--border-strong)] bg-transparent text-strong hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]",
+          "border border-input bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground",
         ghost:
-          "bg-transparent text-strong hover:bg-[color:var(--surface-strong)]",
+          "bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground",
       },
       size: {
         sm: "h-9 px-4",

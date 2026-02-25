@@ -440,7 +440,7 @@ const liveFeedEventLabel = (eventType: LiveFeedEventType): string => {
 
 const liveFeedEventPillClass = (eventType: LiveFeedEventType): string => {
   if (eventType === "task.comment") {
-    return "border-blue-200 bg-blue-50 text-blue-700";
+    return "border-primary/30 bg-primary/10 text-primary";
   }
   if (eventType === "task.created") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
@@ -461,7 +461,7 @@ const liveFeedEventPillClass = (eventType: LiveFeedEventType): string => {
     return "border-lime-200 bg-lime-50 text-lime-700";
   }
   if (eventType === "agent.offline") {
-    return "border-slate-300 bg-slate-100 text-slate-700";
+    return "border-border bg-muted/40 text-foreground/90";
   }
   if (eventType === "agent.updated") {
     return "border-indigo-200 bg-indigo-50 text-indigo-700";
@@ -478,7 +478,7 @@ const liveFeedEventPillClass = (eventType: LiveFeedEventType): string => {
   if (eventType === "approval.rejected") {
     return "border-rose-200 bg-rose-50 text-rose-700";
   }
-  return "border-slate-200 bg-slate-100 text-slate-700";
+  return "border-border bg-muted/40 text-foreground/90";
 };
 
 const normalizeTask = (task: TaskCardRead): Task => ({
@@ -600,17 +600,17 @@ const TaskCommentCard = memo(function TaskCommentCard({
 }) {
   const message = (comment.message ?? "").trim();
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
-      <div className="flex items-center justify-between text-xs text-slate-500">
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{authorLabel}</span>
         <span>{formatShortTimestamp(comment.created_at)}</span>
       </div>
       {message ? (
-        <div className="mt-2 select-text cursor-text text-sm leading-relaxed text-slate-900 break-words">
+        <div className="mt-2 select-text cursor-text text-sm leading-relaxed text-foreground break-words">
           <Markdown content={message} variant="comment" />
         </div>
       ) : (
-        <p className="mt-2 text-sm text-slate-900">—</p>
+        <p className="mt-2 text-sm text-foreground">—</p>
       )}
     </div>
   );
@@ -627,14 +627,14 @@ const ChatMessageCard = memo(function ChatMessageCard({
 }) {
   const sourceLabel = resolveHumanActorName(message.source, fallbackSource);
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+    <div className="rounded-2xl border border-border bg-muted/40 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-slate-900">{sourceLabel}</p>
-        <span className="text-xs text-slate-400">
+        <p className="text-sm font-semibold text-foreground">{sourceLabel}</p>
+        <span className="text-xs text-muted-foreground/60">
           {formatShortTimestamp(message.created_at)}
         </span>
       </div>
-      <div className="mt-2 select-text cursor-text text-sm leading-relaxed text-slate-900 break-words">
+      <div className="mt-2 select-text cursor-text text-sm leading-relaxed text-foreground break-words">
         <Markdown content={message.content} variant="basic" />
       </div>
     </div>
@@ -668,12 +668,12 @@ const LiveFeedCard = memo(function LiveFeedCard({
       className={cn(
         "rounded-xl border p-3 transition-colors duration-300",
         isNew
-          ? "border-blue-200 bg-blue-50/70 shadow-sm hover:border-blue-300 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-right-2 motion-safe:duration-300"
-          : "border-slate-200 bg-white hover:border-slate-300"
+          ? "border-primary/30 bg-primary/5 shadow-sm hover:border-primary/50 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-right-2 motion-safe:duration-300"
+          : "border-border bg-card hover:border-border/80"
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-muted/40 text-xs font-semibold text-foreground/90">
           {authorAvatar}
         </div>
         <div className="min-w-0 flex-1">
@@ -683,9 +683,9 @@ const LiveFeedCard = memo(function LiveFeedCard({
               onClick={onViewTask}
               disabled={!onViewTask}
               className={cn(
-                "text-left text-sm font-semibold leading-snug text-slate-900",
+                "text-left text-sm font-semibold leading-snug text-foreground",
                 onViewTask
-                  ? "cursor-pointer transition hover:text-slate-950 hover:underline"
+                  ? "cursor-pointer transition hover:text-foreground hover:underline"
                   : "cursor-default"
               )}
               title={taskTitle}
@@ -699,7 +699,7 @@ const LiveFeedCard = memo(function LiveFeedCard({
               {taskTitle}
             </button>
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
             <span
               className={cn(
                 "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
@@ -708,26 +708,26 @@ const LiveFeedCard = memo(function LiveFeedCard({
             >
               {eventLabel}
             </span>
-            <span className="font-medium text-slate-700">{authorName}</span>
+            <span className="font-medium text-foreground/90">{authorName}</span>
             {authorRole ? (
               <>
-                <span className="text-slate-300">·</span>
-                <span className="text-slate-500">{authorRole}</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-muted-foreground">{authorRole}</span>
               </>
             ) : null}
-            <span className="text-slate-300">·</span>
-            <span className="text-slate-400">
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-muted-foreground/60">
               {formatShortTimestamp(item.created_at)}
             </span>
           </div>
         </div>
       </div>
       {message ? (
-        <div className="mt-3 select-text cursor-text text-sm leading-relaxed text-slate-900 break-words">
+        <div className="mt-3 select-text cursor-text text-sm leading-relaxed text-foreground break-words">
           <Markdown content={message} variant="basic" />
         </div>
       ) : (
-        <p className="mt-3 text-sm text-slate-500">—</p>
+        <p className="mt-3 text-sm text-muted-foreground">—</p>
       )}
     </div>
   );
@@ -2828,7 +2828,7 @@ export default function BoardDetailPage() {
       case "done":
         return "bg-emerald-100 text-emerald-700";
       default:
-        return "bg-slate-100 text-slate-600";
+        return "bg-muted/40 text-foreground/80";
     }
   };
 
@@ -2841,7 +2841,7 @@ export default function BoardDetailPage() {
       case "low":
         return "bg-emerald-100 text-emerald-700";
       default:
-        return "bg-slate-100 text-slate-600";
+        return "bg-muted/40 text-foreground/80";
     }
   };
 
@@ -2992,18 +2992,18 @@ export default function BoardDetailPage() {
         <DashboardSidebar />
         <main
           className={cn(
-            "flex-1 bg-gradient-to-br from-slate-50 to-slate-100",
+            "flex-1 bg-gradient-to-br from-muted/40 to-muted/60",
             isSidePanelOpen ? "overflow-hidden" : "overflow-y-auto"
           )}
         >
-          <div className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm">
+          <div className="sticky top-0 z-30 border-b border-border bg-card shadow-sm">
             <div className="px-8 py-6">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h1 className="mt-2 text-2xl font-semibold text-slate-900 tracking-tight">
+                  <h1 className="mt-2 text-2xl font-semibold text-foreground tracking-tight">
                     {board?.name ?? "Board"}
                   </h1>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Keep tasks moving through your workflow.
                   </p>
                   {isBoardLeadProvisioning ? (
@@ -3014,13 +3014,13 @@ export default function BoardDetailPage() {
                   ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+                  <div className="flex items-center gap-1 rounded-lg bg-muted/40 p-1">
                     <button
                       className={cn(
                         "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                         viewMode === "board"
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                          ? "bg-foreground text-background"
+                          : "text-foreground/80 hover:bg-accent hover:text-foreground"
                       )}
                       onClick={() => setViewMode("board")}
                     >
@@ -3030,8 +3030,8 @@ export default function BoardDetailPage() {
                       className={cn(
                         "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                         viewMode === "list"
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                          ? "bg-foreground text-background"
+                          : "text-foreground/80 hover:bg-accent hover:text-foreground"
                       )}
                       onClick={() => setViewMode("list")}
                     >
@@ -3056,7 +3056,7 @@ export default function BoardDetailPage() {
                   >
                     <ShieldCheck className="h-4 w-4" />
                     {pendingApprovals.length > 0 ? (
-                      <span className="absolute -right-1 -top-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      <span className="absolute -right-1 -top-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-foreground px-1.5 py-0.5 text-[10px] font-semibold text-background">
                         {pendingApprovals.length}
                       </span>
                     ) : null}
@@ -3121,7 +3121,7 @@ export default function BoardDetailPage() {
                     <button
                       type="button"
                       onClick={() => router.push(`/boards/${boardId}/edit`)}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-foreground/80 transition hover:border-border/80 hover:bg-accent/50"
                       aria-label="Board settings"
                       title="Board settings"
                     >
@@ -3135,27 +3135,27 @@ export default function BoardDetailPage() {
 
           <div className="relative flex gap-6 p-6">
             {isOrgAdmin ? (
-              <aside className="flex h-full w-64 flex-col rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <aside className="flex h-full w-64 flex-col rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Agents
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground/60">
                       {sortedAgents.length} total
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => router.push("/agents/new")}
-                    className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                    className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-foreground/80 transition hover:border-border/80 hover:bg-accent/50"
                   >
                     Add
                   </button>
                 </div>
                 <div className="flex-1 space-y-2 overflow-y-auto p-3">
                   {sortedAgents.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-slate-200 p-3 text-xs text-slate-500">
+                    <div className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
                       No agents assigned yet.
                     </div>
                   ) : (
@@ -3166,26 +3166,26 @@ export default function BoardDetailPage() {
                           key={agent.id}
                           type="button"
                           className={cn(
-                            "flex w-full items-center gap-3 rounded-lg border border-transparent px-2 py-2 text-left transition hover:border-slate-200 hover:bg-slate-50"
+                            "flex w-full items-center gap-3 rounded-lg border border-transparent px-2 py-2 text-left transition hover:border-border hover:bg-accent/50"
                           )}
                           onClick={() => router.push(`/agents/${agent.id}`)}
                         >
-                          <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
+                          <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-muted/40 text-xs font-semibold text-foreground/90">
                             {agentAvatarLabel(agent)}
                             <StatusDot
                               status={agent.status}
                               variant="agent"
                               className={cn(
-                                "absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-white",
+                                "absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-card",
                                 isWorking && "ring-2 ring-emerald-200"
                               )}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-slate-900">
+                            <p className="truncate text-sm font-medium text-foreground">
                               {agent.name}
                             </p>
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-muted-foreground">
                               {agentRoleLabel(agent)}
                             </p>
                           </div>
@@ -3199,13 +3199,13 @@ export default function BoardDetailPage() {
 
             <div className="min-w-0 flex-1 space-y-6">
               {error && (
-                <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-sm">
+                <div className="rounded-lg border border-border bg-card p-3 text-sm text-foreground/80 shadow-sm">
                   {error}
                 </div>
               )}
 
               {isLoading ? (
-                <div className="flex min-h-[50vh] items-center justify-center text-sm text-slate-500">
+                <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted-foreground">
                   Loading {titleLabel}…
                 </div>
               ) : (
@@ -3219,18 +3219,18 @@ export default function BoardDetailPage() {
                       ) : null}
 
                       {groupSnapshot?.group ? (
-                        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                          <div className="border-b border-slate-200 px-5 py-4">
+                        <div className="rounded-xl border border-border bg-card shadow-sm">
+                          <div className="border-b border-border px-5 py-4">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                   Related boards
                                 </p>
-                                <p className="mt-1 truncate text-sm font-semibold text-slate-900">
+                                <p className="mt-1 truncate text-sm font-semibold text-foreground">
                                   {groupSnapshot.group.name}
                                 </p>
                                 {groupSnapshot.group.description ? (
-                                  <p className="mt-1 max-w-3xl text-xs text-slate-500 line-clamp-2">
+                                  <p className="mt-1 max-w-3xl text-xs text-muted-foreground line-clamp-2">
                                     {groupSnapshot.group.description}
                                   </p>
                                 ) : null}
@@ -3269,7 +3269,7 @@ export default function BoardDetailPage() {
                                 {groupSnapshot.boards.map((item) => (
                                   <div
                                     key={item.board.id}
-                                    className="rounded-xl border border-slate-200 bg-slate-50/40 p-4"
+                                    className="rounded-xl border border-border bg-muted/40 p-4"
                                   >
                                     <button
                                       type="button"
@@ -3279,28 +3279,28 @@ export default function BoardDetailPage() {
                                       }
                                     >
                                       <div className="min-w-0">
-                                        <p className="truncate text-sm font-semibold text-slate-900 group-hover:text-blue-600">
+                                        <p className="truncate text-sm font-semibold text-foreground group-hover:text-primary">
                                           {item.board.name}
                                         </p>
-                                        <p className="mt-1 text-xs text-slate-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                           Updated{" "}
                                           {formatTaskTimestamp(
                                             item.board.updated_at
                                           )}
                                         </p>
                                       </div>
-                                      <ArrowUpRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400 group-hover:text-blue-600" />
+                                      <ArrowUpRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground/60 group-hover:text-primary" />
                                     </button>
 
                                     <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                                      <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
+                                      <span className="rounded-full border border-border bg-card px-2 py-0.5 text-foreground/90">
                                         Inbox {item.task_counts?.inbox ?? 0}
                                       </span>
-                                      <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
+                                      <span className="rounded-full border border-border bg-card px-2 py-0.5 text-foreground/90">
                                         In progress{" "}
                                         {item.task_counts?.in_progress ?? 0}
                                       </span>
-                                      <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
+                                      <span className="rounded-full border border-border bg-card px-2 py-0.5 text-foreground/90">
                                         Review {item.task_counts?.review ?? 0}
                                       </span>
                                     </div>
@@ -3310,7 +3310,7 @@ export default function BoardDetailPage() {
                                         {item.tasks.slice(0, 3).map((task) => (
                                           <li
                                             key={task.id}
-                                            className="rounded-lg border border-slate-200 bg-white p-3"
+                                            className="rounded-lg border border-border bg-card p-3"
                                           >
                                             <div className="flex flex-wrap items-center justify-between gap-2">
                                               <div className="flex min-w-0 items-center gap-2">
@@ -3337,19 +3337,19 @@ export default function BoardDetailPage() {
                                                 >
                                                   {task.priority}
                                                 </span>
-                                                <p className="truncate text-sm font-medium text-slate-900">
+                                                <p className="truncate text-sm font-medium text-foreground">
                                                   {task.title}
                                                 </p>
                                               </div>
-                                              <p className="text-xs text-slate-500">
+                                              <p className="text-xs text-muted-foreground">
                                                 {formatTaskTimestamp(
                                                   task.updated_at
                                                 )}
                                               </p>
                                             </div>
-                                            <p className="mt-2 truncate text-xs text-slate-600">
+                                            <p className="mt-2 truncate text-xs text-foreground/80">
                                               Assignee:{" "}
-                                              <span className="font-medium text-slate-900">
+                                              <span className="font-medium text-foreground">
                                                 {task.assignee ?? "Unassigned"}
                                               </span>
                                             </p>
@@ -3360,7 +3360,7 @@ export default function BoardDetailPage() {
                                                   .map((tag) => (
                                                     <span
                                                       key={tag.id}
-                                                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700"
+                                                      className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold text-foreground/90"
                                                     >
                                                       <span
                                                         className="h-1.5 w-1.5 rounded-full"
@@ -3378,13 +3378,13 @@ export default function BoardDetailPage() {
                                           </li>
                                         ))}
                                         {item.tasks.length > 3 ? (
-                                          <li className="text-xs text-slate-500">
+                                          <li className="text-xs text-muted-foreground">
                                             +{item.tasks.length - 3} more…
                                           </li>
                                         ) : null}
                                       </ul>
                                     ) : (
-                                      <p className="mt-3 text-sm text-slate-500">
+                                      <p className="mt-3 text-sm text-muted-foreground">
                                         No tasks in this snapshot.
                                       </p>
                                     )}
@@ -3392,18 +3392,18 @@ export default function BoardDetailPage() {
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-sm text-slate-500">
+                              <p className="text-sm text-muted-foreground">
                                 No other boards in this group yet.
                               </p>
                             )}
                           </div>
                         </div>
                       ) : groupSnapshot ? (
-                        <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-                          <p className="font-semibold text-slate-900">
+                        <div className="rounded-xl border border-border bg-card p-4 text-sm text-foreground/80 shadow-sm">
+                          <p className="font-semibold text-foreground">
                             No board group configured
                           </p>
-                          <p className="mt-1 text-sm text-slate-600">
+                          <p className="mt-1 text-sm text-foreground/80">
                             Assign this board to a group to give agents
                             visibility into related work.
                           </p>
@@ -3439,14 +3439,14 @@ export default function BoardDetailPage() {
                       readOnly={!canWrite}
                     />
                   ) : (
-                    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                      <div className="border-b border-slate-200 px-5 py-4">
+                    <div className="rounded-xl border border-border bg-card shadow-sm">
+                      <div className="border-b border-border px-5 py-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                            <p className="text-sm font-semibold text-foreground">
                               All tasks
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-muted-foreground">
                               {tasks.length} tasks in this board
                             </p>
                           </div>
@@ -3461,9 +3461,9 @@ export default function BoardDetailPage() {
                           </Button>
                         </div>
                       </div>
-                      <div className="divide-y divide-slate-100">
+                      <div className="divide-y divide-border">
                         {tasks.length === 0 ? (
-                          <div className="px-5 py-8 text-sm text-slate-500">
+                          <div className="px-5 py-8 text-sm text-muted-foreground">
                             No tasks yet. Create your first task to get started.
                           </div>
                         ) : (
@@ -3471,15 +3471,15 @@ export default function BoardDetailPage() {
                             <button
                               key={task.id}
                               type="button"
-                              className="w-full px-5 py-4 text-left transition hover:bg-slate-50"
+                              className="w-full px-5 py-4 text-left transition hover:bg-accent/50"
                               onClick={() => openComments(task)}
                             >
                               <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div className="min-w-0">
-                                  <p className="truncate text-sm font-semibold text-slate-900">
+                                  <p className="truncate text-sm font-semibold text-foreground">
                                     {task.title}
                                   </p>
-                                  <p className="mt-1 text-xs text-slate-500">
+                                  <p className="mt-1 text-xs text-muted-foreground">
                                     {task.description
                                       ? task.description
                                           .toString()
@@ -3488,7 +3488,7 @@ export default function BoardDetailPage() {
                                       : "No description"}
                                   </p>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                   {task.approvals_pending_count ? (
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
                                       <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -3517,7 +3517,7 @@ export default function BoardDetailPage() {
                                       {task.tags.slice(0, 2).map((tag) => (
                                         <span
                                           key={tag.id}
-                                          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700"
+                                          className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold text-foreground/90"
                                         >
                                           <span
                                             className="h-1.5 w-1.5 rounded-full"
@@ -3531,16 +3531,16 @@ export default function BoardDetailPage() {
                                         </span>
                                       ))}
                                       {task.tags.length > 2 ? (
-                                        <span className="text-[10px] font-semibold text-slate-500">
+                                        <span className="text-[10px] font-semibold text-muted-foreground">
                                           +{task.tags.length - 2}
                                         </span>
                                       ) : null}
                                     </div>
                                   ) : null}
-                                  <span className="text-xs text-slate-500">
+                                  <span className="text-xs text-muted-foreground">
                                     {task.assignee ?? "Unassigned"}
                                   </span>
-                                  <span className="text-xs text-slate-500">
+                                  <span className="text-xs text-muted-foreground">
                                     {formatTaskTimestamp(
                                       task.updated_at ?? task.created_at
                                     )}
@@ -3561,7 +3561,7 @@ export default function BoardDetailPage() {
       </SignedIn>
       {isDetailOpen || isChatOpen || isLiveFeedOpen ? (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/20"
+          className="fixed inset-0 z-40 bg-foreground/10"
           onClick={() => {
             if (isChatOpen) {
               closeBoardChat();
@@ -3575,17 +3575,17 @@ export default function BoardDetailPage() {
       ) : null}
       <aside
         className={cn(
-          "fixed right-0 top-0 z-50 h-full w-[max(760px,45vw)] max-w-[99vw] transform bg-white shadow-2xl transition-transform",
+          "fixed right-0 top-0 z-50 h-full w-[max(760px,45vw)] max-w-[99vw] transform bg-card shadow-2xl transition-transform",
           isDetailOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Task detail
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-900">
+              <p className="mt-1 text-sm font-medium text-foreground">
                 {selectedTask?.title ?? "Task"}
               </p>
             </div>
@@ -3593,7 +3593,7 @@ export default function BoardDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsEditDialogOpen(true)}
-                className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
+                className="rounded-lg border border-border p-2 text-muted-foreground transition hover:bg-accent/50"
                 disabled={!selectedTask || !canWrite}
                 title={canWrite ? "Edit task" : "Read-only access"}
               >
@@ -3602,7 +3602,7 @@ export default function BoardDetailPage() {
               <button
                 type="button"
                 onClick={closeComments}
-                className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
+                className="rounded-lg border border-border p-2 text-muted-foreground transition hover:bg-accent/50"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -3610,30 +3610,30 @@ export default function BoardDetailPage() {
           </div>
           <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Description
               </p>
               {selectedTask?.description ? (
-                <div className="prose prose-sm max-w-none text-slate-700">
+                <div className="prose prose-sm max-w-none text-foreground/90">
                   <Markdown
                     content={selectedTask.description}
                     variant="description"
                   />
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   No description provided.
                 </p>
               )}
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Custom fields
               </p>
               {customFieldDefinitionsQuery.isLoading ? (
-                <p className="text-sm text-slate-500">Loading custom fields…</p>
+                <p className="text-sm text-muted-foreground">Loading custom fields…</p>
               ) : boardCustomFieldDefinitions.length > 0 ? (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="rounded-lg border border-border bg-muted/40 p-3">
                   <dl className="space-y-2">
                     {boardCustomFieldDefinitions.map((definition) => {
                       const value =
@@ -3646,13 +3646,13 @@ export default function BoardDetailPage() {
                           key={definition.id}
                           className="grid grid-cols-[160px_1fr] gap-3"
                         >
-                          <dt className="text-xs font-semibold text-slate-600">
+                          <dt className="text-xs font-semibold text-foreground/80">
                             {definition.label || definition.field_key}
                             {definition.required === true ? (
                               <span className="ml-1 text-rose-600">*</span>
                             ) : null}
                           </dt>
-                          <dd className="text-xs text-slate-800">
+                          <dd className="text-xs text-foreground">
                             {formatCustomFieldDetailValue(definition, value)}
                           </dd>
                         </div>
@@ -3661,11 +3661,11 @@ export default function BoardDetailPage() {
                   </dl>
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No custom fields.</p>
+                <p className="text-sm text-muted-foreground">No custom fields.</p>
               )}
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Tags
               </p>
               {selectedTask?.tags?.length ? (
@@ -3673,7 +3673,7 @@ export default function BoardDetailPage() {
                   {selectedTask.tags.map((tag) => (
                     <span
                       key={tag.id}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-foreground/90"
                     >
                       <span
                         className="h-2 w-2 rounded-full"
@@ -3686,11 +3686,11 @@ export default function BoardDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No tags assigned.</p>
+                <p className="text-sm text-muted-foreground">No tags assigned.</p>
               )}
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Dependencies
               </p>
               {(() => {
@@ -3733,7 +3733,7 @@ export default function BoardDetailPage() {
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Approvals
                 </p>
                 <Button
@@ -3745,13 +3745,13 @@ export default function BoardDetailPage() {
                 </Button>
               </div>
               {approvalsError ? (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+                <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
                   {approvalsError}
                 </div>
               ) : isApprovalsLoading ? (
-                <p className="text-sm text-slate-500">Loading approvals…</p>
+                <p className="text-sm text-muted-foreground">Loading approvals…</p>
               ) : taskApprovals.length === 0 ? (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   No approvals tied to this task.{" "}
                   {pendingApprovals.length > 0
                     ? `${pendingApprovals.length} pending on this board.`
@@ -3762,30 +3762,30 @@ export default function BoardDetailPage() {
                   {taskApprovals.map((approval) => (
                     <div
                       key={approval.id}
-                      className="rounded-xl border border-slate-200 bg-white p-3"
+                      className="rounded-xl border border-border bg-card p-3"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-2 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-start justify-between gap-2 text-xs text-muted-foreground">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             {humanizeApprovalAction(approval.action_type)}
                           </p>
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             Requested{" "}
                             {formatApprovalTimestamp(approval.created_at)}
                           </p>
                         </div>
-                        <span className="text-xs font-semibold text-slate-700">
+                        <span className="text-xs font-semibold text-foreground/90">
                           {approval.confidence}% confidence · {approval.status}
                         </span>
                       </div>
                       {approvalRows(approval).length > 0 ? (
-                        <div className="mt-2 grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
+                        <div className="mt-2 grid gap-2 text-xs text-foreground/80 sm:grid-cols-2">
                           {approvalRows(approval).map((row) => (
                             <div key={`${approval.id}-${row.label}`}>
-                              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                                 {row.label}
                               </p>
-                              <p className="mt-1 text-xs text-slate-700">
+                              <p className="mt-1 text-xs text-foreground/90">
                                 {row.value}
                               </p>
                             </div>
@@ -3793,7 +3793,7 @@ export default function BoardDetailPage() {
                         </div>
                       ) : null}
                       {approvalReason(approval) ? (
-                        <p className="mt-2 text-xs text-slate-600">
+                        <p className="mt-2 text-xs text-foreground/80">
                           {approvalReason(approval)}
                         </p>
                       ) : null}
@@ -3821,7 +3821,7 @@ export default function BoardDetailPage() {
                               approvalsUpdatingId === approval.id || !canWrite
                             }
                             title={canWrite ? "Reject" : "Read-only access"}
-                            className="border-slate-300 text-slate-700"
+                            className="border-border text-foreground/90"
                           >
                             Reject
                           </Button>
@@ -3833,10 +3833,10 @@ export default function BoardDetailPage() {
               )}
             </div>
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Comments
               </p>
-              <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="space-y-2 rounded-xl border border-border bg-muted/40 p-3">
                 <BoardChatComposer
                   placeholder={
                     canWrite
@@ -3852,19 +3852,19 @@ export default function BoardDetailPage() {
                   <p className="text-xs text-rose-600">{postCommentError}</p>
                 ) : null}
                 {!canWrite ? (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Read-only access. You cannot post comments on this board.
                   </p>
                 ) : null}
               </div>
               {isCommentsLoading ? (
-                <p className="text-sm text-slate-500">Loading comments…</p>
+                <p className="text-sm text-muted-foreground">Loading comments…</p>
               ) : commentsError ? (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+                <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
                   {commentsError}
                 </div>
               ) : comments.length === 0 ? (
-                <p className="text-sm text-slate-500">No comments yet.</p>
+                <p className="text-sm text-muted-foreground">No comments yet.</p>
               ) : (
                 <div className="space-y-3">
                   {comments.map((comment) => (
@@ -3887,38 +3887,38 @@ export default function BoardDetailPage() {
 
       <aside
         className={cn(
-          "fixed right-0 top-0 z-50 h-full w-[560px] max-w-[96vw] transform border-l border-slate-200 bg-white shadow-2xl transition-transform",
+          "fixed right-0 top-0 z-50 h-full w-[560px] max-w-[96vw] transform border-l border-border bg-card shadow-2xl transition-transform",
           isChatOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Board chat
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-900">
+              <p className="mt-1 text-sm font-medium text-foreground">
                 Talk to the lead agent. Tag others with @name.
               </p>
             </div>
             <button
               type="button"
               onClick={closeBoardChat}
-              className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition hover:bg-accent/50"
               aria-label="Close board chat"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="flex flex-1 flex-col overflow-hidden px-6 py-4">
-            <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-border bg-card p-4">
               {chatError ? (
                 <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {chatError}
                 </div>
               ) : null}
               {chatMessages.length === 0 ? (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   No messages yet. Start the conversation with your lead agent.
                 </p>
               ) : (
@@ -3949,24 +3949,24 @@ export default function BoardDetailPage() {
 
       <aside
         className={cn(
-          "fixed right-0 top-0 z-50 h-full w-[520px] max-w-[96vw] transform border-l border-slate-200 bg-white shadow-2xl transition-transform",
+          "fixed right-0 top-0 z-50 h-full w-[520px] max-w-[96vw] transform border-l border-border bg-card shadow-2xl transition-transform",
           isLiveFeedOpen ? "transform-none" : "translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Live feed
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-900">
+              <p className="mt-1 text-sm font-medium text-foreground">
                 Realtime task, approval, agent, and board-chat activity.
               </p>
             </div>
             <button
               type="button"
               onClick={closeLiveFeed}
-              className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50"
+              className="rounded-lg border border-border p-2 text-muted-foreground transition hover:bg-accent/50"
               aria-label="Close live feed"
             >
               <X className="h-4 w-4" />
@@ -3974,13 +3974,13 @@ export default function BoardDetailPage() {
           </div>
           <div className="flex-1 overflow-y-auto px-6 py-4">
             {isLiveFeedHistoryLoading && orderedLiveFeed.length === 0 ? (
-              <p className="text-sm text-slate-500">Loading feed…</p>
+              <p className="text-sm text-muted-foreground">Loading feed…</p>
             ) : liveFeedHistoryError ? (
-              <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm">
+              <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground/90 shadow-sm">
                 {liveFeedHistoryError}
               </div>
             ) : orderedLiveFeed.length === 0 ? (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 Waiting for new activity…
               </p>
             ) : (
@@ -4040,7 +4040,7 @@ export default function BoardDetailPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Title
               </label>
               <Input
@@ -4051,7 +4051,7 @@ export default function BoardDetailPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Description
               </label>
               <Textarea
@@ -4063,7 +4063,7 @@ export default function BoardDetailPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Custom fields
               </label>
               <TaskCustomFieldsEditor
@@ -4076,7 +4076,7 @@ export default function BoardDetailPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Status
                 </label>
                 <Select
@@ -4097,7 +4097,7 @@ export default function BoardDetailPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Priority
                 </label>
                 <Select
@@ -4118,7 +4118,7 @@ export default function BoardDetailPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Due date
                 </label>
                 <Input
@@ -4130,7 +4130,7 @@ export default function BoardDetailPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Assignee
               </label>
               <Select
@@ -4153,20 +4153,20 @@ export default function BoardDetailPage() {
                 </SelectContent>
               </Select>
               {assignableAgents.length === 0 ? (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Add agents to assign tasks.
                 </p>
               ) : null}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Tags
                 </label>
                 <button
                   type="button"
                   onClick={() => router.push("/tags")}
-                  className="text-xs font-medium text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
+                  className="text-xs font-medium text-muted-foreground underline underline-offset-2 transition hover:text-foreground/90"
                 >
                   Manage tags
                 </button>
@@ -4180,7 +4180,7 @@ export default function BoardDetailPage() {
                 emptyMessage="No tags configured."
               />
               {editTagIds.length === 0 ? (
-                <p className="text-xs text-slate-500">No tags assigned.</p>
+                <p className="text-xs text-muted-foreground">No tags assigned.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {editTagIds.map((tagId) => {
@@ -4190,7 +4190,7 @@ export default function BoardDetailPage() {
                     return (
                       <span
                         key={tagId}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-foreground/90"
                       >
                         <span
                           className="h-1.5 w-1.5 rounded-full"
@@ -4201,9 +4201,9 @@ export default function BoardDetailPage() {
                           type="button"
                           onClick={() => removeEditTag(tagId)}
                           className={cn(
-                            "rounded-full p-0.5 text-slate-500 transition",
+                            "rounded-full p-0.5 text-muted-foreground transition",
                             canWrite
-                              ? "hover:bg-white hover:text-slate-700"
+                              ? "hover:bg-card hover:text-foreground/90"
                               : "opacity-50 cursor-not-allowed"
                           )}
                           aria-label="Remove tag"
@@ -4218,10 +4218,10 @@ export default function BoardDetailPage() {
               )}
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Dependencies
               </label>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Tasks stay blocked until every dependency is marked done.
               </p>
               <DropdownSelect
@@ -4238,12 +4238,12 @@ export default function BoardDetailPage() {
                 emptyMessage="No other tasks found."
               />
               {selectedTask?.status === "done" ? (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Dependencies can only be edited until the task is done.
                 </p>
               ) : null}
               {editDependsOnTaskIds.length === 0 ? (
-                <p className="text-xs text-slate-500">No dependencies.</p>
+                <p className="text-xs text-muted-foreground">No dependencies.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {editDependsOnTaskIds.map((depId) => {
@@ -4260,12 +4260,12 @@ export default function BoardDetailPage() {
                           "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs",
                           isDone
                             ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                            : "border-slate-200 bg-slate-50 text-slate-700"
+                            : "border-border bg-muted/40 text-foreground/90"
                         )}
                       >
                         <span className="max-w-[18rem] truncate">{label}</span>
                         {statusLabel ? (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">
                             {statusLabel}
                           </span>
                         ) : null}
@@ -4274,9 +4274,9 @@ export default function BoardDetailPage() {
                             type="button"
                             onClick={() => removeTaskDependency(depId)}
                             className={cn(
-                              "rounded-full p-0.5 text-slate-500 transition",
+                              "rounded-full p-0.5 text-muted-foreground transition",
                               canWrite
-                                ? "hover:bg-white hover:text-slate-700"
+                                ? "hover:bg-card hover:text-foreground/90"
                                 : "opacity-50 cursor-not-allowed"
                             )}
                             aria-label="Remove dependency"
@@ -4292,7 +4292,7 @@ export default function BoardDetailPage() {
               )}
             </div>
             {saveTaskError ? (
-              <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600">
+              <div className="rounded-lg border border-border bg-card p-3 text-xs text-foreground/80">
                 {saveTaskError}
               </div>
             ) : null}
@@ -4448,7 +4448,7 @@ export default function BoardDetailPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/tags")}
-                  className="text-xs font-medium text-slate-500 underline underline-offset-2 transition hover:text-slate-700"
+                  className="text-xs font-medium text-muted-foreground underline underline-offset-2 transition hover:text-foreground/90"
                 >
                   Manage tags
                 </button>
@@ -4469,7 +4469,7 @@ export default function BoardDetailPage() {
                     return (
                       <span
                         key={tagId}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-foreground/90"
                       >
                         <span
                           className="h-1.5 w-1.5 rounded-full"
@@ -4479,7 +4479,7 @@ export default function BoardDetailPage() {
                         <button
                           type="button"
                           onClick={() => removeCreateTag(tagId)}
-                          className="rounded-full p-0.5 text-slate-500 transition hover:bg-white hover:text-slate-700"
+                          className="rounded-full p-0.5 text-muted-foreground transition hover:bg-card hover:text-foreground/90"
                           aria-label="Remove tag"
                           disabled={!canWrite || isCreating}
                         >
@@ -4490,7 +4490,7 @@ export default function BoardDetailPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">No tags assigned.</p>
+                <p className="text-xs text-muted-foreground">No tags assigned.</p>
               )}
             </div>
             {createError ? (
@@ -4543,8 +4543,8 @@ export default function BoardDetailPage() {
               </div>
             ) : null}
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-              <p className="font-semibold text-slate-900">What happens</p>
+            <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm text-foreground/90">
+              <p className="font-semibold text-foreground">What happens</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>
                   This posts{" "}
@@ -4588,7 +4588,7 @@ export default function BoardDetailPage() {
             <div
               key={toast.id}
               className={cn(
-                "rounded-xl border bg-white px-4 py-3 text-sm shadow-lush",
+                "rounded-xl border bg-card px-4 py-3 text-sm shadow-lush",
                 toast.tone === "error"
                   ? "border-rose-200 text-rose-700"
                   : "border-emerald-200 text-emerald-700"
@@ -4601,10 +4601,10 @@ export default function BoardDetailPage() {
                     toast.tone === "error" ? "bg-rose-500" : "bg-emerald-500"
                   )}
                 />
-                <p className="flex-1 text-sm text-slate-700">{toast.message}</p>
+                <p className="flex-1 text-sm text-foreground/90">{toast.message}</p>
                 <button
                   type="button"
-                  className="text-xs text-slate-400 hover:text-slate-600"
+                  className="text-xs text-muted-foreground/60 hover:text-muted-foreground"
                   onClick={() => dismissToast(toast.id)}
                 >
                   Dismiss

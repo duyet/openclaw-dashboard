@@ -204,24 +204,24 @@ function KpiCard({
   progress?: number;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </p>
-        <div className="rounded-lg bg-blue-50 p-2 text-blue-600">{icon}</div>
+        <div className="rounded-lg bg-primary/5 p-2 text-primary">{icon}</div>
       </div>
       <div className="flex items-end gap-2">
-        <h3 className="font-heading text-4xl font-bold text-slate-900">
+        <h3 className="font-heading text-4xl font-bold text-foreground">
           {value}
         </h3>
       </div>
       {sublabel ? (
-        <p className="mt-2 text-xs text-slate-500">{sublabel}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{sublabel}</p>
       ) : null}
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-border/50">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
+          className="h-full rounded-full bg-gradient-to-r from-primary to-primary"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -239,13 +239,13 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="font-heading text-base font-semibold text-slate-900">
+          <h3 className="font-heading text-base font-semibold text-foreground">
             {title}
           </h3>
-          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
       </div>
       <div className="h-56">{children}</div>
@@ -432,14 +432,14 @@ export default function DashboardPage() {
       </SignedOut>
       <SignedIn>
         <DashboardSidebar />
-        <main className="flex-1 overflow-y-auto bg-slate-50">
-          <div className="border-b border-slate-200 bg-white px-8 py-6">
+        <main className="flex-1 overflow-y-auto bg-muted/40">
+          <div className="border-b border-border bg-card px-8 py-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="font-heading text-2xl font-semibold text-slate-900 tracking-tight">
+                <h2 className="font-heading text-2xl font-semibold text-foreground tracking-tight">
                   Dashboard
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Monitor your mission control operations
                 </p>
               </div>
@@ -456,8 +456,8 @@ export default function DashboardPage() {
                   ariaLabel="Dashboard date range"
                   placeholder="Select range"
                   searchEnabled={false}
-                  triggerClassName="h-9 min-w-[150px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  contentClassName="rounded-lg border border-slate-200"
+                  triggerClassName="h-9 min-w-[150px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
+                  contentClassName="rounded-lg border border-border"
                 />
                 <DropdownSelect
                   value={selectedGroupId ?? ALL_FILTER_VALUE}
@@ -486,8 +486,8 @@ export default function DashboardPage() {
                   options={boardGroupOptions}
                   ariaLabel="Dashboard board group filter"
                   placeholder="All groups"
-                  triggerClassName="h-9 min-w-[170px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  contentClassName="rounded-lg border border-slate-200"
+                  triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
+                  contentClassName="rounded-lg border border-border"
                   searchEnabled={false}
                   disabled={boardGroupsQuery.isLoading}
                 />
@@ -507,15 +507,15 @@ export default function DashboardPage() {
                   options={boardOptions}
                   ariaLabel="Dashboard board filter"
                   placeholder="All boards"
-                  triggerClassName="h-9 min-w-[170px] rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  contentClassName="rounded-lg border border-slate-200"
+                  triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
+                  contentClassName="rounded-lg border border-border"
                   searchEnabled={false}
                   disabled={boardsQuery.isLoading || boardOptions.length <= 1}
                 />
                 {selectedGroup ? (
                   <Link
                     href={`/board-groups/${selectedGroup.id}`}
-                    className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
                   >
                     Open group
                   </Link>
@@ -523,7 +523,7 @@ export default function DashboardPage() {
                 {selectedBoard ? (
                   <Link
                     href={`/boards/${selectedBoard.id}`}
-                    className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
                   >
                     Open board
                   </Link>
@@ -533,13 +533,13 @@ export default function DashboardPage() {
           </div>
           <div className="p-8">
             {metricsQuery.error ? (
-              <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
+              <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground/80 shadow-sm">
                 {metricsQuery.error.message}
               </div>
             ) : null}
 
             {metricsQuery.isLoading && !metrics ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+              <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
                 Loading dashboard metrics…
               </div>
             ) : null}

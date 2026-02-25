@@ -130,7 +130,7 @@ export default function BoardsPage() {
         }
         stickyHeader
       >
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <BoardsTable
             boards={boards}
             boardGroups={groups}

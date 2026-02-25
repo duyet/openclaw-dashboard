@@ -268,16 +268,16 @@ export default function EditAgentPage() {
     >
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-6"
+        className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-6"
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Basic configuration
           </p>
           <div className="mt-4 space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-900">
+                <label className="text-sm font-medium text-foreground">
                   Agent name <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -288,7 +288,7 @@ export default function EditAgentPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-900">
+                <label className="text-sm font-medium text-foreground">
                   Role
                 </label>
                 <Input
@@ -307,10 +307,10 @@ export default function EditAgentPage() {
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-900">
+                  <label className="text-sm font-medium text-foreground">
                     Board
                     {resolvedIsGatewayMain ? (
-                      <span className="ml-2 text-xs font-normal text-slate-500">
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
                         optional
                       </span>
                     ) : (
@@ -320,7 +320,7 @@ export default function EditAgentPage() {
                   {resolvedBoardId ? (
                     <button
                       type="button"
-                      className="text-xs font-medium text-slate-600 hover:text-slate-900"
+                      className="text-xs font-medium text-foreground/80 hover:text-foreground"
                       onClick={() => {
                         setBoardId("");
                       }}
@@ -342,25 +342,25 @@ export default function EditAgentPage() {
                   }
                   searchPlaceholder="Search boards..."
                   emptyMessage="No matching boards."
-                  triggerClassName="w-full h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  contentClassName="rounded-xl border border-slate-200 shadow-lg"
-                  itemClassName="px-4 py-3 text-sm text-slate-700 data-[selected=true]:bg-slate-50 data-[selected=true]:text-slate-900"
+                  triggerClassName="w-full h-11 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-foreground shadow-sm focus-visible:ring-ring"
+                  contentClassName="rounded-xl border border-border shadow-lg"
+                  itemClassName="px-4 py-3 text-sm text-foreground/90 data-[selected=true]:bg-accent data-[selected=true]:text-foreground"
                   disabled={boards.length === 0}
                 />
                 {resolvedIsGatewayMain ? (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Main agents are not attached to a board. If a board is
                     selected, it is only used to resolve the gateway main
                     session key and will be cleared on save.
                   </p>
                 ) : boards.length === 0 ? (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     Create a board before assigning agents.
                   </p>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-900">
+                <label className="text-sm font-medium text-foreground">
                   Emoji
                 </label>
                 <Select
@@ -387,20 +387,20 @@ export default function EditAgentPage() {
               </div>
             </div>
           </div>
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <label className="flex items-start gap-3 text-sm text-slate-700">
+          <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4">
+            <label className="flex items-start gap-3 text-sm text-foreground/90">
               <input
                 type="checkbox"
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-200"
+                className="mt-1 h-4 w-4 rounded border-border text-primary focus-visible:ring-ring"
                 checked={resolvedIsGatewayMain}
                 onChange={(event) => setIsGatewayMain(event.target.checked)}
                 disabled={isLoading}
               />
               <span>
-                <span className="block font-medium text-slate-900">
+                <span className="block font-medium text-foreground">
                   Gateway main agent
                 </span>
-                <span className="block text-xs text-slate-500">
+                <span className="block text-xs text-muted-foreground">
                   Uses the gateway main session key and is not tied to a single
                   board.
                 </span>
@@ -410,12 +410,12 @@ export default function EditAgentPage() {
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Personality & behavior
           </p>
           <div className="mt-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-900">
+              <label className="text-sm font-medium text-foreground">
                 Communication style
               </label>
               <Input
@@ -433,12 +433,12 @@ export default function EditAgentPage() {
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Schedule & notifications
           </p>
           <div className="mt-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-900">
+              <label className="text-sm font-medium text-foreground">
                 Interval
               </label>
               <Input
@@ -447,7 +447,7 @@ export default function EditAgentPage() {
                 placeholder="e.g. 10m"
                 disabled={isLoading}
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Set how often this agent runs HEARTBEAT.md.
               </p>
             </div>
@@ -455,7 +455,7 @@ export default function EditAgentPage() {
         </div>
 
         {errorMessage ? (
-          <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-3 text-sm text-foreground/80 shadow-sm">
             {errorMessage}
           </div>
         ) : null}

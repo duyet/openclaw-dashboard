@@ -167,7 +167,7 @@ export default function GatewayDetailPage() {
         adminOnlyMessage="Only organization owners and admins can access gateways."
       >
         {gatewayQuery.isLoading ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
             Loading gateway…
           </div>
         ) : gatewayQuery.error ? (
@@ -177,16 +177,16 @@ export default function GatewayDetailPage() {
         ) : gateway ? (
           <div className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Connection
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span
                       className={`h-2 w-2 rounded-full ${
                         isStatusChecking && isConnected === null
-                          ? "bg-slate-300"
+                          ? "bg-muted-foreground/40"
                           : isConnected
                             ? "bg-emerald-500"
                             : "bg-rose-500"
@@ -201,51 +201,51 @@ export default function GatewayDetailPage() {
                     </span>
                   </div>
                 </div>
-                <div className="mt-4 space-y-3 text-sm text-slate-700">
+                <div className="mt-4 space-y-3 text-sm text-foreground/90">
                   <div>
-                    <p className="text-xs uppercase text-slate-400">
+                    <p className="text-xs uppercase text-muted-foreground/60">
                       Gateway URL
                     </p>
-                    <p className="mt-1 text-sm font-medium text-slate-900">
+                    <p className="mt-1 text-sm font-medium text-foreground">
                       {gateway.url}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase text-slate-400">Token</p>
-                    <p className="mt-1 text-sm font-medium text-slate-900">
+                    <p className="text-xs uppercase text-muted-foreground/60">Token</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">
                       {maskToken(gateway.token)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Runtime
                 </p>
-                <div className="mt-4 space-y-3 text-sm text-slate-700">
+                <div className="mt-4 space-y-3 text-sm text-foreground/90">
                   <div>
-                    <p className="text-xs uppercase text-slate-400">
+                    <p className="text-xs uppercase text-muted-foreground/60">
                       Workspace root
                     </p>
-                    <p className="mt-1 text-sm font-medium text-slate-900">
+                    <p className="mt-1 text-sm font-medium text-foreground">
                       {gateway.workspace_root}
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs uppercase text-slate-400">
+                      <p className="text-xs uppercase text-muted-foreground/60">
                         Created
                       </p>
-                      <p className="mt-1 text-sm font-medium text-slate-900">
+                      <p className="mt-1 text-sm font-medium text-foreground">
                         {formatTimestamp(gateway.created_at)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase text-slate-400">
+                      <p className="text-xs uppercase text-muted-foreground/60">
                         Updated
                       </p>
-                      <p className="mt-1 text-sm font-medium text-slate-900">
+                      <p className="mt-1 text-sm font-medium text-foreground">
                         {formatTimestamp(gateway.updated_at)}
                       </p>
                     </div>
@@ -254,15 +254,15 @@ export default function GatewayDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Agents
                 </p>
                 {agentsQuery.isLoading ? (
-                  <span className="text-xs text-slate-500">Loading…</span>
+                  <span className="text-xs text-muted-foreground">Loading…</span>
                 ) : (
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-muted-foreground">
                     {agents.length} total
                   </span>
                 )}

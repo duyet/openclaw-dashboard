@@ -52,7 +52,7 @@ export function ConfirmActionDialog({
           errorStyle === "text" ? (
             <p className="text-sm text-red-500">{errorMessage}</p>
           ) : (
-            <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 text-xs text-muted">
+            <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
               {errorMessage}
             </div>
           )

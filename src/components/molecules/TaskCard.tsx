@@ -61,7 +61,7 @@ export function TaskCard({
     if (normalized === "low") {
       return "bg-emerald-100 text-emerald-700";
     }
-    return "bg-slate-100 text-slate-600";
+    return "bg-muted/40 text-foreground/80";
   };
 
   const priorityLabel = priority ? priority.toUpperCase() : "MEDIUM";
@@ -70,7 +70,7 @@ export function TaskCard({
   return (
     <div
       className={cn(
-        "group relative cursor-pointer rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md",
+        "group relative cursor-pointer rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-md",
         isDragging && "opacity-60 shadow-none",
         hasPendingApproval && "border-amber-200 bg-amber-50/40",
         isBlocked && "border-rose-200 bg-rose-50/50",
@@ -99,7 +99,7 @@ export function TaskCard({
       ) : null}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-2">
-          <p className="text-sm font-medium text-slate-900 line-clamp-2 break-words">
+          <p className="text-sm font-medium text-foreground line-clamp-2 break-words">
             {title}
           </p>
           {isBlocked ? (
@@ -125,7 +125,7 @@ export function TaskCard({
               {visibleTags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-700"
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold text-foreground/90"
                 >
                   <span
                     className="h-1.5 w-1.5 rounded-full"
@@ -135,7 +135,7 @@ export function TaskCard({
                 </span>
               ))}
               {tags.length > visibleTags.length ? (
-                <span className="text-[10px] font-semibold text-slate-500">
+                <span className="text-[10px] font-semibold text-muted-foreground">
                   +{tags.length - visibleTags.length}
                 </span>
               ) : null}
@@ -146,16 +146,16 @@ export function TaskCard({
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide",
-              priorityBadge(priority) ?? "bg-slate-100 text-slate-600"
+              priorityBadge(priority) ?? "bg-muted/40 text-foreground/80"
             )}
           >
             {priorityLabel}
           </span>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <UserCircle className="h-4 w-4 text-slate-400" />
+          <UserCircle className="h-4 w-4 text-muted-foreground/60" />
           <span>{assignee ?? "Unassigned"}</span>
         </div>
         {due ? (
@@ -168,7 +168,7 @@ export function TaskCard({
             <CalendarClock
               className={cn(
                 "h-4 w-4",
-                isOverdue ? "text-rose-500" : "text-slate-400"
+                isOverdue ? "text-rose-500" : "text-muted-foreground/60"
               )}
             />
             <span>{due}</span>

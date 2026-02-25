@@ -162,7 +162,7 @@ const eventLabel = (eventType: FeedEventType): string => {
 
 const eventPillClass = (eventType: FeedEventType): string => {
   if (eventType === "task.comment") {
-    return "border-blue-200 bg-blue-50 text-blue-700";
+    return "border-primary/30 bg-primary/10 text-primary";
   }
   if (eventType === "task.created") {
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
@@ -183,7 +183,7 @@ const eventPillClass = (eventType: FeedEventType): string => {
     return "border-lime-200 bg-lime-50 text-lime-700";
   }
   if (eventType === "agent.offline") {
-    return "border-slate-300 bg-slate-100 text-slate-700";
+    return "border-border bg-muted/40 text-foreground/90";
   }
   if (eventType === "agent.updated") {
     return "border-indigo-200 bg-indigo-50 text-indigo-700";
@@ -200,7 +200,7 @@ const eventPillClass = (eventType: FeedEventType): string => {
   if (eventType === "approval.rejected") {
     return "border-rose-200 bg-rose-50 text-rose-700";
   }
-  return "border-slate-200 bg-slate-100 text-slate-700";
+  return "border-border bg-muted/40 text-foreground/90";
 };
 
 const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
@@ -213,9 +213,9 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
   const boardHref = item.board_id ? `/boards/${item.board_id}` : null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300">
+    <div className="rounded-xl border border-border bg-card p-4 transition hover:border-border/80">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-muted/40 text-xs font-semibold text-foreground/90">
           {authorAvatar}
         </div>
         <div className="min-w-0 flex-1">
@@ -223,7 +223,7 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
             {taskHref ? (
               <Link
                 href={taskHref}
-                className="block text-sm font-semibold leading-snug text-slate-900 transition hover:text-slate-950 hover:underline"
+                className="block text-sm font-semibold leading-snug text-foreground transition hover:text-foreground hover:underline"
                 title={item.title}
                 style={{
                   display: "-webkit-box",
@@ -235,11 +235,11 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
                 {item.title}
               </Link>
             ) : (
-              <p className="text-sm font-semibold leading-snug text-slate-900">
+              <p className="text-sm font-semibold leading-snug text-foreground">
                 {item.title}
               </p>
             )}
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
               <span
                 className={cn(
                   "rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
@@ -251,29 +251,29 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
               {boardHref && item.board_name ? (
                 <Link
                   href={boardHref}
-                  className="font-semibold text-slate-700 hover:text-slate-900 hover:underline"
+                  className="font-semibold text-foreground/90 hover:text-foreground hover:underline"
                 >
                   {item.board_name}
                 </Link>
               ) : item.board_name ? (
-                <span className="font-semibold text-slate-700">
+                <span className="font-semibold text-foreground/90">
                   {item.board_name}
                 </span>
               ) : null}
               {item.board_name ? (
-                <span className="text-slate-300">·</span>
+                <span className="text-muted-foreground/40">·</span>
               ) : null}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-foreground/90">
                 {item.actor_name}
               </span>
               {item.actor_role ? (
                 <>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-slate-500">{item.actor_role}</span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground">{item.actor_role}</span>
                 </>
               ) : null}
-              <span className="text-slate-300">·</span>
-              <span className="text-slate-400">
+              <span className="text-muted-foreground/40">·</span>
+              <span className="text-muted-foreground/60">
                 {formatShortTimestamp(item.created_at)}
               </span>
             </div>
@@ -281,11 +281,11 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
         </div>
       </div>
       {message ? (
-        <div className="mt-3 select-text cursor-text text-sm leading-relaxed text-slate-900 break-words">
+        <div className="mt-3 select-text cursor-text text-sm leading-relaxed text-foreground break-words">
           <Markdown content={message} variant="basic" />
         </div>
       ) : (
-        <p className="mt-3 text-sm text-slate-500">—</p>
+        <p className="mt-3 text-sm text-muted-foreground">—</p>
       )}
     </div>
   );
@@ -1298,18 +1298,18 @@ export default function ActivityPage() {
           </SignedOut>
           <SignedIn>
             <DashboardSidebar />
-            <main className="flex-1 overflow-y-auto bg-slate-50">
-              <div className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+            <main className="flex-1 overflow-y-auto bg-muted/40">
+              <div className="sticky top-0 z-30 border-b border-border bg-card">
                 <div className="px-8 py-6">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <ActivityIcon className="h-5 w-5 text-slate-600" />
-                        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+                        <ActivityIcon className="h-5 w-5 text-foreground/80" />
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                           Live feed
                         </h1>
                       </div>
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Realtime task, approval, agent, and board-chat activity
                         across all boards.
                       </p>

@@ -32,7 +32,7 @@ export default function BoardApprovalsPage() {
       </SignedOut>
       <SignedIn>
         <DashboardSidebar />
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-muted/40 to-muted/60">
           <div className="p-6">
             {boardId ? (
               <div className="h-[calc(100vh-160px)] min-h-[520px]">

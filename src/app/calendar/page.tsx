@@ -68,8 +68,8 @@ function buildCalendarGrid(year: number, month: number): (number | null)[] {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  inbox: "bg-slate-100 text-slate-700 border-slate-200",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
+  inbox: "bg-muted/40 text-foreground/90 border-border",
+  in_progress: "bg-primary/5 text-primary border-primary/30",
   review: "bg-purple-50 text-purple-700 border-purple-200",
   done: "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
@@ -210,17 +210,17 @@ export default function CalendarPage() {
           <button
             type="button"
             onClick={prevMonth}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 shadow-sm transition hover:bg-accent/50"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <span className="min-w-[160px] text-center text-sm font-semibold text-slate-800">
+          <span className="min-w-[160px] text-center text-sm font-semibold text-foreground/90">
             {MONTHS[month]} {year}
           </span>
           <button
             type="button"
             onClick={nextMonth}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-foreground/80 shadow-sm transition hover:bg-accent/50"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -236,7 +236,7 @@ export default function CalendarPage() {
             {DAYS.map((d) => (
               <div
                 key={d}
-                className="py-2 text-center text-xs font-semibold uppercase tracking-wider text-slate-500"
+                className="py-2 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 {d}
               </div>
@@ -244,7 +244,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Grid cells */}
-          <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 shadow-sm">
+          <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-border bg-border shadow-sm">
             {calendarDays.map((day, i) => {
               const dayTasks = day ? (tasksByDay.get(day) ?? []) : [];
               return (
@@ -252,7 +252,7 @@ export default function CalendarPage() {
                   key={i}
                   className={cn(
                     "min-h-[108px] p-2",
-                    day ? "bg-white" : "bg-slate-50"
+                    day ? "bg-card" : "bg-muted/40"
                   )}
                 >
                   {day ? (
@@ -261,8 +261,8 @@ export default function CalendarPage() {
                         className={cn(
                           "mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
                           isToday(day)
-                            ? "bg-blue-600 text-white"
-                            : "text-slate-600"
+                            ? "bg-primary text-primary-foreground"
+                            : "text-foreground/80"
                         )}
                       >
                         {day}
@@ -281,7 +281,7 @@ export default function CalendarPage() {
                           </div>
                         ))}
                         {dayTasks.length > 3 ? (
-                          <div className="text-[11px] text-slate-400">
+                          <div className="text-[11px] text-muted-foreground/60">
                             +{dayTasks.length - 3} more
                           </div>
                         ) : null}
@@ -294,24 +294,24 @@ export default function CalendarPage() {
           </div>
 
           {isLoading ? (
-            <p className="mt-4 text-sm text-slate-500">Loading…</p>
+            <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
           ) : null}
         </div>
 
         {/* ── Sidebar ───────────────────────────────────────────── */}
-        <aside className="w-72 shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-5">
+        <aside className="w-72 shrink-0 overflow-y-auto border-l border-border bg-card p-5">
           {/* Scheduled agents (cronjobs) */}
           <div className="mb-3 flex items-center gap-2">
-            <Bot className="h-4 w-4 text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-800">
+            <Bot className="h-4 w-4 text-muted-foreground/60" />
+            <h2 className="text-sm font-semibold text-foreground/90">
               Agent schedules
             </h2>
           </div>
 
           {agentsQuery.isLoading ? (
-            <p className="text-xs text-slate-500">Loading…</p>
+            <p className="text-xs text-muted-foreground">Loading…</p>
           ) : scheduledAgents.length === 0 ? (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               No agents with a heartbeat schedule.
             </p>
           ) : (
@@ -319,20 +319,20 @@ export default function CalendarPage() {
               {scheduledAgents.map((agent) => (
                 <li
                   key={agent.id}
-                  className="rounded-lg border border-slate-200 p-3"
+                  className="rounded-lg border border-border p-3"
                 >
                   <Link
                     href={`/agents/${agent.id}`}
-                    className="text-sm font-medium text-slate-800 hover:text-blue-600"
+                    className="text-sm font-medium text-foreground/90 hover:text-primary"
                   >
                     {agent.name}
                   </Link>
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                  <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                     <CalendarClock className="h-3.5 w-3.5 shrink-0" />
                     Every {String(agent.heartbeat_config?.every ?? "—")}
                   </div>
                   {agent.last_seen_at ? (
-                    <div className="mt-0.5 text-xs text-slate-400">
+                    <div className="mt-0.5 text-xs text-muted-foreground/60">
                       Last seen:{" "}
                       {new Date(agent.last_seen_at).toLocaleString()}
                     </div>
@@ -343,27 +343,27 @@ export default function CalendarPage() {
           )}
 
           {/* Upcoming due tasks */}
-          <div className="mt-6 border-t border-slate-100 pt-4">
+          <div className="mt-6 border-t border-border/50 pt-4">
             <div className="mb-3 flex items-center gap-2">
-              <CalendarClock className="h-4 w-4 text-slate-400" />
-              <h2 className="text-sm font-semibold text-slate-800">
+              <CalendarClock className="h-4 w-4 text-muted-foreground/60" />
+              <h2 className="text-sm font-semibold text-foreground/90">
                 Due in 7 days
               </h2>
             </div>
             {tasksQuery.isLoading ? (
-              <p className="text-xs text-slate-500">Loading…</p>
+              <p className="text-xs text-muted-foreground">Loading…</p>
             ) : upcomingTasks.length === 0 ? (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 No tasks due in the next 7 days.
               </p>
             ) : (
               <ul className="space-y-2">
                 {upcomingTasks.map((task) => (
                   <li key={task.id}>
-                    <div className="truncate text-xs font-medium text-slate-700">
+                    <div className="truncate text-xs font-medium text-foreground/90">
                       {task.title}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-muted-foreground/60">
                       {new Date(task.due_at!).toLocaleDateString()}
                       {boardNameMap.get(task._boardId)
                         ? ` · ${boardNameMap.get(task._boardId)}`

@@ -74,8 +74,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-app text-strong">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border bg-card shadow-sm">
         <div className="grid grid-cols-[260px_1fr_auto] items-center gap-0 py-3">
           <div className="flex items-center px-6">
             <BrandMark />
@@ -90,11 +90,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <SignedIn>
             <div className="flex items-center gap-3 px-6">
               <div className="hidden text-right lg:block">
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-foreground">
                   {displayName}
                 </p>
                 {displayRole && (
-                  <p className="text-xs text-slate-500">{displayRole}</p>
+                  <p className="text-xs text-muted-foreground">{displayRole}</p>
                 )}
               </div>
               <UserMenu displayName={displayName} displayEmail={displayEmail} />
@@ -102,7 +102,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </SignedIn>
         </div>
       </header>
-      <div className="grid min-h-[calc(100vh-64px)] grid-cols-[260px_1fr] bg-slate-50">
+      <div className="grid min-h-[calc(100vh-64px)] grid-cols-[260px_1fr] bg-muted/40">
         {children}
       </div>
     </div>

@@ -97,7 +97,7 @@ export default function CustomFieldsPage() {
         adminOnlyMessage="Only organization owners and admins can manage custom fields."
         stickyHeader
       >
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <CustomFieldsTable
             fields={customFields}
             isLoading={customFieldsQuery.isLoading}

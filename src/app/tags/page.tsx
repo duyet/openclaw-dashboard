@@ -96,7 +96,7 @@ export default function TagsPage() {
         adminOnlyMessage="Only organization owners and admins can manage tags."
         stickyHeader
       >
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <TagsTable
             tags={tags}
             isLoading={tagsQuery.isLoading}
