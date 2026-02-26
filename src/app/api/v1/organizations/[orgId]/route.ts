@@ -61,7 +61,7 @@ export async function GET(
     const { orgId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.userId) {
       throw new ApiError(401, "Unauthorized");
@@ -97,7 +97,7 @@ export async function PATCH(
     const { orgId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.userId) {
       throw new ApiError(401, "Unauthorized");
@@ -158,7 +158,7 @@ export async function DELETE(
     const { orgId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.userId) {
       throw new ApiError(401, "Unauthorized");

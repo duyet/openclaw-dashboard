@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user") {
       throw new ApiError(401, "Unauthorized");

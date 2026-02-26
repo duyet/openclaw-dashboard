@@ -42,7 +42,7 @@ export async function GET(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { gatewayId } = await params;
 
     const gatewayResult = await db
@@ -83,7 +83,7 @@ export async function POST(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { gatewayId } = await params;
 
     const gatewayResult = await db
@@ -128,7 +128,7 @@ export async function DELETE(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { gatewayId } = await params;
 
     const gatewayResult = await db

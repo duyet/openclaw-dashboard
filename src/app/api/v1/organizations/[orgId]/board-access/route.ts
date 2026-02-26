@@ -19,7 +19,7 @@ export async function GET(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { orgId } = await params;
 
     const url = new URL(request.url);
@@ -74,7 +74,7 @@ export async function POST(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
     const { orgId } = await params;
 
     if (actor.type !== "user") {

@@ -22,7 +22,7 @@ export async function GET(
     const { fieldId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (!actor.orgId) {
       throw new ApiError(403, "No active organization");
@@ -69,7 +69,7 @@ export async function PATCH(
     const { fieldId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.orgId) {
       throw new ApiError(403, "No active organization");
@@ -165,7 +165,7 @@ export async function DELETE(
     const { fieldId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.orgId) {
       throw new ApiError(403, "No active organization");

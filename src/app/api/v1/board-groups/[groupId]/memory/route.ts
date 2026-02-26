@@ -20,7 +20,7 @@ export async function GET(
     const { groupId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
@@ -58,7 +58,7 @@ export async function POST(
     const { groupId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify board group exists
     const group = await db
@@ -113,7 +113,7 @@ export async function DELETE(
     const { groupId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const url = new URL(request.url);
     const memoryId = url.searchParams.get("id");

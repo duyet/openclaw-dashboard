@@ -21,7 +21,7 @@ export async function DELETE(
     const { boardId, taskId, tagId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify task exists on this board
     const task = await db

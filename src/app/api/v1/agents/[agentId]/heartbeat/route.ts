@@ -19,7 +19,7 @@ export async function POST(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
     const { agentId } = await params;
 
     // Only agents can send heartbeats

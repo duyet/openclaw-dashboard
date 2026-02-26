@@ -26,7 +26,7 @@ export async function GET(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, taskId } = await params;
 
     const result = await db
@@ -56,7 +56,7 @@ export async function PATCH(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
     const { boardId, taskId } = await params;
 
     const existing = await db
@@ -159,7 +159,7 @@ export async function DELETE(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
     const { boardId, taskId } = await params;
 
     if (actor.type !== "user") {

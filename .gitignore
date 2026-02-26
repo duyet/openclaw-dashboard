@@ -8,6 +8,7 @@ dist/
 # Env
 .env
 .env.local
+.env.production.local
 
 # Coverage
 coverage/

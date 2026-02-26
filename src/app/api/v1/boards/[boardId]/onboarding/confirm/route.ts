@@ -20,7 +20,7 @@ export async function POST(
     const { boardId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const board = await db
       .select()

@@ -21,7 +21,7 @@ export async function DELETE(
     const { boardId, boardCustomFieldId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user") {
       throw new ApiError(403, "Only users can unbind custom fields");

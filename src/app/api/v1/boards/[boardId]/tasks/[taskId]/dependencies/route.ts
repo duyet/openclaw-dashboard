@@ -18,7 +18,7 @@ export async function GET(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, taskId } = await params;
 
     const deps = await db
@@ -51,7 +51,7 @@ export async function POST(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, taskId } = await params;
 
     // Verify task exists
@@ -144,7 +144,7 @@ export async function PUT(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, taskId } = await params;
 
     // Verify task exists

@@ -19,7 +19,7 @@ export async function GET(
     const { boardId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const result = await db
       .select()
@@ -55,7 +55,7 @@ export async function POST(
     const { boardId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify board exists
     const board = await db
@@ -133,7 +133,7 @@ export async function PATCH(
     const { boardId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Find active session
     const session = await db

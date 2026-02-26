@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.orgId) {
       throw new ApiError(403, "No active organization");
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.orgId) {
       throw new ApiError(403, "No active organization");

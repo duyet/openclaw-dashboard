@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const _actor = await requireActorContext(request, env.DB);
+    const _actor = await requireActorContext(request, env.DB, env);
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const _actor = await requireActorContext(request, env.DB);
+    const _actor = await requireActorContext(request, env.DB, env);
 
     const body = (await request.json()) as Record<string, unknown>;
     const name = ((body.name as string) || "").trim();

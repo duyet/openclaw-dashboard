@@ -19,7 +19,7 @@ export async function GET(
     const { boardId, approvalId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const result = await db
       .select()
@@ -49,7 +49,7 @@ export async function PATCH(
     const { boardId, approvalId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const existing = await db
       .select()

@@ -23,7 +23,7 @@ export async function GET(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId } = await params;
 
     const url = new URL(request.url);
@@ -66,7 +66,7 @@ export async function POST(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId } = await params;
 
     // Verify board exists

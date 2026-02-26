@@ -21,7 +21,7 @@ export async function POST(
     const { packId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user" || !actor.orgId) {
       throw new ApiError(403, "No active organization");

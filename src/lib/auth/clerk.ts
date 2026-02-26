@@ -25,14 +25,27 @@ function extractBearerToken(request: Request): string | null {
 }
 
 /**
+ * Env type matching Cloudflare Pages runtime bindings.
+ */
+type CfEnv = {
+  CLERK_SECRET_KEY?: string;
+  [key: string]: unknown;
+} | CloudflareEnv;
+
+/**
  * Resolve user auth context from a Clerk JWT.
  *
  * Attempts to verify the JWT using Clerk's edge-compatible verification.
  * If verification succeeds, looks up or creates the user in the DB.
+ *
+ * @param request - The incoming request
+ * @param d1 - The D1 database binding
+ * @param env - Cloudflare env bindings (contains CLERK_SECRET_KEY at runtime)
  */
 export async function resolveClerkAuth(
   request: Request,
-  d1: D1Database
+  d1: D1Database,
+  env?: CfEnv
 ): Promise<ActorContext | null> {
   const token = extractBearerToken(request);
   if (!token) return null;
@@ -45,10 +58,10 @@ export async function resolveClerkAuth(
     // Dynamic import to avoid issues when Clerk is not configured
     const { verifyToken } = await import("@clerk/nextjs/server");
 
-    const secretKey =
-      typeof process !== "undefined"
-        ? process.env?.CLERK_SECRET_KEY
-        : undefined;
+    // On Cloudflare Workers edge, CLERK_SECRET_KEY is in env, not process.env
+    // Fallback to process.env for local dev with Next.js dev server
+    const secretKey = env?.CLERK_SECRET_KEY ??
+      (typeof process !== "undefined" ? process.env?.CLERK_SECRET_KEY : undefined);
     if (!secretKey) return null;
 
     const payload = await verifyToken(token, { secretKey });
@@ -119,7 +132,8 @@ export async function resolveClerkAuth(
  */
 export async function verifyClerkToken(
   request: Request,
-  db: Database
+  db: Database,
+  env?: CfEnv
 ): Promise<Actor | null> {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) return null;
@@ -128,9 +142,9 @@ export async function verifyClerkToken(
 
   try {
     const { verifyToken } = await import("@clerk/nextjs/server");
-    const payload = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    const secretKey = env?.CLERK_SECRET_KEY ??
+      (typeof process !== "undefined" ? process.env?.CLERK_SECRET_KEY : undefined);
+    const payload = await verifyToken(token, { secretKey });
     if (!payload?.sub) return null;
 
     const clerkUserId = payload.sub;

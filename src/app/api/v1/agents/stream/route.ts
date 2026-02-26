@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const url = new URL(request.url);
     const boardId = url.searchParams.get("board_id");

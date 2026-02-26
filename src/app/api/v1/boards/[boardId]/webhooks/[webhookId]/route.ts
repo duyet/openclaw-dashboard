@@ -27,7 +27,7 @@ export async function GET(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, webhookId } = await params;
 
     const result = await db
@@ -62,7 +62,7 @@ export async function PATCH(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, webhookId } = await params;
 
     const existing = await db
@@ -116,7 +116,7 @@ export async function DELETE(
   try {
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
     const { boardId, webhookId } = await params;
 
     const existing = await db

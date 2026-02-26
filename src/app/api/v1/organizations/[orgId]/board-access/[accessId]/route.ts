@@ -59,7 +59,7 @@ export async function GET(
     const { orgId, accessId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const access = await getVerifiedAccess(db, orgId, accessId);
 
@@ -81,7 +81,7 @@ export async function PATCH(
     const { orgId, accessId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user") {
       throw new ApiError(403, "Only users can update board access");
@@ -137,7 +137,7 @@ export async function DELETE(
     const { orgId, accessId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    const actor = await requireActorContext(request, env.DB);
+    const actor = await requireActorContext(request, env.DB, env);
 
     if (actor.type !== "user") {
       throw new ApiError(403, "Only users can remove board access");

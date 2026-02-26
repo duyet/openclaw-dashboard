@@ -20,7 +20,7 @@ export async function GET(
     const { boardId, webhookId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify webhook exists
     const webhook = await db

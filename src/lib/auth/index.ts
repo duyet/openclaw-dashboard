@@ -41,10 +41,15 @@ export type ActorContext = {
  * 1. X-Agent-Token header (agent auth)
  * 2. Clerk JWT (when AUTH_MODE=clerk or unset)
  * 3. Local bearer token (when AUTH_MODE=local)
+ *
+ * @param request - The incoming request
+ * @param d1 - The D1 database binding
+ * @param env - Cloudflare env bindings (for CLERK_SECRET_KEY at runtime)
  */
 export async function resolveActorContext(
   request: Request,
-  d1: D1Database
+  d1: D1Database,
+  env?: { CLERK_SECRET_KEY?: string; [key: string]: unknown } | CloudflareEnv
 ): Promise<ActorContext | null> {
   // 1. Check agent token first
   const agentContext = await resolveAgentAuth(request, d1);
@@ -60,18 +65,23 @@ export async function resolveActorContext(
   }
 
   // 3. Default: Clerk JWT
-  return resolveClerkAuth(request, d1);
+  return resolveClerkAuth(request, d1, env);
 }
 
 /**
  * Require an authenticated actor context.
  * Throws ApiError(401) if no valid credentials are found.
+ *
+ * @param request - The incoming request
+ * @param d1 - The D1 database binding
+ * @param env - Cloudflare env bindings (for CLERK_SECRET_KEY at runtime)
  */
 export async function requireActorContext(
   request: Request,
-  d1: D1Database
+  d1: D1Database,
+  env?: { CLERK_SECRET_KEY?: string; [key: string]: unknown } | CloudflareEnv
 ): Promise<ActorContext> {
-  const ctx = await resolveActorContext(request, d1);
+  const ctx = await resolveActorContext(request, d1, env);
   if (!ctx) {
     throw new ApiError(401, "Unauthorized");
   }

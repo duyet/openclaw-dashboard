@@ -20,7 +20,7 @@ export async function GET(
     const { boardId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const url = new URL(request.url);
     const { limit, offset } = parsePagination(url);
@@ -63,7 +63,7 @@ export async function POST(
     const { boardId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify board exists
     const board = await db

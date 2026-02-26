@@ -19,7 +19,7 @@ export async function GET(
     const { boardId, taskId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify task exists on this board
     const task = await db
@@ -90,7 +90,7 @@ export async function POST(
     const { boardId, taskId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     // Verify task exists on this board
     const task = await db
@@ -169,7 +169,7 @@ export async function DELETE(
     const { boardId, taskId } = await params;
     const { env } = getRequestContext();
     const db = getDb(env.DB);
-    await requireActorContext(request, env.DB);
+    await requireActorContext(request, env.DB, env);
 
     const url = new URL(request.url);
     const tagId = url.searchParams.get("tag_id");
