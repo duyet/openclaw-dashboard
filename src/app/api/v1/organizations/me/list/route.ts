@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { organizationMembers, organizations } from "@/lib/db/schema";
@@ -23,20 +23,24 @@ export async function GET(request: Request) {
 
     const rows = await db
       .select({
-        id: organizations.id,
-        name: organizations.name,
+        id: organizationMembers.organizationId,
         role: organizationMembers.role,
       })
       .from(organizationMembers)
-      .innerJoin(
-        organizations,
-        eq(organizationMembers.organizationId, organizations.id)
-      )
       .where(eq(organizationMembers.userId, actor.userId));
+
+    // Fetch organization names in parallel
+    const orgIds = rows.map((r) => r.id);
+    const orgs = await db
+      .select({ id: organizations.id, name: organizations.name })
+      .from(organizations)
+      .where(inArray(organizations.id, orgIds));
+
+    const orgMap = new Map(orgs.map((o) => [o.id, o.name]));
 
     const data = rows.map((row) => ({
       id: row.id,
-      name: row.name,
+      name: orgMap.get(row.id) ?? "",
       role: row.role,
       is_active: row.id === actor.orgId,
     }));

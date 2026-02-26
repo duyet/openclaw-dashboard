@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, asc, sql } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { tags } from "@/lib/db/schema";
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       .select()
       .from(tags)
       .where(eq(tags.organizationId, actor.orgId))
-      .orderBy(sql`lower(${tags.name}) asc`)
+      .orderBy(asc(tags.name))
       .limit(limit)
       .offset(offset);
 
