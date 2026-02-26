@@ -269,7 +269,9 @@ const FeedCard = memo(function FeedCard({ item }: { item: FeedItem }) {
               {item.actor_role ? (
                 <>
                   <span className="text-muted-foreground/40">·</span>
-                  <span className="text-muted-foreground">{item.actor_role}</span>
+                  <span className="text-muted-foreground">
+                    {item.actor_role}
+                  </span>
                 </>
               ) : null}
               <span className="text-muted-foreground/40">·</span>

@@ -211,7 +211,9 @@ export default function GatewayDetailPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase text-muted-foreground/60">Token</p>
+                    <p className="text-xs uppercase text-muted-foreground/60">
+                      Token
+                    </p>
                     <p className="mt-1 text-sm font-medium text-foreground">
                       {maskToken(gateway.token)}
                     </p>
@@ -260,7 +262,9 @@ export default function GatewayDetailPage() {
                   Agents
                 </p>
                 {agentsQuery.isLoading ? (
-                  <span className="text-xs text-muted-foreground">Loading…</span>
+                  <span className="text-xs text-muted-foreground">
+                    Loading…
+                  </span>
                 ) : (
                   <span className="text-xs text-muted-foreground">
                     {agents.length} total

@@ -7,9 +7,9 @@ import { Bot, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/auth/clerk";
+import { getLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { cn } from "@/lib/utils";
-import { getLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,8 +93,7 @@ export default function CalendarPage() {
   // Boards
   const boardsQuery = useQuery({
     queryKey: ["calendar", "boards"],
-    queryFn: () =>
-      fetchJson<{ items: ApiBoard[] }>("/api/v1/boards?limit=200"),
+    queryFn: () => fetchJson<{ items: ApiBoard[] }>("/api/v1/boards?limit=200"),
     enabled: Boolean(isSignedIn),
     staleTime: 60_000,
   });
@@ -111,7 +110,10 @@ export default function CalendarPage() {
           fetchJson<{ items: ApiTask[] }>(
             `/api/v1/boards/${boardId}/tasks?limit=500`
           ).then((res) =>
-            res.items.map<ApiTaskWithBoard>((t) => ({ ...t, _boardId: boardId }))
+            res.items.map<ApiTaskWithBoard>((t) => ({
+              ...t,
+              _boardId: boardId,
+            }))
           )
         )
       );
@@ -126,8 +128,7 @@ export default function CalendarPage() {
   // Agents (for scheduled cronjobs)
   const agentsQuery = useQuery({
     queryKey: ["calendar", "agents"],
-    queryFn: () =>
-      fetchJson<{ items: ApiAgent[] }>("/api/v1/agents?limit=200"),
+    queryFn: () => fetchJson<{ items: ApiAgent[] }>("/api/v1/agents?limit=200"),
     enabled: Boolean(isSignedIn),
     staleTime: 30_000,
   });
@@ -347,8 +348,7 @@ export default function CalendarPage() {
                   </div>
                   {agent.last_seen_at ? (
                     <div className="mt-0.5 text-xs text-muted-foreground/60">
-                      Last seen:{" "}
-                      {new Date(agent.last_seen_at).toLocaleString()}
+                      Last seen: {new Date(agent.last_seen_at).toLocaleString()}
                     </div>
                   ) : null}
                 </li>

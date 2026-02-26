@@ -27,10 +27,12 @@ function extractBearerToken(request: Request): string | null {
 /**
  * Env type matching Cloudflare Pages runtime bindings.
  */
-type CfEnv = {
-  CLERK_SECRET_KEY?: string;
-  [key: string]: unknown;
-} | CloudflareEnv;
+type CfEnv =
+  | {
+      CLERK_SECRET_KEY?: string;
+      [key: string]: unknown;
+    }
+  | CloudflareEnv;
 
 /**
  * Resolve user auth context from a Clerk JWT.
@@ -60,8 +62,11 @@ export async function resolveClerkAuth(
 
     // On Cloudflare Workers edge, CLERK_SECRET_KEY is in env, not process.env
     // Fallback to process.env for local dev with Next.js dev server
-    const secretKey = env?.CLERK_SECRET_KEY ??
-      (typeof process !== "undefined" ? process.env?.CLERK_SECRET_KEY : undefined);
+    const secretKey =
+      env?.CLERK_SECRET_KEY ??
+      (typeof process !== "undefined"
+        ? process.env?.CLERK_SECRET_KEY
+        : undefined);
     if (!secretKey) return null;
 
     const payload = await verifyToken(token, { secretKey });
@@ -142,8 +147,11 @@ export async function verifyClerkToken(
 
   try {
     const { verifyToken } = await import("@clerk/nextjs/server");
-    const secretKey = env?.CLERK_SECRET_KEY ??
-      (typeof process !== "undefined" ? process.env?.CLERK_SECRET_KEY : undefined);
+    const secretKey =
+      env?.CLERK_SECRET_KEY ??
+      (typeof process !== "undefined"
+        ? process.env?.CLERK_SECRET_KEY
+        : undefined);
     const payload = await verifyToken(token, { secretKey });
     if (!payload?.sub) return null;
 

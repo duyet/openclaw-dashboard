@@ -9,10 +9,8 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-muted text-foreground/90",
-        outline:
-          "border border-border text-muted-foreground",
-        accent:
-          "bg-primary/10 text-primary",
+        outline: "border border-border text-muted-foreground",
+        accent: "bg-primary/10 text-primary",
         success: "bg-[color:rgba(15,118,110,0.14)] text-[color:var(--success)]",
         warning: "bg-[color:rgba(180,83,9,0.15)] text-[color:var(--warning)]",
         danger: "bg-[color:rgba(180,35,24,0.15)] text-[color:var(--danger)]",

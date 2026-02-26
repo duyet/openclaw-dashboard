@@ -46,8 +46,7 @@ export async function callOnboardingAI(
     baseURL: "https://openrouter.ai/api/v1",
   });
 
-  const model =
-    process.env.OPENROUTER_MODEL ?? "openrouter/auto:free";
+  const model = process.env.OPENROUTER_MODEL ?? "openrouter/auto:free";
 
   const response = await client.chat.completions.create({
     model,

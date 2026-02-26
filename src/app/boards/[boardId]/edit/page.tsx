@@ -1185,7 +1185,9 @@ export default function EditBoardPage() {
               ) : null}
 
               {webhooksQuery.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading webhooks…</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading webhooks…
+                </p>
               ) : null}
 
               {!webhooksQuery.isLoading && webhooks.length === 0 ? (

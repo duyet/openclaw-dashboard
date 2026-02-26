@@ -145,7 +145,9 @@ export function TaskCustomFieldsEditor({
             )}
 
             {definition.description ? (
-              <p className="text-xs text-muted-foreground">{definition.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {definition.description}
+              </p>
             ) : null}
           </div>
         );

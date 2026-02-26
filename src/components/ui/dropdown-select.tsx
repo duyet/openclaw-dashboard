@@ -149,7 +149,10 @@ export default function DropdownSelect({
           >
             {SelectedIcon ? (
               <SelectedIcon
-                className={cn("h-4 w-4 text-foreground/80", selectedIconClassName)}
+                className={cn(
+                  "h-4 w-4 text-foreground/80",
+                  selectedIconClassName
+                )}
               />
             ) : null}
             <span className="truncate">
@@ -208,7 +211,9 @@ export default function DropdownSelect({
                       <OptionIcon
                         className={cn(
                           "h-4 w-4",
-                          isSelected ? "text-foreground/90" : "text-muted-foreground",
+                          isSelected
+                            ? "text-foreground/90"
+                            : "text-muted-foreground",
                           option.iconClassName
                         )}
                       />

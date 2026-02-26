@@ -3631,7 +3631,9 @@ export default function BoardDetailPage() {
                 Custom fields
               </p>
               {customFieldDefinitionsQuery.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading custom fields…</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading custom fields…
+                </p>
               ) : boardCustomFieldDefinitions.length > 0 ? (
                 <div className="rounded-lg border border-border bg-muted/40 p-3">
                   <dl className="space-y-2">
@@ -3661,7 +3663,9 @@ export default function BoardDetailPage() {
                   </dl>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No custom fields.</p>
+                <p className="text-sm text-muted-foreground">
+                  No custom fields.
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -3686,7 +3690,9 @@ export default function BoardDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No tags assigned.</p>
+                <p className="text-sm text-muted-foreground">
+                  No tags assigned.
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -3749,7 +3755,9 @@ export default function BoardDetailPage() {
                   {approvalsError}
                 </div>
               ) : isApprovalsLoading ? (
-                <p className="text-sm text-muted-foreground">Loading approvals…</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading approvals…
+                </p>
               ) : taskApprovals.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No approvals tied to this task.{" "}
@@ -3858,13 +3866,17 @@ export default function BoardDetailPage() {
                 ) : null}
               </div>
               {isCommentsLoading ? (
-                <p className="text-sm text-muted-foreground">Loading comments…</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading comments…
+                </p>
               ) : commentsError ? (
                 <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
                   {commentsError}
                 </div>
               ) : comments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No comments yet.</p>
+                <p className="text-sm text-muted-foreground">
+                  No comments yet.
+                </p>
               ) : (
                 <div className="space-y-3">
                   {comments.map((comment) => (
@@ -4180,7 +4192,9 @@ export default function BoardDetailPage() {
                 emptyMessage="No tags configured."
               />
               {editTagIds.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No tags assigned.</p>
+                <p className="text-xs text-muted-foreground">
+                  No tags assigned.
+                </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {editTagIds.map((tagId) => {
@@ -4243,7 +4257,9 @@ export default function BoardDetailPage() {
                 </p>
               ) : null}
               {editDependsOnTaskIds.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No dependencies.</p>
+                <p className="text-xs text-muted-foreground">
+                  No dependencies.
+                </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {editDependsOnTaskIds.map((depId) => {
@@ -4490,7 +4506,9 @@ export default function BoardDetailPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">No tags assigned.</p>
+                <p className="text-xs text-muted-foreground">
+                  No tags assigned.
+                </p>
               )}
             </div>
             {createError ? (
@@ -4601,7 +4619,9 @@ export default function BoardDetailPage() {
                     toast.tone === "error" ? "bg-rose-500" : "bg-emerald-500"
                   )}
                 />
-                <p className="flex-1 text-sm text-foreground/90">{toast.message}</p>
+                <p className="flex-1 text-sm text-foreground/90">
+                  {toast.message}
+                </p>
                 <button
                   type="button"
                   className="text-xs text-muted-foreground/60 hover:text-muted-foreground"
