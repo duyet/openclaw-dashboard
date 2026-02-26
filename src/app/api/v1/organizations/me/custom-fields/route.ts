@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { eq, sql } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import {
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       .select()
       .from(taskCustomFieldDefinitions)
       .where(eq(taskCustomFieldDefinitions.organizationId, actor.orgId))
-      .orderBy(sql`lower(${taskCustomFieldDefinitions.label}) asc`);
+      .orderBy(asc(taskCustomFieldDefinitions.label));
 
     // Fetch board bindings for each definition
     const definitionIds = definitions.map((d) => d.id);
