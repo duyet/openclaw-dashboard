@@ -31,10 +31,13 @@ export async function GET(request: Request) {
 
     // Fetch organization names in parallel
     const orgIds = rows.map((r) => r.id);
-    const orgs = await db
-      .select({ id: organizations.id, name: organizations.name })
-      .from(organizations)
-      .where(inArray(organizations.id, orgIds));
+    const orgs =
+      orgIds.length > 0
+        ? await db
+            .select({ id: organizations.id, name: organizations.name })
+            .from(organizations)
+            .where(inArray(organizations.id, orgIds))
+        : [];
 
     const orgMap = new Map(orgs.map((o) => [o.id, o.name]));
 
