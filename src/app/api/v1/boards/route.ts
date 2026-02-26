@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { boards } from "@/lib/db/schema";
@@ -27,31 +27,28 @@ export async function GET(request: Request) {
     const gatewayId = url.searchParams.get("gateway_id");
     const boardGroupId = url.searchParams.get("board_group_id");
 
-    const query = db
-      .select()
-      .from(boards)
-      .where(eq(boards.organizationId, actor.orgId))
-      .orderBy(sql`lower(${boards.name}) asc`)
-      .limit(limit)
-      .offset(offset);
+    const conditions = [eq(boards.organizationId, actor.orgId)];
+    if (gatewayId) conditions.push(eq(boards.gatewayId, gatewayId));
+    if (boardGroupId) conditions.push(eq(boards.boardGroupId, boardGroupId));
+    const whereClause = and(...conditions);
 
-    const result = await query;
-
-    // Filter in-memory for optional params (D1 doesn't support dynamic WHERE well)
-    const filtered = result.filter((b) => {
-      if (gatewayId && b.gatewayId !== gatewayId) return false;
-      if (boardGroupId && b.boardGroupId !== boardGroupId) return false;
-      return true;
-    });
-
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(boards)
-      .where(eq(boards.organizationId, actor.orgId));
+    const [result, countResult] = await Promise.all([
+      db
+        .select()
+        .from(boards)
+        .where(whereClause)
+        .orderBy(sql`lower(${boards.name}) asc`)
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(boards)
+        .where(whereClause),
+    ]);
 
     const total = countResult[0]?.count ?? 0;
 
-    return Response.json(paginatedResponse(filtered, total, { limit, offset }));
+    return Response.json(paginatedResponse(result, total, { limit, offset }));
   } catch (error) {
     return handleApiError(error);
   }

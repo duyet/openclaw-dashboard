@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { cn } from "@/lib/utils";
+import { getLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,7 +54,12 @@ const MONTHS = [
 ];
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { credentials: "include" });
+  const headers = new Headers();
+  if (isLocalAuthMode()) {
+    const token = getLocalAuthToken();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  }
+  const res = await fetch(url, { credentials: "include", headers });
   if (!res.ok) throw new Error(`${res.status}`);
   return res.json() as Promise<T>;
 }
@@ -197,6 +203,9 @@ export default function CalendarPage() {
   const isLoading =
     boardsQuery.isLoading || tasksQuery.isLoading || agentsQuery.isLoading;
 
+  const isError =
+    boardsQuery.isError || tasksQuery.isError || agentsQuery.isError;
+
   return (
     <DashboardPageLayout
       signedOut={{
@@ -295,6 +304,11 @@ export default function CalendarPage() {
 
           {isLoading ? (
             <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
+          ) : null}
+          {isError ? (
+            <p className="mt-4 text-sm text-destructive/80">
+              Failed to load calendar data. Please refresh.
+            </p>
           ) : null}
         </div>
 
