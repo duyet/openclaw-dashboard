@@ -7,7 +7,6 @@ import {
   type GatewayConfig,
   listPairing,
   requestPairing,
-  type PairingRequestResponse,
 } from "@/lib/services/gateway-rpc";
 
 const log = createLogger("[useGatewayPairing]");
@@ -26,7 +25,7 @@ interface UseGatewayPairingResult {
   pairGateway: (
     gatewayId: string,
     config: GatewayConfig
-  ) => Promise<() => void>;
+  ) => Promise<void>;
 }
 
 export function useGatewayPairing(
@@ -46,9 +45,13 @@ export function useGatewayPairing(
         created: response.created,
       });
 
+      log.info("polling:started", { gatewayId, requestId, pollInterval: POLL_INTERVAL_MS });
+
       const pollInterval = setInterval(async () => {
         try {
+          log.info("polling:check", { requestId });
           const listResponse = await listPairing(config);
+          log.info("polling:listResponse", { requestId, pairedCount: listResponse.paired.length, pendingCount: listResponse.pending.length });
 
           const pairedNode = listResponse.paired.find(
             (n) => n.nodeId === PAIRING_NODE_ID
@@ -90,10 +93,8 @@ export function useGatewayPairing(
         }
       }, POLL_INTERVAL_MS);
 
-      return () => {
-        log.info("polling:cleanup", { requestId });
-        clearInterval(pollInterval);
-      };
+      log.info("pairGateway:complete", { gatewayId, requestId });
+      // Return undefined - polling continues until approved/rejected
     },
     [onApproved, onRejected]
   );

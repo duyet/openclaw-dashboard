@@ -157,14 +157,26 @@ export default function GatewayDetailPage() {
 
   const handleRequestApproval = async () => {
     if (!gateway) return;
+    console.log("[handleRequestApproval] Starting pairing request for gateway:", gateway.id);
     setRequestingGatewayId(gateway.id);
 
     try {
+      console.log("[handleRequestApproval] Calling pairGateway...");
       await pairGateway(gateway.id, toGatewayConfig(gateway));
-      setRequestingGatewayId(null);
+      console.log("[handleRequestApproval] pairGateway returned successfully");
+      // Set pairing state immediately after request succeeds
+      console.log("[handleRequestApproval] Setting pairingGatewayId to:", gateway.id);
       setPairingGatewayId(gateway.id);
+      console.log("[handleRequestApproval] Clearing requestingGatewayId");
+      setRequestingGatewayId(null);
+      console.log("[handleRequestApproval] Showing success toast");
       pushToast("Pairing request sent. Check your gateway to approve.", "success");
+      console.log("[handleRequestApproval] State after request:", {
+        pairingGatewayId: gateway.id,
+        requestingGatewayId: null,
+      });
     } catch (err) {
+      console.error("[handleRequestApproval] Pairing request failed:", err);
       setRequestingGatewayId(null);
       const message = err instanceof Error ? err.message : "Failed to request pairing";
       pushToast(message, "error");
