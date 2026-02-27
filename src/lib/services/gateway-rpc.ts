@@ -221,7 +221,7 @@ export async function callGatewayRpc(
             maxProtocol: 3,
             client: CLIENT_META,
             role: "operator",
-            scopes: [],
+            scopes: ["operator.read", "operator.write", "operator.pairing"],
             caps: [],
             auth: { token: token ?? "" },
           },
