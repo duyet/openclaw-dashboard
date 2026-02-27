@@ -357,14 +357,19 @@ export default function DashboardPage() {
 
   // Fetch cronjobs from online gateways
   useEffect(() => {
-    if (!isSignedIn || gateways.length === 0) return;
+    if (!isSignedIn || gateways.length === 0) {
+      console.log("[Dashboard] No gateways or not signed in", { isSignedIn, gatewaysCount: gateways.length });
+      return;
+    }
 
     const fetchCronjobs = async () => {
+      console.log("[Dashboard] Fetching cronjobs from", gateways.length, "gateways");
       let total = 0;
       const timeout = 10_000;
 
       await Promise.allSettled(
         gateways.map(async (gateway) => {
+          console.log("[Dashboard] Fetching from gateway:", gateway.name, gateway.url);
           try {
             const jobs = await Promise.race([
               getTaskHistory({ url: gateway.url, token: gateway.token ?? null }),
@@ -372,13 +377,16 @@ export default function DashboardPage() {
                 setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
               ),
             ]);
+            console.log("[Dashboard] Gateway", gateway.name, "returned", jobs.length, "jobs");
             total += jobs.length;
-          } catch {
+          } catch (err) {
+            console.error("[Dashboard] Failed to fetch cronjobs from gateway:", gateway.name, err);
             // Gateway offline or error - skip
           }
         })
       );
 
+      console.log("[Dashboard] Total cronjobs:", total);
       setTotalCronjobs(total);
     };
 
