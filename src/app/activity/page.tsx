@@ -25,6 +25,8 @@ import {
   useGetMyMembershipApiV1OrganizationsMeMemberGet,
 } from "@/api/generated/organizations/organizations";
 import { streamTasksApiV1BoardsBoardIdTasksStreamGet } from "@/api/generated/tasks/tasks";
+import { useListGatewaysApiV1GatewaysGet } from "@/api/generated/gateways/gateways";
+import type { GatewayRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
@@ -41,6 +43,12 @@ import {
   resolveMemberDisplayName,
 } from "@/lib/display-name";
 import { cn } from "@/lib/utils";
+import {
+  type GatewayCronJob,
+  type GatewaySession,
+  getSessions,
+  getTaskHistory,
+} from "@/lib/services/gateway-rpc";
 
 const SSE_RECONNECT_BACKOFF = {
   baseMs: 1_000,
@@ -73,7 +81,9 @@ type FeedEventType =
   | "approval.created"
   | "approval.updated"
   | "approval.approved"
-  | "approval.rejected";
+  | "approval.rejected"
+  | "gateway.cronjob"
+  | "gateway.session";
 
 type FeedItem = {
   id: string;
@@ -88,6 +98,8 @@ type FeedItem = {
   task_id: string | null;
   task_title: string | null;
   title: string;
+  gateway_id?: string | null;
+  gateway_name?: string | null;
 };
 
 type TaskMeta = {
@@ -157,6 +169,8 @@ const eventLabel = (eventType: FeedEventType): string => {
   if (eventType === "approval.updated") return "Approval update";
   if (eventType === "approval.approved") return "Approved";
   if (eventType === "approval.rejected") return "Rejected";
+  if (eventType === "gateway.cronjob") return "Cronjob";
+  if (eventType === "gateway.session") return "Session";
   return "Updated";
 };
 
@@ -199,6 +213,12 @@ const eventPillClass = (eventType: FeedEventType): string => {
   }
   if (eventType === "approval.rejected") {
     return "border-rose-200 bg-rose-50 text-rose-700";
+  }
+  if (eventType === "gateway.cronjob") {
+    return "border-orange-200 bg-orange-50 text-orange-700";
+  }
+  if (eventType === "gateway.session") {
+    return "border-blue-200 bg-blue-50 text-blue-700";
   }
   return "border-border bg-muted/40 text-foreground/90";
 };
@@ -326,10 +346,33 @@ export default function ActivityPage() {
     return resolveMemberDisplayName(member, DEFAULT_HUMAN_LABEL);
   }, [membershipQuery.data]);
 
+  // Fetch gateways
+  const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
+    { data: { items: GatewayRead[] }; status: 200 },
+    { message: string; status: number }
+  >(
+    { limit: 200 },
+    {
+      query: {
+        enabled: Boolean(isSignedIn),
+        staleTime: 30_000,
+        refetchInterval: 60_000,
+      },
+    }
+  );
+
+  // Update gateways state when query data changes
+  useEffect(() => {
+    if (gatewaysQuery.data?.status === 200) {
+      setGateways(gatewaysQuery.data.data.items ?? []);
+    }
+  }, [gatewaysQuery.data]);
+
   const [isFeedLoading, setIsFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [boards, setBoards] = useState<BoardRead[]>([]);
+  const [gateways, setGateways] = useState<GatewayRead[]>([]);
 
   const feedItemsRef = useRef<FeedItem[]>([]);
   const seenIdsRef = useRef<Set<string>>(new Set());
@@ -1276,6 +1319,130 @@ export default function ActivityPage() {
     mapAgentEvent,
     pushFeedItem,
   ]);
+
+  // Poll gateways for cronjobs and sessions
+  useEffect(() => {
+    if (!isSignedIn) return;
+    if (gateways.length === 0) return;
+
+    console.log("[Activity] Polling gateways for activity");
+
+    const pollGateways = async () => {
+      const timeout = 10_000;
+
+      for (const gateway of gateways) {
+        try {
+          console.log("[Activity] Polling gateway:", gateway.name);
+
+          // Fetch cronjobs
+          const cronjobs = await Promise.race([
+            getTaskHistory({ url: gateway.url, token: gateway.token ?? null }),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+            ),
+          ]);
+
+          console.log("[Activity] Gateway", gateway.name, "returned", cronjobs.length, "cronjobs");
+
+          // Add recent cronjob runs to feed
+          const seenCronJobs = new Set<string>();
+          for (const job of cronjobs) {
+            // Skip if we've already added this job recently
+            const jobId = `cronjob:${gateway.id}:${job.id}`;
+            if (seenIdsRef.current.has(jobId)) continue;
+            seenCronJobs.add(jobId);
+
+            // Only add jobs that have recently run
+            if (job.state.lastRunAtMs) {
+              const lastRun = new Date(job.state.lastRunAtMs);
+              const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+              if (lastRun > oneHourAgo) {
+                const status = job.state.lastStatus ?? "unknown";
+                const statusText =
+                  status === "ok" || status === "completed"
+                    ? "completed"
+                    : status === "failed"
+                      ? "failed"
+                      : status;
+
+                const item: FeedItem = {
+                  id: `gateway-cron-${gateway.id}-${job.id}-${job.state.lastRunAtMs}`,
+                  created_at: lastRun.toISOString(),
+                  event_type: "gateway.cronjob",
+                  message: `Status: ${statusText}${job.state.lastError ? ` | Error: ${job.state.lastError}` : ""}`,
+                  agent_id: null,
+                  actor_name: gateway.name,
+                  actor_role: "Gateway",
+                  board_id: null,
+                  board_name: null,
+                  task_id: null,
+                  task_title: null,
+                  title: job.name,
+                  gateway_id: gateway.id,
+                  gateway_name: gateway.name,
+                };
+                pushFeedItem(item);
+              }
+            }
+          }
+
+          // Fetch sessions
+          const sessions = await Promise.race([
+            getSessions({ url: gateway.url, token: gateway.token ?? null }),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+            ),
+          ]);
+
+          console.log("[Activity] Gateway", gateway.name, "returned", sessions.length, "sessions");
+
+          // Add recent sessions to feed
+          const seenSessions = new Set<string>();
+          for (const session of sessions) {
+            const sessionId = `session:${gateway.id}:${session.session_key}`;
+            if (seenIdsRef.current.has(sessionId)) continue;
+            seenSessions.add(sessionId);
+
+            // Only add sessions with recent activity
+            if (session.last_activity_at) {
+              const lastActivity = new Date(session.last_activity_at);
+              const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+              if (lastActivity > oneHourAgo) {
+                const item: FeedItem = {
+                  id: `gateway-session-${gateway.id}-${session.session_key}`,
+                  created_at: session.last_activity_at,
+                  event_type: "gateway.session",
+                  message: `Session: ${session.session_key}`,
+                  agent_id: null,
+                  actor_name: gateway.name,
+                  actor_role: "Gateway",
+                  board_id: null,
+                  board_name: null,
+                  task_id: null,
+                  task_title: null,
+                  title: `Session ${session.status ?? "active"}`,
+                  gateway_id: gateway.id,
+                  gateway_name: gateway.name,
+                };
+                pushFeedItem(item);
+              }
+            }
+          }
+        } catch (err) {
+          console.error("[Activity] Failed to poll gateway:", gateway.name, err);
+        }
+      }
+    };
+
+    // Initial poll
+    void pollGateways();
+
+    // Poll every 60 seconds
+    const interval = setInterval(pollGateways, 60_000);
+    return () => clearInterval(interval);
+  }, [isSignedIn, gateways, pushFeedItem]);
 
   const orderedFeed = useMemo(() => {
     return [...feedItems].sort((a, b) => {
