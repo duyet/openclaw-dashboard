@@ -103,7 +103,7 @@ export function AgentsTable({
       setInternalSorting(updater);
     });
 
-  const sortedAgents = useMemo<AgentWithGateway[]>(() => [...agents], [agents]);
+  const sortedAgents = useMemo<AgentWithGateway[]>(() => Array.isArray(agents) ? [...agents] : [], [agents]);
   const columnVisibility = useMemo<VisibilityState>(
     () =>
       Object.fromEntries(
@@ -112,7 +112,7 @@ export function AgentsTable({
     [hiddenColumns]
   );
   const boardNameById = useMemo(
-    () => new Map(boards.map((board) => [board.id, board.name])),
+    () => new Map(Array.isArray(boards) ? boards.map((board) => [board.id, board.name]) : []),
     [boards]
   );
 
