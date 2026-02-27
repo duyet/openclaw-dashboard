@@ -567,8 +567,8 @@ export interface GatewaySession {
 }
 
 /**
- * Fetch task/execution history from the gateway.
- * Returns tasks that agents have executed, including cronjob runs.
+ * Fetch cronjob task history from the gateway.
+ * Returns cronjob runs via cron.list RPC method.
  */
 export function getTaskHistory(
   config: GatewayConfig,
@@ -580,7 +580,7 @@ export function getTaskHistory(
     since?: string; // ISO timestamp
   }
 ): Promise<GatewayTask[]> {
-  return rpc<GatewayTask[]>(config, "tasks.list", params ?? {});
+  return rpc<GatewayTask[]>(config, "cron.list", params ?? {});
 }
 
 // -- Node pairing --
