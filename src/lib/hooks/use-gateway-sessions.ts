@@ -1,14 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import type { GatewayRead } from "@/api/generated/model";
-import {
-  getSessions,
-  type GatewaySession,
-} from "@/lib/services/gateway-rpc";
-import { createLogger } from "@/lib/logger";
 import { customFetch } from "@/api/mutator";
+import { createLogger } from "@/lib/logger";
+import { type GatewaySession, getSessions } from "@/lib/services/gateway-rpc";
 
 const log = createLogger("[useGatewaySessions]");
 
@@ -29,7 +26,6 @@ export function useGatewaySessions(
   gateways: GatewayRead[],
   options?: UseGatewaySessionsOptions
 ): UseGatewaySessionsResult {
-  // Deduplicate gateways by id
   const uniqueGateways = useMemo(() => {
     const seen = new Set<string>();
     return gateways.filter((g) => {
@@ -40,40 +36,44 @@ export function useGatewaySessions(
   }, [gateways]);
 
   const gatewayIds = useMemo(
-    () => Array.isArray(uniqueGateways) ? uniqueGateways.map((g) => g.id) : [],
+    () => uniqueGateways.map((g) => g.id).join(","),
     [uniqueGateways]
   );
 
   const query = useQuery({
-    queryKey: ["gateway-sessions", gatewayIds.join(",")],
+    queryKey: ["gateway-sessions", gatewayIds],
     queryFn: async () => {
-      log.info("queryFn:start", { gatewayIds, numGateways: uniqueGateways.length });
+      log.info("queryFn:start", {
+        gatewayIds,
+        numGateways: uniqueGateways.length,
+      });
 
-      const timeout = 10_000; // 10s timeout per gateway
+      const timeout = 10_000;
 
       const results = await Promise.allSettled(
-        (Array.isArray(uniqueGateways) ? uniqueGateways : []).map(async (gateway) => {
-          log.info("gatewayFetch:start", { gatewayId: gateway.id, gatewayName: gateway.name });
+        uniqueGateways.map(async (gateway) => {
+          log.info("gatewayFetch:start", {
+            gatewayId: gateway.id,
+            gatewayName: gateway.name,
+          });
           try {
             const sessions = await Promise.race([
               getSessions({ url: gateway.url, token: gateway.token ?? null }),
               new Promise<never>((_, reject) =>
-                setTimeout(
-                  () => reject(new Error("Gateway RPC timeout")),
-                  timeout
-                )
+                setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
               ),
             ]);
 
             log.info("gatewayFetch:success", {
               gatewayId: gateway.id,
-              numSessions: Array.isArray(sessions) ? sessions.length : 0,
+              numSessions: sessions.length,
             });
 
-            // Fire-and-forget sync to API after successful session fetch
-            if (sessions && Array.isArray(sessions) && sessions.length > 0) {
-              log.info("syncApi:calling", { gatewayId: gateway.id, numSessions: sessions.length });
-              // Use customFetch to include auth headers (local token or Clerk JWT)
+            if (sessions.length > 0) {
+              log.info("syncApi:calling", {
+                gatewayId: gateway.id,
+                numSessions: sessions.length,
+              });
               customFetch<{ data: { synced: number } }>(
                 `/api/v1/gateways/${encodeURIComponent(gateway.id)}/sessions/sync`,
                 {
@@ -89,7 +89,9 @@ export function useGatewaySessions(
                   });
                 })
                 .catch((syncErr) => {
-                  log.error("syncApi:failed", syncErr, { gatewayId: gateway.id });
+                  log.error("syncApi:failed", syncErr, {
+                    gatewayId: gateway.id,
+                  });
                 });
             }
 
@@ -100,7 +102,6 @@ export function useGatewaySessions(
               scopeError: false,
             };
           } catch (err) {
-            // Detect scope errors
             const scopeError =
               err instanceof Error &&
               err.message.includes("missing scope: operator");
@@ -184,12 +185,10 @@ export function useGatewaySessions(
   const syncStatus = useMemo(() => {
     const map = new Map<string, "idle" | "syncing" | "synced">();
     for (const entry of query.data ?? []) {
-      // Synced if online and has sessions
-      if (entry.online && entry.sessions.length > 0) {
-        map.set(entry.gatewayId, "synced");
-      } else {
-        map.set(entry.gatewayId, "idle");
-      }
+      map.set(
+        entry.gatewayId,
+        entry.online && entry.sessions.length > 0 ? "synced" : "idle"
+      );
     }
     return map;
   }, [query.data]);

@@ -14,6 +14,7 @@ import type { AgentRead, BoardRead } from "@/api/generated/model";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("[AgentsTable]");
+
 import {
   dateCell,
   linkifyCell,
@@ -125,7 +126,12 @@ export function AgentsTable({
     [hiddenColumns]
   );
   const boardNameById = useMemo(
-    () => new Map(Array.isArray(boards) ? boards.map((board) => [board.id, board.name]) : []),
+    () =>
+      new Map(
+        Array.isArray(boards)
+          ? boards.map((board) => [board.id, board.name])
+          : []
+      ),
     [boards]
   );
 

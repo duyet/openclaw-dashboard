@@ -11,21 +11,17 @@ import {
 } from "@/api/generated/gateways/gateways";
 import type { GatewayRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
-import { customFetch } from "@/api/mutator";
 import { useAuth } from "@/auth/clerk";
 import { GatewaysTable } from "@/components/gateways/GatewaysTable";
+import { useToast } from "@/components/providers/ToastProvider";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
-import {
-  requestPairing,
-  verifyPairing,
-  type GatewayConfig,
-} from "@/lib/services/gateway-rpc";
+import { toGatewayConfig } from "@/lib/services/gateway-rpc";
+import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
-import { useToast } from "@/components/providers/ToastProvider";
 
 const GATEWAY_SORTABLE_COLUMNS = ["name", "workspace_root", "updated_at"];
 
@@ -42,7 +38,6 @@ export default function GatewaysPage() {
   const { pushToast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState<GatewayRead | null>(null);
   const [pairingGatewayId, setPairingGatewayId] = useState<string | null>(null);
-  const [requestingGatewayId, setRequestingGatewayId] = useState<string | null>(null);
 
   const gatewaysKey = getListGatewaysApiV1GatewaysGetQueryKey();
   const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
@@ -87,64 +82,31 @@ export default function GatewaysPage() {
     queryClient
   );
 
+  const { pairGateway } = useGatewayPairing({
+    onApproved: async () => {
+      setPairingGatewayId(null);
+      queryClient.invalidateQueries({ queryKey: gatewaysKey });
+    },
+    onRejected: async () => {
+      setPairingGatewayId(null);
+    },
+  });
+
   const handleDelete = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate({ gatewayId: deleteTarget.id });
   };
 
   const handleRequestApproval = async (gateway: GatewayRead) => {
-    const config: GatewayConfig = {
-      url: gateway.url,
-      token: gateway.token ?? null,
-    };
-
-    setRequestingGatewayId(gateway.id);
+    setPairingGatewayId(gateway.id);
 
     try {
-      const response = await requestPairing(config, {
-        nodeId: "OpenClaw Mission Control",
-      });
-
-      // Success - show toast and start polling
-      setRequestingGatewayId(null);
-      setPairingGatewayId(gateway.id);
       pushToast("Pairing request sent. Check your gateway to approve.", "success");
-
-      // Poll for approval
-      const pollInterval = setInterval(async () => {
-        try {
-          const verifyResponse = await verifyPairing(config, response.request_id);
-
-          if (verifyResponse.status === "approved" && verifyResponse.token) {
-            clearInterval(pollInterval);
-            setPairingGatewayId(null);
-
-            // Send device token to backend
-            await customFetch<{ device_token: string }>(
-              `/api/v1/gateways/${encodeURIComponent(gateway.id)}/pair/approve`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  device_token: verifyResponse.token,
-                }),
-              }
-            );
-
-            // Refresh the gateways list
-            queryClient.invalidateQueries({ queryKey: gatewaysKey });
-          } else if (verifyResponse.status === "rejected") {
-            clearInterval(pollInterval);
-            setPairingGatewayId(null);
-          }
-        } catch {
-          // Continue polling on error
-        }
-      }, 3000);
+      await pairGateway(gateway.id, toGatewayConfig(gateway));
     } catch (err) {
-      setRequestingGatewayId(null);
       setPairingGatewayId(null);
-      const message = err instanceof Error ? err.message : "Failed to request pairing";
+      const message =
+        err instanceof Error ? err.message : "Failed to request pairing";
       pushToast(message, "error");
       console.error("Pairing request failed:", err);
     }
@@ -187,7 +149,7 @@ export default function GatewaysPage() {
             onDelete={setDeleteTarget}
             onRequestApproval={handleRequestApproval}
             pairingGatewayId={pairingGatewayId}
-            requestingGatewayId={requestingGatewayId}
+            requestingGatewayId={pairingGatewayId}
             emptyState={{
               title: "No gateways yet",
               description:

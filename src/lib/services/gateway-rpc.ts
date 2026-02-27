@@ -326,6 +326,13 @@ export interface GatewayConfig {
   token: string | null;
 }
 
+/** Creates a GatewayConfig from a gateway object with optional url/token fields. */
+export function toGatewayConfig(
+  gateway: { url?: string | null; token?: string | null }
+): GatewayConfig {
+  return { url: gateway.url ?? "", token: gateway.token ?? null };
+}
+
 // ---------------------------------------------------------------------------
 // Typed RPC method helpers
 // ---------------------------------------------------------------------------
@@ -363,8 +370,14 @@ export interface GatewaySessionsListResponse {
   sessions: GatewaySession[];
 }
 
-export async function getSessions(config: GatewayConfig): Promise<GatewaySession[]> {
-  const response = await rpc<GatewaySessionsListResponse>(config, "sessions.list", {});
+export async function getSessions(
+  config: GatewayConfig
+): Promise<GatewaySession[]> {
+  const response = await rpc<GatewaySessionsListResponse>(
+    config,
+    "sessions.list",
+    {}
+  );
   // Extract the sessions array and normalize `key` to `session_key`
   const rawSessions = response?.sessions ?? [];
   return rawSessions.map((s) => ({
@@ -528,13 +541,13 @@ export interface GatewayTask {
 // Gateway session response from sessions.list
 // Note: The gateway uses `key` but we normalize to `session_key` for consistency
 export interface GatewaySession {
-  session_key: string;  // Mapped from `key` in gateway response
-  key?: string;  // Original field from gateway
-  kind?: string;  // "direct" | "group"
+  session_key: string; // Mapped from `key` in gateway response
+  key?: string; // Original field from gateway
+  kind?: string; // "direct" | "group"
   label?: string;
   displayName?: string;
-  updatedAt?: number;  // Unix timestamp in seconds
-  sessionId?: string;  // Internal session UUID
+  updatedAt?: number; // Unix timestamp in seconds
+  sessionId?: string; // Internal session UUID
   status?: string; // "active" | "idle" | "bootstrapping"
   workspace_root?: string;
   created_at?: string;
@@ -583,13 +596,47 @@ export function requestPairing(
   );
 }
 
-export function verifyPairing(
+/**
+ * Result type for node.pair.list RPC method.
+ */
+export interface NodePairListResponse {
+  pending: Array<{
+    requestId: string;
+    nodeId: string;
+    displayName?: string;
+    platform?: string;
+    ts: number;
+  }>;
+  paired: Array<{
+    nodeId: string;
+    displayName?: string;
+    platform?: string;
+    token: string;
+    approvedAtMs: number;
+  }>;
+}
+
+/**
+ * List all pairing requests (pending and paired).
+ * Use this to poll for pairing approval status after calling requestPairing.
+ */
+export function listPairing(
+  config: GatewayConfig
+): Promise<NodePairListResponse> {
+  return rpc<NodePairListResponse>(config, "node.pair.list", {});
+}
+
+/**
+ * Verify a node's authentication token.
+ * This is used to authenticate a paired node, not to poll pairing status.
+ */
+export function verifyNodeToken(
   config: GatewayConfig,
-  requestId: string
-): Promise<{ status: "pending" | "approved" | "rejected"; token?: string }> {
-  return rpc<{ status: "pending" | "approved" | "rejected"; token?: string }>(
+  params: { nodeId: string; token: string }
+): Promise<{ ok: boolean; node?: { nodeId: string; displayName?: string } }> {
+  return rpc<{ ok: boolean; node?: { nodeId: string; displayName?: string } }>(
     config,
     "node.pair.verify",
-    { request_id: requestId }
+    params
   );
 }

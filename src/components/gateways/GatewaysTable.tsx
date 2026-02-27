@@ -16,8 +16,8 @@ import {
   DataTable,
   type DataTableEmptyState,
 } from "@/components/tables/DataTable";
-import { truncateText as truncate } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
+import { truncateText as truncate } from "@/lib/formatters";
 
 type GatewaysTableProps = {
   gateways: GatewayRead[];
@@ -130,7 +130,9 @@ export function GatewaysTable({
                 <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                 <span className="text-sm text-emerald-700">Paired</span>
                 {relativeDate && (
-                  <span className="text-xs text-slate-500">({relativeDate})</span>
+                  <span className="text-xs text-slate-500">
+                    ({relativeDate})
+                  </span>
                 )}
               </div>
             );
@@ -156,10 +158,15 @@ export function GatewaysTable({
                   size="sm"
                   variant="outline"
                   onClick={() => onRequestApproval(gateway)}
-                  disabled={requestingGatewayId === gateway.id || pairingGatewayId === gateway.id}
+                  disabled={
+                    requestingGatewayId === gateway.id ||
+                    pairingGatewayId === gateway.id
+                  }
                   className="h-7 px-2 text-xs"
                 >
-                  {requestingGatewayId === gateway.id ? "Sending..." : "Request Approval"}
+                  {requestingGatewayId === gateway.id
+                    ? "Sending..."
+                    : "Request Approval"}
                 </Button>
               )}
             </div>

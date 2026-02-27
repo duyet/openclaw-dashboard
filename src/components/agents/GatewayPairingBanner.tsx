@@ -1,16 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  requestPairing,
-  verifyPairing,
-  type GatewayConfig,
-} from "@/lib/services/gateway-rpc";
+import type { GatewayConfig } from "@/lib/services/gateway-rpc";
+import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { Button } from "@/components/ui/button";
-import { createLogger } from "@/lib/logger";
-import { customFetch } from "@/api/mutator";
 
-const log = createLogger("[GatewayPairingBanner]");
+import type { PairingState } from "@/lib/hooks/use-gateway-pairing";
 
 interface GatewayPairingBannerProps {
   gatewayId: string;
@@ -19,8 +14,6 @@ interface GatewayPairingBannerProps {
   onApprovalComplete?: () => void;
 }
 
-type PairingState = "idle" | "requesting" | "waiting" | "approved" | "rejected";
-
 export function GatewayPairingBanner({
   gatewayId,
   gatewayName,
@@ -28,91 +21,31 @@ export function GatewayPairingBanner({
   onApprovalComplete,
 }: GatewayPairingBannerProps) {
   const [state, setState] = useState<PairingState>("idle");
-  const [requestId, setRequestId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { pairGateway } = useGatewayPairing({
+    onApproved: async () => {
+      setState("approved");
+      onApprovalComplete?.();
+    },
+    onRejected: async () => {
+      setState("rejected");
+      setError("Gateway approval was rejected or timed out.");
+    },
+  });
+
   const handleRequestApproval = async () => {
-    log.info("handleRequestApproval:start", { gatewayId, gatewayName });
     setState("requesting");
     setError(null);
 
     try {
-      const response = await requestPairing(gatewayConfig, {
-        nodeId: "OpenClaw Mission Control",
-      });
-
-      log.info("requestPairing:success", { requestId: response.request_id, status: response.status });
-
-      setRequestId(response.request_id);
       setState("waiting");
-
-      // Start polling for verification
-      const pollInterval = setInterval(async () => {
-        try {
-          log.info("verifyPairing:polling", { requestId: response.request_id });
-          const verifyResponse = await verifyPairing(
-            gatewayConfig,
-            response.request_id
-          );
-
-          log.info("verifyPairing:response", {
-            requestId: response.request_id,
-            status: verifyResponse.status,
-            hasToken: !!verifyResponse.token,
-          });
-
-          if (
-            verifyResponse.status === "approved" &&
-            verifyResponse.token
-          ) {
-            log.info("pairing:approved", { requestId: response.request_id });
-            clearInterval(pollInterval);
-            setState("approved");
-
-            // Send device token to backend
-            log.info("syncApi:calling", { gatewayId });
-            try {
-              await customFetch<{ device_token: string }>(
-                `/api/v1/gateways/${encodeURIComponent(gatewayId)}/pair/approve`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    device_token: verifyResponse.token,
-                  }),
-                }
-              );
-              log.info("syncApi:success", { gatewayId });
-            } catch (syncErr) {
-              log.error("syncApi:failed", syncErr, { gatewayId });
-            }
-
-            onApprovalComplete?.();
-          } else if (verifyResponse.status === "rejected") {
-            log.info("pairing:rejected", { requestId: response.request_id });
-            clearInterval(pollInterval);
-            setState("rejected");
-            setError("Gateway approval was rejected.");
-          }
-        } catch (err) {
-          // Polling continues even if verification fails temporarily
-          log.error("verifyPairing:failed", err, { requestId: response.request_id });
-        }
-      }, 3000); // Poll every 3 seconds
-
-      // Cleanup on unmount or timeout
-      return () => {
-        log.info("polling:cleanup", { requestId: response.request_id });
-        clearInterval(pollInterval);
-      };
+      await pairGateway(gatewayId, gatewayConfig);
     } catch (err) {
-      log.error("requestPairing:failed", err, { gatewayId, gatewayName });
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to request gateway approval"
-      );
       setState("idle");
+      setError(
+        err instanceof Error ? err.message : "Failed to request gateway approval"
+      );
     }
   };
 
@@ -131,11 +64,7 @@ export function GatewayPairingBanner({
             session data.
           </p>
 
-          {error && (
-            <p className="mt-2 text-sm text-red-600">
-              Error: {error}
-            </p>
-          )}
+          {error && <p className="mt-2 text-sm text-red-600">Error: {error}</p>}
 
           {state === "approved" && (
             <p className="mt-2 text-sm text-emerald-600">
@@ -161,7 +90,10 @@ export function GatewayPairingBanner({
                 </Button>
               </div>
               <p className="mt-2 text-xs text-amber-700">
-                Click above, then run on your gateway: <code className="rounded bg-white px-1 py-0.5">openclaw pair approve</code>
+                Click above, then run on your gateway:{" "}
+                <code className="rounded bg-white px-1 py-0.5">
+                  openclaw pair approve
+                </code>
               </p>
             </>
           )}
@@ -175,7 +107,10 @@ export function GatewayPairingBanner({
                 </span>
               </div>
               <p className="mt-2 text-xs text-amber-700">
-                Run this on your gateway: <code className="rounded bg-white px-1 py-0.5">openclaw pair approve</code>
+                Run this on your gateway:{" "}
+                <code className="rounded bg-white px-1 py-0.5">
+                  openclaw pair approve
+                </code>
               </p>
             </>
           )}

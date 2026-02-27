@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { createLogger } from "@/lib/logger";
+import { useEffect, useMemo, useState } from "react";
 import { setupGlobalErrorHandlers } from "@/lib/global-error-handlers";
+import { createLogger } from "@/lib/logger";
 
 const log = createLogger("[AgentsPage]");
 
-// Setup global error handlers once at module load
 setupGlobalErrorHandlers();
+
 import {
   getListAgentsApiV1AgentsGetQueryKey,
   type listAgentsApiV1AgentsGetResponse,
@@ -34,8 +33,9 @@ import { GatewayPairingBanner } from "@/components/agents/GatewayPairingBanner";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
-import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { useGatewaySessions } from "@/lib/hooks/use-gateway-sessions";
+import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import { toGatewayConfig } from "@/lib/services/gateway-rpc";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
 
@@ -99,57 +99,54 @@ export default function AgentsPage() {
   const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
     listGatewaysApiV1GatewaysGetResponse,
     ApiError
-  >({ limit: 200 }, {
-    query: {
-      enabled: Boolean(isSignedIn && isAdmin),
-      staleTime: 30_000,
-      refetchInterval: 60_000,
-    },
-  });
+  >(
+    { limit: 200 },
+    {
+      query: {
+        enabled: Boolean(isSignedIn && isAdmin),
+        staleTime: 30_000,
+        refetchInterval: 60_000,
+      },
+    }
+  );
 
   const boards = useMemo(
-    () => {
-      const result = boardsQuery.data?.status === 200
+    () =>
+      boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
-        : [];
-      log.info("boards:useMemo", { count: Array.isArray(result) ? result.length : 0 });
-      return result;
-    },
+        : [],
     [boardsQuery.data]
   );
 
   const agents = useMemo(
-    () => {
-      const result = agentsQuery.data?.status === 200
+    () =>
+      agentsQuery.data?.status === 200
         ? (agentsQuery.data.data.items ?? [])
-        : [];
-      log.info("agents:useMemo", { count: Array.isArray(result) ? result.length : 0 });
-      return result;
-    },
+        : [],
     [agentsQuery.data]
   );
 
   const gateways = useMemo(
-    () => {
-      const result = gatewaysQuery.data?.status === 200
+    () =>
+      gatewaysQuery.data?.status === 200
         ? (gatewaysQuery.data.data.items ?? [])
-        : [];
-      log.info("gateways:useMemo", { count: Array.isArray(result) ? result.length : 0 });
-      return result;
-    },
+        : [],
     [gatewaysQuery.data]
   );
 
-  const { sessionByKey, gatewayOnline, scopeErrors, isLoading: sessionsLoading } =
-    useGatewaySessions(gateways, { enabled: Boolean(isSignedIn && isAdmin) });
+  const {
+    sessionByKey,
+    gatewayOnline,
+    scopeErrors,
+    isLoading: sessionsLoading,
+  } = useGatewaySessions(gateways, { enabled: Boolean(isSignedIn && isAdmin) });
 
-  // Log component lifecycle and query state changes
   useEffect(() => {
-    log.info("component:mounted", {
+    log.info("state", {
       isSignedIn,
       isAdmin,
-      gatewaysCount: Array.isArray(gateways) ? gateways.length : 0,
-      agentsCount: Array.isArray(agents) ? agents.length : 0,
+      gatewaysCount: gateways.length,
+      agentsCount: agents.length,
       sessionsLoading,
       scopeErrorsCount: scopeErrors.size,
       gatewayOnlineCount: gatewayOnline.size,
@@ -157,38 +154,26 @@ export default function AgentsPage() {
   }, [isSignedIn, isAdmin, gateways, agents, sessionsLoading, scopeErrors, gatewayOnline]);
 
   const gatewayNameById = useMemo(
-    () => new Map(Array.isArray(gateways) ? gateways.map((g) => [g.id, g.name]) : []),
+    () => new Map(gateways.map((g) => [g.id, g.name])),
     [gateways]
   );
 
   const enrichedAgents = useMemo<EnrichedAgent[]>(() => {
-    try {
-      log.info("enrichedAgents:start", { agentsCount: Array.isArray(agents) ? agents.length : 0 });
-      const result = Array.isArray(agents) ? agents.map((agent) => {
-        const gatewayName = gatewayNameById.get(agent.gateway_id);
-        const isOnline = gatewayOnline.get(agent.gateway_id);
-        const session = agent.openclaw_session_id
-          ? sessionByKey.get(agent.openclaw_session_id)
-          : undefined;
-        return {
-          ...agent,
-          _gatewayName: gatewayName,
-          _gatewayOnline: isOnline,
-          _sessionActive: session != null,
-          _sessionStatus: session?.status,
-          _lastActivity: session?.last_activity_at,
-          _sessionSyncedAt: (agent as unknown as Record<string, unknown>)?.session_synced_at as string | undefined,
-        };
-      }) : [];
-      log.info("enrichedAgents:success", { count: result.length });
-      return result;
-    } catch (err) {
-      log.error("enrichedAgents:failed", err, {
-        agentsCount: Array.isArray(agents) ? agents.length : 0,
-        agentsSample: Array.isArray(agents) ? agents.slice(0, 2) : [],
-      });
-      return [];
-    }
+    return agents.map((agent) => {
+      const session = agent.openclaw_session_id
+        ? sessionByKey.get(agent.openclaw_session_id)
+        : undefined;
+      return {
+        ...agent,
+        _gatewayName: gatewayNameById.get(agent.gateway_id),
+        _gatewayOnline: gatewayOnline.get(agent.gateway_id),
+        _sessionActive: session != null,
+        _sessionStatus: session?.status,
+        _lastActivity: session?.last_activity_at,
+        _sessionSyncedAt: (agent as unknown as Record<string, unknown>)
+          ?.session_synced_at as string | undefined,
+      };
+    });
   }, [agents, gatewayNameById, gatewayOnline, sessionByKey]);
 
   const deleteMutation = useDeleteAgentApiV1AgentsAgentIdDelete<
@@ -219,6 +204,21 @@ export default function AgentsPage() {
     deleteMutation.mutate({ agentId: deleteTarget.id });
   };
 
+  const pairingBanners = useMemo(
+    () =>
+      gateways
+        .filter((gateway) => scopeErrors.get(gateway.id))
+        .map((gateway) => (
+          <GatewayPairingBanner
+            key={gateway.id}
+            gatewayId={gateway.id}
+            gatewayName={gateway.name}
+            gatewayConfig={toGatewayConfig(gateway)}
+          />
+        )),
+    [gateways, scopeErrors]
+  );
+
   return (
     <>
       <DashboardPageLayout
@@ -240,37 +240,7 @@ export default function AgentsPage() {
         adminOnlyMessage="Only organization owners and admins can access agents."
         stickyHeader
       >
-        {(() => {
-          try {
-            log.info("renderBanners:start", { gatewaysCount: Array.isArray(gateways) ? gateways.length : 0 });
-            const result = Array.isArray(gateways) ? gateways.map((gateway) => {
-              const hasScopeError = scopeErrors.get(gateway.id);
-              if (!hasScopeError) return null;
-              return (
-                <GatewayPairingBanner
-                  key={gateway.id}
-                  gatewayId={gateway.id}
-                  gatewayName={gateway.name}
-                  gatewayConfig={{ url: gateway.url, token: gateway.token ?? null }}
-                />
-              );
-            }) : null;
-            log.info("renderBanners:success", { bannerCount: result ? result.filter(Boolean).length : 0 });
-            return result;
-          } catch (err) {
-            log.error("renderBanners:failed", err, {
-              gatewaysCount: Array.isArray(gateways) ? gateways.length : 0,
-              gatewaysSample: Array.isArray(gateways) ? gateways.slice(0, 2) : [],
-            });
-            return (
-              <div className="my-4 rounded-lg border border-red-200 bg-red-50 p-4">
-                <p className="text-sm text-red-600">
-                  Error rendering pairing banners. Check console for details.
-                </p>
-              </div>
-            );
-          }
-        })()}
+        {pairingBanners}
 
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AgentsTable
