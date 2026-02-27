@@ -3,12 +3,29 @@
 export const runtime = "edge";
 
 import { useQuery } from "@tanstack/react-query";
-import { Bot, CalendarClock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Bot,
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  Server,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useListGatewaysApiV1GatewaysGet } from "@/api/generated/gateways/gateways";
+import type { GatewayRead, OrganizationRead } from "@/api/generated/model";
+import { useGetMyOrgApiV1OrganizationsMeGet } from "@/api/generated/organizations/organizations";
 import { useAuth } from "@/auth/clerk";
 import { getLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { type GatewayTask, getTaskHistory } from "@/lib/services/gateway-rpc";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +40,14 @@ type ApiTask = {
 };
 
 type ApiTaskWithBoard = ApiTask & { _boardId: string };
+
+type ApiTaskWithGateway = ApiTask & {
+  _gatewayId: string;
+  _gatewayName: string;
+  _gatewayTask: GatewayTask;
+};
+
+type ApiTaskWithSource = ApiTaskWithBoard | ApiTaskWithGateway;
 
 type ApiBoard = { id: string; name: string };
 
@@ -78,6 +103,19 @@ const STATUS_COLOR: Record<string, string> = {
   in_progress: "bg-primary/5 text-primary border-primary/30",
   review: "bg-purple-50 text-purple-700 border-purple-200",
   done: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  // Server task status colors
+  pending: "bg-amber-50 text-amber-700 border-amber-200",
+  running: "bg-blue-50 text-blue-700 border-blue-200",
+  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  failed: "bg-red-50 text-red-700 border-red-200",
+};
+
+// Server status to our status mapping
+const GATEWAY_STATUS_MAP: Record<string, string> = {
+  pending: "pending",
+  running: "running",
+  completed: "done",
+  failed: "failed",
 };
 
 // ---------------------------------------------------------------------------
@@ -89,6 +127,22 @@ export default function CalendarPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [selectedTask, setSelectedTask] = useState<ApiTaskWithSource | null>(
+    null
+  );
+
+  // Active organization
+  const myOrgQuery = useGetMyOrgApiV1OrganizationsMeGet<
+    { data: OrganizationRead; status: 200 },
+    { message: string; status: number }
+  >({
+    query: {
+      enabled: Boolean(isSignedIn),
+      staleTime: 60_000,
+      refetchInterval: 60_000,
+    },
+  });
+  const activeOrgId = myOrgQuery.data?.data?.id ?? null;
 
   // Boards
   const boardsQuery = useQuery({
@@ -123,7 +177,89 @@ export default function CalendarPage() {
     staleTime: 15_000,
     refetchInterval: 30_000,
   });
-  const allTasks = tasksQuery.data ?? [];
+  const boardTasks = tasksQuery.data ?? [];
+
+  // Gateways for active organization
+  const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
+    { data: { items: GatewayRead[] }; status: 200 },
+    { message: string; status: number }
+  >(
+    { limit: 200 },
+    {
+      query: {
+        enabled: Boolean(activeOrgId),
+        staleTime: 30_000,
+        refetchInterval: 60_000,
+      },
+    }
+  );
+  const gateways = gatewaysQuery.data?.data?.items ?? [];
+
+  // Gateway task history
+  const gatewayTasksQuery = useQuery({
+    queryKey: [
+      "calendar",
+      "gateway-tasks",
+      gateways.map((g: GatewayRead) => g.id).join(","),
+    ],
+    queryFn: async () => {
+      if (gateways.length === 0) return [] as ApiTaskWithGateway[];
+
+      // Fetch tasks from all gateways in parallel with timeout
+      const timeout = 10000; // 10s timeout per gateway
+      const results = await Promise.allSettled(
+        gateways.map(async (gateway: GatewayRead) => {
+          try {
+            const tasks = await Promise.race([
+              getTaskHistory(
+                { url: gateway.url, token: gateway.token ?? null },
+                { limit: 100 }
+              ),
+              new Promise<never>((_, reject) =>
+                setTimeout(
+                  () => reject(new Error("Server RPC timeout")),
+                  timeout
+                )
+              ),
+            ]);
+            return tasks
+              .filter((t) => t.due_at) // Only tasks with due dates
+              .map<ApiTaskWithGateway>((task) => ({
+                id: `gateway-${gateway.id}-${task.id}`,
+                title: task.name,
+                status: GATEWAY_STATUS_MAP[task.status] ?? task.status,
+                due_at: task.due_at,
+                _gatewayId: gateway.id,
+                _gatewayName: gateway.name,
+                _gatewayTask: task,
+              }));
+          } catch {
+            // Server offline or error — return empty array
+            return [] as ApiTaskWithGateway[];
+          }
+        })
+      );
+
+      return results
+        .filter(
+          (result): result is PromiseFulfilledResult<ApiTaskWithGateway[]> =>
+            result.status === "fulfilled"
+        )
+        .flatMap(
+          (result: PromiseFulfilledResult<ApiTaskWithGateway[]>) => result.value
+        );
+    },
+    enabled: gateways.length > 0,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  });
+  const gatewayTasks = gatewayTasksQuery.data ?? [];
+
+  // Combine board and gateway tasks
+  const allTasks = useMemo(
+    () => [...boardTasks, ...gatewayTasks],
+    [boardTasks, gatewayTasks]
+  );
 
   // Agents (for scheduled cronjobs)
   const agentsQuery = useQuery({
@@ -144,7 +280,7 @@ export default function CalendarPage() {
 
   // Tasks grouped by calendar day (current month only)
   const tasksByDay = useMemo(() => {
-    const map = new Map<number, ApiTaskWithBoard[]>();
+    const map = new Map<number, ApiTaskWithSource[]>();
     for (const task of allTasks) {
       if (!task.due_at) continue;
       const d = new Date(task.due_at);
@@ -201,11 +337,26 @@ export default function CalendarPage() {
     }
   };
 
+  // Check if task is from gateway
+  const isGatewayTask = (
+    task: ApiTaskWithSource
+  ): task is ApiTaskWithGateway => {
+    return "_gatewayId" in task;
+  };
+
   const isLoading =
-    boardsQuery.isLoading || tasksQuery.isLoading || agentsQuery.isLoading;
+    boardsQuery.isLoading ||
+    tasksQuery.isLoading ||
+    agentsQuery.isLoading ||
+    gatewaysQuery.isLoading ||
+    gatewayTasksQuery.isLoading;
 
   const isError =
-    boardsQuery.isError || tasksQuery.isError || agentsQuery.isError;
+    boardsQuery.isError ||
+    tasksQuery.isError ||
+    agentsQuery.isError ||
+    gatewaysQuery.isError ||
+    gatewayTasksQuery.isError;
 
   return (
     <DashboardPageLayout
@@ -279,16 +430,34 @@ export default function CalendarPage() {
                       </span>
                       <div className="space-y-0.5">
                         {dayTasks.slice(0, 3).map((task) => (
-                          <div
+                          <button
                             key={task.id}
-                            title={`${task.title} · ${boardNameMap.get(task._boardId) ?? ""}`}
-                            className={cn(
-                              "truncate rounded border px-1.5 py-0.5 text-[11px] leading-4",
-                              STATUS_COLOR[task.status] ?? STATUS_COLOR.inbox
-                            )}
+                            type="button"
+                            onClick={() => setSelectedTask(task)}
+                            className="w-full text-left truncate rounded border px-1.5 py-0.5 text-[11px] leading-4 transition hover:opacity-80"
+                            title={
+                              isGatewayTask(task)
+                                ? `${task.title} · ${task._gatewayName}`
+                                : `${task.title} · ${boardNameMap.get(task._boardId) ?? ""}`
+                            }
+                            style={{
+                              backgroundColor: isGatewayTask(task)
+                                ? undefined
+                                : undefined,
+                            }}
                           >
-                            {task.title}
-                          </div>
+                            <div
+                              className={cn(
+                                "flex items-center gap-1",
+                                STATUS_COLOR[task.status] ?? STATUS_COLOR.inbox
+                              )}
+                            >
+                              {isGatewayTask(task) ? (
+                                <Server className="h-3 w-3 shrink-0" />
+                              ) : null}
+                              <span className="truncate">{task.title}</span>
+                            </div>
+                          </button>
                         ))}
                         {dayTasks.length > 3 ? (
                           <div className="text-[11px] text-muted-foreground/60">
@@ -364,7 +533,7 @@ export default function CalendarPage() {
                 Due in 7 days
               </h2>
             </div>
-            {tasksQuery.isLoading ? (
+            {tasksQuery.isLoading || gatewayTasksQuery.isLoading ? (
               <p className="text-xs text-muted-foreground">Loading…</p>
             ) : upcomingTasks.length === 0 ? (
               <p className="text-xs text-muted-foreground">
@@ -374,14 +543,29 @@ export default function CalendarPage() {
               <ul className="space-y-2">
                 {upcomingTasks.map((task) => (
                   <li key={task.id}>
-                    <div className="truncate text-xs font-medium text-foreground/90">
-                      {task.title}
+                    <div className="flex items-center gap-1">
+                      {isGatewayTask(task) ? (
+                        <Server className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                      ) : null}
+                      <div className="min-w-0 flex-1 truncate text-xs font-medium text-foreground/90">
+                        {task.title}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground/60">
-                      {new Date(task.due_at!).toLocaleDateString()}
-                      {boardNameMap.get(task._boardId)
-                        ? ` · ${boardNameMap.get(task._boardId)}`
-                        : ""}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground/60">
+                      <span>{new Date(task.due_at!).toLocaleDateString()}</span>
+                      {isGatewayTask(task) ? (
+                        <>
+                          <span>·</span>
+                          <span className="truncate">{task._gatewayName}</span>
+                        </>
+                      ) : boardNameMap.get(task._boardId) ? (
+                        <>
+                          <span>·</span>
+                          <span className="truncate">
+                            {boardNameMap.get(task._boardId)}
+                          </span>
+                        </>
+                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -390,6 +574,104 @@ export default function CalendarPage() {
           </div>
         </aside>
       </div>
+
+      {/* ── Task Detail Dialog ───────────────────────────────────── */}
+      <Dialog
+        open={selectedTask !== null}
+        onOpenChange={(open) => !open && setSelectedTask(null)}
+      >
+        <DialogContent>
+          {selectedTask ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {isGatewayTask(selectedTask) ? (
+                    <>
+                      <Server className="h-5 w-5 text-muted-foreground/60" />
+                      {selectedTask._gatewayTask.name}
+                    </>
+                  ) : (
+                    selectedTask.title
+                  )}
+                </DialogTitle>
+                <DialogDescription>
+                  {isGatewayTask(selectedTask)
+                    ? `Task from ${selectedTask._gatewayName}`
+                    : `Task from ${
+                        boardNameMap.get(selectedTask._boardId) ??
+                        "Unknown board"
+                      }`}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {/* Task metadata */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Status</span>
+                    <div className="font-medium">{selectedTask.status}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Due date</span>
+                    <div className="font-medium">
+                      {selectedTask.due_at
+                        ? new Date(selectedTask.due_at).toLocaleString()
+                        : "Not set"}
+                    </div>
+                  </div>
+                  {isGatewayTask(selectedTask) && (
+                    <>
+                      <div>
+                        <span className="text-muted-foreground">Agent</span>
+                        <div className="font-medium">
+                          {selectedTask._gatewayTask.agent_name ?? "—"}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Created</span>
+                        <div className="font-medium">
+                          {new Date(
+                            selectedTask._gatewayTask.created_at
+                          ).toLocaleString()}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Server task details */}
+                {isGatewayTask(selectedTask) && (
+                  <>
+                    {selectedTask._gatewayTask.error && (
+                      <div>
+                        <span className="text-sm font-medium text-destructive">
+                          Error
+                        </span>
+                        <pre className="mt-1 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
+                          {selectedTask._gatewayTask.error}
+                        </pre>
+                      </div>
+                    )}
+
+                    {selectedTask._gatewayTask.result && (
+                      <div>
+                        <span className="text-sm font-medium">Result</span>
+                        <pre className="mt-1 max-h-48 overflow-y-auto rounded-lg bg-muted p-3 text-xs">
+                          {JSON.stringify(
+                            selectedTask._gatewayTask.result,
+                            null,
+                            2
+                          )}
+                        </pre>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </DashboardPageLayout>
   );
 }

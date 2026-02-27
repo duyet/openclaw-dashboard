@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { eq, asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import {

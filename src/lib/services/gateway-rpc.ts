@@ -489,3 +489,36 @@ export function syncSkillPack(
 ): Promise<unknown> {
   return rpc<unknown>(config, "skills.sync_pack", params);
 }
+
+// -- Task/Execution history --
+
+export interface GatewayTask {
+  id: string;
+  name: string;
+  status: string;
+  created_at: string;
+  updated_at?: string;
+  agent_name?: string;
+  agent_id?: string;
+  session_key?: string;
+  due_at?: string;
+  error?: string;
+  result?: unknown;
+}
+
+/**
+ * Fetch task/execution history from the gateway.
+ * Returns tasks that agents have executed, including cronjob runs.
+ */
+export function getTaskHistory(
+  config: GatewayConfig,
+  params?: {
+    limit?: number;
+    offset?: number;
+    agent_id?: string;
+    session_key?: string;
+    since?: string; // ISO timestamp
+  }
+): Promise<GatewayTask[]> {
+  return rpc<GatewayTask[]>(config, "tasks.list", params ?? {});
+}

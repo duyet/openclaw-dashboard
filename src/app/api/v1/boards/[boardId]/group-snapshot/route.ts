@@ -4,7 +4,12 @@ import { getRequestContext } from "@cloudflare/next-on-pages";
 import { and, eq, sql } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { boardGroups, boards, organizationMembers, tasks } from "@/lib/db/schema";
+import {
+  boardGroups,
+  boards,
+  organizationMembers,
+  tasks,
+} from "@/lib/db/schema";
 import { ApiError, handleApiError } from "@/lib/errors";
 
 interface BoardGroupTaskSummary {
@@ -159,7 +164,9 @@ async function getTaskSummaryForBoard(
 
   if (!includeDone) {
     // Exclude "done" and "cancelled" statuses
-    conditions.push(sql`(tasks.status != 'done' AND tasks.status != 'cancelled')`);
+    conditions.push(
+      sql`(tasks.status != 'done' AND tasks.status != 'cancelled')`
+    );
   }
 
   const result = await db
