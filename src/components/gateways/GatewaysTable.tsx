@@ -32,6 +32,7 @@ type GatewaysTableProps = {
   onDelete?: (gateway: GatewayRead) => void;
   onRequestApproval?: (gateway: GatewayRead) => void;
   pairingGatewayId?: string | null;
+  requestingGatewayId?: string | null;
   emptyMessage?: string;
   emptyState?: Omit<DataTableEmptyState, "icon"> & {
     icon?: DataTableEmptyState["icon"];
@@ -66,6 +67,7 @@ export function GatewaysTable({
   onDelete,
   onRequestApproval,
   pairingGatewayId,
+  requestingGatewayId,
   emptyMessage = "No gateways found.",
   emptyState,
 }: GatewaysTableProps) {
@@ -154,9 +156,10 @@ export function GatewaysTable({
                   size="sm"
                   variant="outline"
                   onClick={() => onRequestApproval(gateway)}
+                  disabled={requestingGatewayId === gateway.id || pairingGatewayId === gateway.id}
                   className="h-7 px-2 text-xs"
                 >
-                  Request Approval
+                  {requestingGatewayId === gateway.id ? "Sending..." : "Request Approval"}
                 </Button>
               )}
             </div>

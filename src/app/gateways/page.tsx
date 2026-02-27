@@ -25,6 +25,7 @@ import {
 } from "@/lib/services/gateway-rpc";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
+import { useToast } from "@/components/providers/ToastProvider";
 
 const GATEWAY_SORTABLE_COLUMNS = ["name", "workspace_root", "updated_at"];
 
@@ -38,8 +39,10 @@ export default function GatewaysPage() {
   });
 
   const { isAdmin } = useOrganizationMembership(isSignedIn);
+  const { pushToast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState<GatewayRead | null>(null);
   const [pairingGatewayId, setPairingGatewayId] = useState<string | null>(null);
+  const [requestingGatewayId, setRequestingGatewayId] = useState<string | null>(null);
 
   const gatewaysKey = getListGatewaysApiV1GatewaysGetQueryKey();
   const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
@@ -95,12 +98,17 @@ export default function GatewaysPage() {
       token: gateway.token ?? null,
     };
 
-    setPairingGatewayId(gateway.id);
+    setRequestingGatewayId(gateway.id);
 
     try {
       const response = await requestPairing(config, {
-        nodeId: "mission-control",
+        nodeId: "OpenClaw Mission Control",
       });
+
+      // Success - show toast and start polling
+      setRequestingGatewayId(null);
+      setPairingGatewayId(gateway.id);
+      pushToast("Pairing request sent. Check your gateway to approve.", "success");
 
       // Poll for approval
       const pollInterval = setInterval(async () => {
@@ -134,7 +142,10 @@ export default function GatewaysPage() {
         }
       }, 3000);
     } catch (err) {
+      setRequestingGatewayId(null);
       setPairingGatewayId(null);
+      const message = err instanceof Error ? err.message : "Failed to request pairing";
+      pushToast(message, "error");
       console.error("Pairing request failed:", err);
     }
   };
@@ -176,6 +187,7 @@ export default function GatewaysPage() {
             onDelete={setDeleteTarget}
             onRequestApproval={handleRequestApproval}
             pairingGatewayId={pairingGatewayId}
+            requestingGatewayId={requestingGatewayId}
             emptyState={{
               title: "No gateways yet",
               description:

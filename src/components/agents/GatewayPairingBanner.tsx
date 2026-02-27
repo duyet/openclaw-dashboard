@@ -38,7 +38,7 @@ export function GatewayPairingBanner({
 
     try {
       const response = await requestPairing(gatewayConfig, {
-        nodeId: "mission-control",
+        nodeId: "OpenClaw Mission Control",
       });
 
       log.info("requestPairing:success", { requestId: response.request_id, status: response.status });
