@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { generateAgentToken, hashAgentToken } from "@/lib/auth/agent";
 import { getDb } from "@/lib/db";
@@ -24,19 +24,25 @@ export async function GET(request: Request) {
     const boardId = url.searchParams.get("board_id");
     const gatewayId = url.searchParams.get("gateway_id");
 
-    let result = await db.select().from(agents).limit(limit).offset(offset);
+    const conditions = [];
+    if (boardId) conditions.push(eq(agents.boardId, boardId));
+    if (gatewayId) conditions.push(eq(agents.gatewayId, gatewayId));
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Apply filters
-    if (boardId) {
-      result = result.filter((a) => a.boardId === boardId);
-    }
-    if (gatewayId) {
-      result = result.filter((a) => a.gatewayId === gatewayId);
-    }
-
-    const countResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(agents);
+    const [result, countResult] = await Promise.all([
+      whereClause
+        ? db
+            .select()
+            .from(agents)
+            .where(whereClause)
+            .limit(limit)
+            .offset(offset)
+        : db.select().from(agents).limit(limit).offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(agents)
+        .where(whereClause ?? sql`1=1`),
+    ]);
 
     const total = countResult[0]?.count ?? 0;
 
