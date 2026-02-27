@@ -17,4 +17,6 @@ export interface GatewayRead {
   token?: string | null;
   created_at: string;
   updated_at: string;
+  device_token?: string | null;
+  device_token_granted_at?: string | null;
 }

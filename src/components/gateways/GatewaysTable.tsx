@@ -17,6 +17,7 @@ import {
   type DataTableEmptyState,
 } from "@/components/tables/DataTable";
 import { truncateText as truncate } from "@/lib/formatters";
+import { Button } from "@/components/ui/button";
 
 type GatewaysTableProps = {
   gateways: GatewayRead[];
@@ -29,6 +30,8 @@ type GatewaysTableProps = {
   columnOrder?: string[];
   disableSorting?: boolean;
   onDelete?: (gateway: GatewayRead) => void;
+  onRequestApproval?: (gateway: GatewayRead) => void;
+  pairingGatewayId?: string | null;
   emptyMessage?: string;
   emptyState?: Omit<DataTableEmptyState, "icon"> & {
     icon?: DataTableEmptyState["icon"];
@@ -61,6 +64,8 @@ export function GatewaysTable({
   columnOrder,
   disableSorting = false,
   onDelete,
+  onRequestApproval,
+  pairingGatewayId,
   emptyMessage = "No gateways found.",
   emptyState,
 }: GatewaysTableProps) {
@@ -108,13 +113,14 @@ export function GatewaysTable({
         accessorKey: "device_token",
         header: "Approval Status",
         cell: ({ row }) => {
-          const gateway = row.original as unknown as Record<string, unknown>;
-          const deviceToken = gateway?.device_token;
-          const grantedAt = gateway?.device_token_granted_at;
+          const gateway = row.original;
+          const deviceToken = gateway.device_token;
+          const grantedAt = gateway.device_token_granted_at;
+          const isPairing = pairingGatewayId === gateway.id;
 
           if (deviceToken) {
             const relativeDate = grantedAt
-              ? dateCell(grantedAt as string, { relative: true })
+              ? dateCell(grantedAt, { relative: true })
               : null;
 
             return (
@@ -128,10 +134,31 @@ export function GatewaysTable({
             );
           }
 
+          if (isPairing) {
+            return (
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                <span className="text-sm text-blue-700">Requesting...</span>
+              </div>
+            );
+          }
+
           return (
-            <div className="flex items-center gap-1.5">
-              <span className="inline-flex h-2 w-2 rounded-full bg-amber-400" />
-              <span className="text-sm text-amber-700">Pending</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex h-2 w-2 rounded-full bg-amber-400" />
+                <span className="text-sm text-amber-700">Pending</span>
+              </div>
+              {onRequestApproval && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onRequestApproval(gateway)}
+                  className="h-7 px-2 text-xs"
+                >
+                  Request Approval
+                </Button>
+              )}
             </div>
           );
         },

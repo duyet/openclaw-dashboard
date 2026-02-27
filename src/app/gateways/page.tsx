@@ -17,6 +17,11 @@ import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout"
 import { buttonVariants } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import {
+  requestPairing,
+  verifyPairing,
+  type GatewayConfig,
+} from "@/lib/services/gateway-rpc";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
 
@@ -33,6 +38,7 @@ export default function GatewaysPage() {
 
   const { isAdmin } = useOrganizationMembership(isSignedIn);
   const [deleteTarget, setDeleteTarget] = useState<GatewayRead | null>(null);
+  const [pairingGatewayId, setPairingGatewayId] = useState<string | null>(null);
 
   const gatewaysKey = getListGatewaysApiV1GatewaysGetQueryKey();
   const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
@@ -82,6 +88,57 @@ export default function GatewaysPage() {
     deleteMutation.mutate({ gatewayId: deleteTarget.id });
   };
 
+  const handleRequestApproval = async (gateway: GatewayRead) => {
+    const config: GatewayConfig = {
+      url: gateway.url,
+      token: gateway.token ?? null,
+    };
+
+    setPairingGatewayId(gateway.id);
+
+    try {
+      const response = await requestPairing(config, {
+        label: "Mission Control",
+        scopes: ["operator.read", "operator.write"],
+      });
+
+      // Poll for approval
+      const pollInterval = setInterval(async () => {
+        try {
+          const verifyResponse = await verifyPairing(config, response.request_id);
+
+          if (verifyResponse.status === "approved" && verifyResponse.token) {
+            clearInterval(pollInterval);
+            setPairingGatewayId(null);
+
+            // Send device token to backend
+            await fetch(
+              `/api/v1/gateways/${encodeURIComponent(gateway.id)}/pair/approve`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  device_token: verifyResponse.token,
+                }),
+              }
+            );
+
+            // Refresh the gateways list
+            queryClient.invalidateQueries({ queryKey: gatewaysKey });
+          } else if (verifyResponse.status === "rejected") {
+            clearInterval(pollInterval);
+            setPairingGatewayId(null);
+          }
+        } catch {
+          // Continue polling on error
+        }
+      }, 3000);
+    } catch (err) {
+      setPairingGatewayId(null);
+      console.error("Pairing request failed:", err);
+    }
+  };
+
   return (
     <>
       <DashboardPageLayout
@@ -117,6 +174,8 @@ export default function GatewaysPage() {
             showActions
             stickyHeader
             onDelete={setDeleteTarget}
+            onRequestApproval={handleRequestApproval}
+            pairingGatewayId={pairingGatewayId}
             emptyState={{
               title: "No gateways yet",
               description:
