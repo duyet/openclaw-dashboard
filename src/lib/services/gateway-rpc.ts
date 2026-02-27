@@ -604,11 +604,23 @@ export function getTaskHistory(
 
 // -- Node pairing --
 
+export interface PairingRequestResponse {
+  status: string;
+  request: {
+    requestId: string;
+    nodeId: string;
+    displayName?: string;
+    isRepair?: boolean;
+    ts: number;
+  };
+  created: boolean;
+}
+
 export function requestPairing(
   config: GatewayConfig,
   params: { nodeId: string }
-): Promise<{ request_id: string; status: string }> {
-  return rpc<{ request_id: string; status: string }>(
+): Promise<PairingRequestResponse> {
+  return rpc<PairingRequestResponse>(
     config,
     "node.pair.request",
     params

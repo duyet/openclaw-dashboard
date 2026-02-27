@@ -7,6 +7,7 @@ import {
   type GatewayConfig,
   listPairing,
   requestPairing,
+  type PairingRequestResponse,
 } from "@/lib/services/gateway-rpc";
 
 const log = createLogger("[useGatewayPairing]");
@@ -38,9 +39,11 @@ export function useGatewayPairing(
       log.info("pairGateway:start", { gatewayId });
 
       const response = await requestPairing(config, { nodeId: PAIRING_NODE_ID });
+      const requestId = response.request.requestId;
       log.info("requestPairing:success", {
-        requestId: response.request_id,
+        requestId,
         status: response.status,
+        created: response.created,
       });
 
       const pollInterval = setInterval(async () => {
@@ -53,7 +56,7 @@ export function useGatewayPairing(
 
           if (pairedNode) {
             log.info("pairing:approved", {
-              requestId: response.request_id,
+              requestId,
               nodeId: pairedNode.nodeId,
               hasToken: !!pairedNode.token,
             });
@@ -74,23 +77,21 @@ export function useGatewayPairing(
           }
 
           const isStillPending = listResponse.pending.some(
-            (p) => p.requestId === response.request_id
+            (p) => p.requestId === requestId
           );
 
           if (!isStillPending && !pairedNode) {
-            log.info("pairing:rejected", { requestId: response.request_id });
+            log.info("pairing:rejected", { requestId });
             clearInterval(pollInterval);
             await onRejected?.();
           }
         } catch (err) {
-          log.error("listPairing:failed", err, {
-            requestId: response.request_id,
-          });
+          log.error("listPairing:failed", err, { requestId });
         }
       }, POLL_INTERVAL_MS);
 
       return () => {
-        log.info("polling:cleanup", { requestId: response.request_id });
+        log.info("polling:cleanup", { requestId });
         clearInterval(pollInterval);
       };
     },
