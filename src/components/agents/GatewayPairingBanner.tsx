@@ -38,8 +38,7 @@ export function GatewayPairingBanner({
 
     try {
       const response = await requestPairing(gatewayConfig, {
-        label: "Mission Control",
-        scopes: ["operator.pairing"],
+        nodeId: "mission-control",
       });
 
       log.info("requestPairing:success", { requestId: response.request_id, status: response.status });

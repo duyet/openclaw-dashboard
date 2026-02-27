@@ -11,6 +11,7 @@ import {
 } from "@/api/generated/gateways/gateways";
 import type { GatewayRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
+import { customFetch } from "@/api/mutator";
 import { useAuth } from "@/auth/clerk";
 import { GatewaysTable } from "@/components/gateways/GatewaysTable";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
@@ -98,8 +99,7 @@ export default function GatewaysPage() {
 
     try {
       const response = await requestPairing(config, {
-        label: "Mission Control",
-        scopes: ["operator.pairing"],
+        nodeId: "mission-control",
       });
 
       // Poll for approval
@@ -112,7 +112,7 @@ export default function GatewaysPage() {
             setPairingGatewayId(null);
 
             // Send device token to backend
-            await fetch(
+            await customFetch<{ device_token: string }>(
               `/api/v1/gateways/${encodeURIComponent(gateway.id)}/pair/approve`,
               {
                 method: "POST",

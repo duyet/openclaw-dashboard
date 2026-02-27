@@ -574,7 +574,7 @@ export function getTaskHistory(
 
 export function requestPairing(
   config: GatewayConfig,
-  params: { label: string; scopes: string[] }
+  params: { nodeId: string }
 ): Promise<{ request_id: string; status: string }> {
   return rpc<{ request_id: string; status: string }>(
     config,
