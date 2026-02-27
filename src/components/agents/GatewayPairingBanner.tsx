@@ -8,6 +8,30 @@ import {
 } from "@/lib/services/gateway-rpc";
 import { Button } from "@/components/ui/button";
 
+// ============================================================================
+// ERROR LOGGING UTILITIES
+// ============================================================================
+
+const LOG_PREFIX = "[GatewayPairingBanner]";
+
+function logError(context: string, error: unknown, extra?: Record<string, unknown>) {
+  const errorDetails = {
+    context,
+    timestamp: new Date().toISOString(),
+    error: error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    } : { error },
+    ...extra,
+  };
+  console.error(LOG_PREFIX, context, errorDetails);
+}
+
+function logInfo(context: string, data?: unknown) {
+  console.log(LOG_PREFIX, context, data ?? "");
+}
+
 interface GatewayPairingBannerProps {
   gatewayId: string;
   gatewayName: string;
@@ -28,6 +52,7 @@ export function GatewayPairingBanner({
   const [error, setError] = useState<string | null>(null);
 
   const handleRequestApproval = async () => {
+    logInfo("handleRequestApproval:start", { gatewayId, gatewayName });
     setState("requesting");
     setError(null);
 
@@ -37,26 +62,37 @@ export function GatewayPairingBanner({
         scopes: ["operator.pairing"],
       });
 
+      logInfo("requestPairing:success", { requestId: response.request_id, status: response.status });
+
       setRequestId(response.request_id);
       setState("waiting");
 
       // Start polling for verification
       const pollInterval = setInterval(async () => {
         try {
+          logInfo("verifyPairing:polling", { requestId: response.request_id });
           const verifyResponse = await verifyPairing(
             gatewayConfig,
             response.request_id
           );
 
+          logInfo("verifyPairing:response", {
+            requestId: response.request_id,
+            status: verifyResponse.status,
+            hasToken: !!verifyResponse.token,
+          });
+
           if (
             verifyResponse.status === "approved" &&
             verifyResponse.token
           ) {
+            logInfo("pairing:approved", { requestId: response.request_id });
             clearInterval(pollInterval);
             setState("approved");
 
             // Send device token to backend
-            await fetch(
+            logInfo("syncApi:calling", { gatewayId });
+            const apiResponse = await fetch(
               `/api/v1/gateways/${encodeURIComponent(gatewayId)}/pair/approve`,
               {
                 method: "POST",
@@ -67,20 +103,35 @@ export function GatewayPairingBanner({
               }
             );
 
+            if (!apiResponse.ok) {
+              logError("syncApi:failed", new Error(`API returned ${apiResponse.status}`), {
+                gatewayId,
+                status: apiResponse.status,
+              });
+            } else {
+              logInfo("syncApi:success", { gatewayId });
+            }
+
             onApprovalComplete?.();
           } else if (verifyResponse.status === "rejected") {
+            logInfo("pairing:rejected", { requestId: response.request_id });
             clearInterval(pollInterval);
             setState("rejected");
             setError("Gateway approval was rejected.");
           }
         } catch (err) {
           // Polling continues even if verification fails temporarily
+          logError("verifyPairing:failed", err, { requestId: response.request_id });
         }
       }, 3000); // Poll every 3 seconds
 
       // Cleanup on unmount or timeout
-      return () => clearInterval(pollInterval);
+      return () => {
+        logInfo("polling:cleanup", { requestId: response.request_id });
+        clearInterval(pollInterval);
+      };
     } catch (err) {
+      logError("requestPairing:failed", err, { gatewayId, gatewayName });
       setError(
         err instanceof Error
           ? err.message

@@ -11,6 +11,30 @@ import {
 import { type ReactNode, useMemo, useState } from "react";
 
 import type { AgentRead, BoardRead } from "@/api/generated/model";
+
+// ============================================================================
+// ERROR LOGGING UTILITIES
+// ============================================================================
+
+const LOG_PREFIX = "[AgentsTable]";
+
+function logError(context: string, error: unknown, extra?: Record<string, unknown>) {
+  const errorDetails = {
+    context,
+    timestamp: new Date().toISOString(),
+    error: error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    } : { error },
+    ...extra,
+  };
+  console.error(LOG_PREFIX, context, errorDetails);
+}
+
+function logInfo(context: string, data?: unknown) {
+  console.log(LOG_PREFIX, context, data ?? "");
+}
 import {
   dateCell,
   linkifyCell,
@@ -103,7 +127,17 @@ export function AgentsTable({
       setInternalSorting(updater);
     });
 
-  const sortedAgents = useMemo<AgentWithGateway[]>(() => Array.isArray(agents) ? [...agents] : [], [agents]);
+  const sortedAgents = useMemo<AgentWithGateway[]>(() => {
+    try {
+      const result = Array.isArray(agents) ? [...agents] : [];
+      logInfo("sortedAgents:success", { count: result.length });
+      return result;
+    } catch (err) {
+      logError("sortedAgents:failed", err, { agents });
+      return [];
+    }
+  }, [agents]);
+
   const columnVisibility = useMemo<VisibilityState>(
     () =>
       Object.fromEntries(
@@ -132,19 +166,29 @@ export function AgentsTable({
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => {
-          const liveStatus = row.original._sessionStatus;
-          return (
-            <div className="flex flex-wrap items-center gap-1.5">
-              {pillCell(row.original.status)}
-              {liveStatus && liveStatus !== row.original.status ? (
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SESSION_STATUS_COLORS[liveStatus] ?? "bg-slate-100 text-slate-700"}`}
-                >
-                  {liveStatus}
-                </span>
-              ) : null}
-            </div>
-          );
+          try {
+            const liveStatus = row.original._sessionStatus;
+            return (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {pillCell(row.original.status)}
+                {liveStatus && liveStatus !== row.original.status ? (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SESSION_STATUS_COLORS[liveStatus] ?? "bg-slate-100 text-slate-700"}`}
+                  >
+                    {liveStatus}
+                  </span>
+                ) : null}
+              </div>
+            );
+          } catch (err) {
+            logError("statusCell:failed", err, {
+              agentId: row.original.id,
+              agentName: row.original.name,
+              status: row.original.status,
+              liveStatus: row.original._sessionStatus,
+            });
+            return <span className="text-sm text-red-500">Error</span>;
+          }
         },
       },
       {
@@ -176,25 +220,34 @@ export function AgentsTable({
         accessorKey: "gateway_id",
         header: "Gateway",
         cell: ({ row }) => {
-          const name = row.original._gatewayName;
-          if (!name) {
-            return <span className="text-sm text-slate-400">—</span>;
+          try {
+            const name = row.original._gatewayName;
+            if (!name) {
+              return <span className="text-sm text-slate-400">—</span>;
+            }
+            const online = row.original._gatewayOnline;
+            // Show pulsing dot when gateway online status is unknown (still loading)
+            const isChecking = online === undefined || sessionsLoading;
+            let dotClass = "animate-pulse bg-slate-300";
+            if (!isChecking) {
+              dotClass = online ? "bg-emerald-500" : "bg-slate-300";
+            }
+            return (
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotClass}`}
+                />
+                <span className="text-sm text-slate-700">{name}</span>
+              </div>
+            );
+          } catch (err) {
+            logError("gatewayCell:failed", err, {
+              agentId: row.original.id,
+              agentName: row.original.name,
+              gatewayId: row.original.gateway_id,
+            });
+            return <span className="text-sm text-red-500">Error</span>;
           }
-          const online = row.original._gatewayOnline;
-          // Show pulsing dot when gateway online status is unknown (still loading)
-          const isChecking = online === undefined || sessionsLoading;
-          let dotClass = "animate-pulse bg-slate-300";
-          if (!isChecking) {
-            dotClass = online ? "bg-emerald-500" : "bg-slate-300";
-          }
-          return (
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotClass}`}
-              />
-              <span className="text-sm text-slate-700">{name}</span>
-            </div>
-          );
         },
       },
       {

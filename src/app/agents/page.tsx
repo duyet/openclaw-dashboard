@@ -1,8 +1,51 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+
+// ============================================================================
+// ERROR LOGGING UTILITIES
+// ============================================================================
+
+const LOG_PREFIX = "[AgentsPage]";
+
+function logError(context: string, error: unknown, extra?: Record<string, unknown>) {
+  const errorDetails = {
+    context,
+    timestamp: new Date().toISOString(),
+    error: error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    } : { error },
+    ...extra,
+  };
+  console.error(LOG_PREFIX, context, errorDetails);
+}
+
+function logInfo(context: string, data?: unknown) {
+  console.log(LOG_PREFIX, context, data ?? "");
+}
+
+// Global error handler to catch unhandled errors
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    logError("window:error", event.error, {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    logError("window:unhandledRejection", event.reason, {
+      promise: String(event.promise),
+    });
+  });
+}
 import {
   getListAgentsApiV1AgentsGetQueryKey,
   type listAgentsApiV1AgentsGetResponse,
@@ -100,29 +143,53 @@ export default function AgentsPage() {
   });
 
   const boards = useMemo(
-    () =>
-      boardsQuery.data?.status === 200
+    () => {
+      const result = boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
-        : [],
+        : [];
+      logInfo("boards:useMemo", { count: Array.isArray(result) ? result.length : 0 });
+      return result;
+    },
     [boardsQuery.data]
   );
+
   const agents = useMemo(
-    () =>
-      agentsQuery.data?.status === 200
+    () => {
+      const result = agentsQuery.data?.status === 200
         ? (agentsQuery.data.data.items ?? [])
-        : [],
+        : [];
+      logInfo("agents:useMemo", { count: Array.isArray(result) ? result.length : 0 });
+      return result;
+    },
     [agentsQuery.data]
   );
+
   const gateways = useMemo(
-    () =>
-      gatewaysQuery.data?.status === 200
+    () => {
+      const result = gatewaysQuery.data?.status === 200
         ? (gatewaysQuery.data.data.items ?? [])
-        : [],
+        : [];
+      logInfo("gateways:useMemo", { count: Array.isArray(result) ? result.length : 0 });
+      return result;
+    },
     [gatewaysQuery.data]
   );
 
   const { sessionByKey, gatewayOnline, scopeErrors, isLoading: sessionsLoading } =
     useGatewaySessions(gateways, { enabled: Boolean(isSignedIn && isAdmin) });
+
+  // Log component lifecycle and query state changes
+  useEffect(() => {
+    logInfo("component:mounted", {
+      isSignedIn,
+      isAdmin,
+      gatewaysCount: Array.isArray(gateways) ? gateways.length : 0,
+      agentsCount: Array.isArray(agents) ? agents.length : 0,
+      sessionsLoading,
+      scopeErrorsCount: scopeErrors.size,
+      gatewayOnlineCount: gatewayOnline.size,
+    });
+  }, [isSignedIn, isAdmin, gateways, agents, sessionsLoading, scopeErrors, gatewayOnline]);
 
   const gatewayNameById = useMemo(
     () => new Map(Array.isArray(gateways) ? gateways.map((g) => [g.id, g.name]) : []),
@@ -130,22 +197,33 @@ export default function AgentsPage() {
   );
 
   const enrichedAgents = useMemo<EnrichedAgent[]>(() => {
-    return Array.isArray(agents) ? agents.map((agent) => {
-      const gatewayName = gatewayNameById.get(agent.gateway_id);
-      const isOnline = gatewayOnline.get(agent.gateway_id);
-      const session = agent.openclaw_session_id
-        ? sessionByKey.get(agent.openclaw_session_id)
-        : undefined;
-      return {
-        ...agent,
-        _gatewayName: gatewayName,
-        _gatewayOnline: isOnline,
-        _sessionActive: session != null,
-        _sessionStatus: session?.status,
-        _lastActivity: session?.last_activity_at,
-        _sessionSyncedAt: (agent as unknown as Record<string, unknown>)?.session_synced_at as string | undefined,
-      };
-    }) : [];
+    try {
+      logInfo("enrichedAgents:start", { agentsCount: Array.isArray(agents) ? agents.length : 0 });
+      const result = Array.isArray(agents) ? agents.map((agent) => {
+        const gatewayName = gatewayNameById.get(agent.gateway_id);
+        const isOnline = gatewayOnline.get(agent.gateway_id);
+        const session = agent.openclaw_session_id
+          ? sessionByKey.get(agent.openclaw_session_id)
+          : undefined;
+        return {
+          ...agent,
+          _gatewayName: gatewayName,
+          _gatewayOnline: isOnline,
+          _sessionActive: session != null,
+          _sessionStatus: session?.status,
+          _lastActivity: session?.last_activity_at,
+          _sessionSyncedAt: (agent as unknown as Record<string, unknown>)?.session_synced_at as string | undefined,
+        };
+      }) : [];
+      logInfo("enrichedAgents:success", { count: result.length });
+      return result;
+    } catch (err) {
+      logError("enrichedAgents:failed", err, {
+        agentsCount: Array.isArray(agents) ? agents.length : 0,
+        agentsSample: Array.isArray(agents) ? agents.slice(0, 2) : [],
+      });
+      return [];
+    }
   }, [agents, gatewayNameById, gatewayOnline, sessionByKey]);
 
   const deleteMutation = useDeleteAgentApiV1AgentsAgentIdDelete<
@@ -197,18 +275,37 @@ export default function AgentsPage() {
         adminOnlyMessage="Only organization owners and admins can access agents."
         stickyHeader
       >
-        {Array.isArray(gateways) ? gateways.map((gateway) => {
-          const hasScopeError = scopeErrors.get(gateway.id);
-          if (!hasScopeError) return null;
-          return (
-            <GatewayPairingBanner
-              key={gateway.id}
-              gatewayId={gateway.id}
-              gatewayName={gateway.name}
-              gatewayConfig={{ url: gateway.url, token: gateway.token ?? null }}
-            />
-          );
-        }) : null}
+        {(() => {
+          try {
+            logInfo("renderBanners:start", { gatewaysCount: Array.isArray(gateways) ? gateways.length : 0 });
+            const result = Array.isArray(gateways) ? gateways.map((gateway) => {
+              const hasScopeError = scopeErrors.get(gateway.id);
+              if (!hasScopeError) return null;
+              return (
+                <GatewayPairingBanner
+                  key={gateway.id}
+                  gatewayId={gateway.id}
+                  gatewayName={gateway.name}
+                  gatewayConfig={{ url: gateway.url, token: gateway.token ?? null }}
+                />
+              );
+            }) : null;
+            logInfo("renderBanners:success", { bannerCount: result ? result.filter(Boolean).length : 0 });
+            return result;
+          } catch (err) {
+            logError("renderBanners:failed", err, {
+              gatewaysCount: Array.isArray(gateways) ? gateways.length : 0,
+              gatewaysSample: Array.isArray(gateways) ? gateways.slice(0, 2) : [],
+            });
+            return (
+              <div className="my-4 rounded-lg border border-red-200 bg-red-50 p-4">
+                <p className="text-sm text-red-600">
+                  Error rendering pairing banners. Check console for details.
+                </p>
+              </div>
+            );
+          }
+        })()}
 
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AgentsTable
