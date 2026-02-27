@@ -1,9 +1,9 @@
 "use client";
 
-import { Activity, PenSquare, Timer, Users } from "lucide-react";
+import { Activity, PenSquare, Server, Timer, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -27,6 +27,10 @@ import {
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
 import {
+  type listGatewaysApiV1GatewaysGetResponse,
+  useListGatewaysApiV1GatewaysGet,
+} from "@/api/generated/gateways/gateways";
+import {
   type dashboardMetricsApiV1MetricsDashboardGetResponse,
   useDashboardMetricsApiV1MetricsDashboardGet,
 } from "@/api/generated/metrics/metrics";
@@ -34,6 +38,8 @@ import type { DashboardMetricsApiV1MetricsDashboardGetRangeKey } from "@/api/gen
 import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
+import { useGatewaySessions } from "@/lib/hooks/use-gateway-sessions";
+import { getTaskHistory } from "@/lib/services/gateway-rpc";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import DropdownSelect, {
@@ -301,6 +307,19 @@ export default function DashboardPage() {
       },
     }
   );
+  const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
+    listGatewaysApiV1GatewaysGetResponse,
+    ApiError
+  >(
+    { limit: 200 },
+    {
+      query: {
+        enabled: Boolean(isSignedIn),
+        refetchInterval: 30_000,
+        refetchOnMount: "always",
+      },
+    }
+  );
 
   const boards = useMemo(
     () =>
@@ -319,6 +338,62 @@ export default function DashboardPage() {
           )
         : [],
     [boardGroupsQuery.data]
+  );
+  const gateways = useMemo(
+    () =>
+      gatewaysQuery.data?.status === 200
+        ? [...(gatewaysQuery.data.data.items ?? [])].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          )
+        : [],
+    [gatewaysQuery.data]
+  );
+
+  const [totalCronjobs, setTotalCronjobs] = useState(0);
+
+  const { sessionsByGateway, gatewayOnline } = useGatewaySessions(gateways, {
+    enabled: Boolean(isSignedIn),
+  });
+
+  // Fetch cronjobs from online gateways
+  useEffect(() => {
+    if (!isSignedIn || gateways.length === 0) return;
+
+    const fetchCronjobs = async () => {
+      let total = 0;
+      const timeout = 10_000;
+
+      await Promise.allSettled(
+        gateways.map(async (gateway) => {
+          try {
+            const jobs = await Promise.race([
+              getTaskHistory({ url: gateway.url, token: gateway.token ?? null }),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+              ),
+            ]);
+            total += jobs.length;
+          } catch {
+            // Gateway offline or error - skip
+          }
+        })
+      );
+
+      setTotalCronjobs(total);
+    };
+
+    fetchCronjobs();
+    const interval = setInterval(fetchCronjobs, 60_000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, [isSignedIn, gateways]);
+
+  const totalGateways = gateways.length;
+  const onlineGateways = Array.from(gatewayOnline.values()).filter(
+    (online) => online
+  ).length;
+  const totalSessions = Array.from(sessionsByGateway.values()).reduce(
+    (sum, sessions) => sum + sessions.length,
+    0
   );
 
   const filteredBoards = useMemo(
@@ -570,6 +645,29 @@ export default function DashboardPage() {
                     value={formatHours(metrics.kpis.median_cycle_time_hours_7d)}
                     icon={<Timer className="h-4 w-4" />}
                     progress={cycleProgress}
+                  />
+                </div>
+
+                <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  <KpiCard
+                    label="Total gateways"
+                    value={formatNumber(totalGateways)}
+                    icon={<Server className="h-4 w-4" />}
+                  />
+                  <KpiCard
+                    label="Online gateways"
+                    value={formatNumber(onlineGateways)}
+                    icon={<Server className="h-4 w-4" />}
+                  />
+                  <KpiCard
+                    label="Active sessions"
+                    value={formatNumber(totalSessions)}
+                    icon={<Activity className="h-4 w-4" />}
+                  />
+                  <KpiCard
+                    label="Cronjobs"
+                    value={formatNumber(totalCronjobs)}
+                    icon={<Timer className="h-4 w-4" />}
                   />
                 </div>
 
