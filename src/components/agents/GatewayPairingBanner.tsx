@@ -8,6 +8,7 @@ import {
 } from "@/lib/services/gateway-rpc";
 import { Button } from "@/components/ui/button";
 import { createLogger } from "@/lib/logger";
+import { customFetch } from "@/api/mutator";
 
 const log = createLogger("[GatewayPairingBanner]");
 
@@ -71,24 +72,20 @@ export function GatewayPairingBanner({
 
             // Send device token to backend
             log.info("syncApi:calling", { gatewayId });
-            const apiResponse = await fetch(
-              `/api/v1/gateways/${encodeURIComponent(gatewayId)}/pair/approve`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  device_token: verifyResponse.token,
-                }),
-              }
-            );
-
-            if (!apiResponse.ok) {
-              log.error("syncApi:failed", new Error(`API returned ${apiResponse.status}`), {
-                gatewayId,
-                status: apiResponse.status,
-              });
-            } else {
+            try {
+              await customFetch<{ device_token: string }>(
+                `/api/v1/gateways/${encodeURIComponent(gatewayId)}/pair/approve`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    device_token: verifyResponse.token,
+                  }),
+                }
+              );
               log.info("syncApi:success", { gatewayId });
+            } catch (syncErr) {
+              log.error("syncApi:failed", syncErr, { gatewayId });
             }
 
             onApprovalComplete?.();

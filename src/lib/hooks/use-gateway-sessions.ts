@@ -8,6 +8,7 @@ import {
   type GatewaySession,
 } from "@/lib/services/gateway-rpc";
 import { createLogger } from "@/lib/logger";
+import { customFetch } from "@/api/mutator";
 
 const log = createLogger("[useGatewaySessions]");
 
@@ -72,16 +73,24 @@ export function useGatewaySessions(
             // Fire-and-forget sync to API after successful session fetch
             if (sessions && Array.isArray(sessions) && sessions.length > 0) {
               log.info("syncApi:calling", { gatewayId: gateway.id, numSessions: sessions.length });
-              fetch(
+              // Use customFetch to include auth headers (local token or Clerk JWT)
+              customFetch<{ data: { synced: number } }>(
                 `/api/v1/gateways/${encodeURIComponent(gateway.id)}/sessions/sync`,
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ sessions }),
                 }
-              ).catch((syncErr) => {
-                log.error("syncApi:failed", syncErr, { gatewayId: gateway.id });
-              });
+              )
+                .then((result) => {
+                  log.info("syncApi:success", {
+                    gatewayId: gateway.id,
+                    synced: result.data?.synced,
+                  });
+                })
+                .catch((syncErr) => {
+                  log.error("syncApi:failed", syncErr, { gatewayId: gateway.id });
+                });
             }
 
             return {
