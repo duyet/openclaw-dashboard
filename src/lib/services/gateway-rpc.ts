@@ -221,7 +221,7 @@ export async function callGatewayRpc(
             maxProtocol: 3,
             client: CLIENT_META,
             role: "operator",
-            scopes: ["operator.read", "operator.write"],
+            scopes: [],
             caps: [],
             auth: { token: token ?? "" },
           },
@@ -530,4 +530,28 @@ export function getTaskHistory(
   }
 ): Promise<GatewayTask[]> {
   return rpc<GatewayTask[]>(config, "tasks.list", params ?? {});
+}
+
+// -- Node pairing --
+
+export function requestPairing(
+  config: GatewayConfig,
+  params: { label: string; scopes: string[] }
+): Promise<{ request_id: string; status: string }> {
+  return rpc<{ request_id: string; status: string }>(
+    config,
+    "node.pair.request",
+    params
+  );
+}
+
+export function verifyPairing(
+  config: GatewayConfig,
+  requestId: string
+): Promise<{ status: "pending" | "approved" | "rejected"; token?: string }> {
+  return rpc<{ status: "pending" | "approved" | "rejected"; token?: string }>(
+    config,
+    "node.pair.verify",
+    { request_id: requestId }
+  );
 }

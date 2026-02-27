@@ -22,6 +22,7 @@ import type { AgentRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
 import { useAuth } from "@/auth/clerk";
 import { AgentsTable } from "@/components/agents/AgentsTable";
+import { GatewayPairingBanner } from "@/components/agents/GatewayPairingBanner";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
@@ -36,6 +37,7 @@ type EnrichedAgent = AgentRead & {
   _sessionActive?: boolean;
   _sessionStatus?: string;
   _lastActivity?: string;
+  _sessionSyncedAt?: string;
 };
 
 const AGENT_SORTABLE_COLUMNS = [
@@ -119,7 +121,7 @@ export default function AgentsPage() {
     [gatewaysQuery.data]
   );
 
-  const { sessionByKey, gatewayOnline, isLoading: sessionsLoading } =
+  const { sessionByKey, gatewayOnline, scopeErrors, isLoading: sessionsLoading } =
     useGatewaySessions(gateways, { enabled: Boolean(isSignedIn && isAdmin) });
 
   const gatewayNameById = useMemo(
@@ -141,6 +143,7 @@ export default function AgentsPage() {
         _sessionActive: session != null,
         _sessionStatus: session?.status,
         _lastActivity: session?.last_activity_at,
+        _sessionSyncedAt: (agent as unknown as Record<string, unknown>)?.session_synced_at as string | undefined,
       };
     });
   }, [agents, gatewayNameById, gatewayOnline, sessionByKey]);
@@ -194,6 +197,19 @@ export default function AgentsPage() {
         adminOnlyMessage="Only organization owners and admins can access agents."
         stickyHeader
       >
+        {gateways.map((gateway) => {
+          const hasScopeError = scopeErrors.get(gateway.id);
+          if (!hasScopeError) return null;
+          return (
+            <GatewayPairingBanner
+              key={gateway.id}
+              gatewayId={gateway.id}
+              gatewayName={gateway.name}
+              gatewayConfig={{ url: gateway.url, token: gateway.token ?? null }}
+            />
+          );
+        })}
+
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AgentsTable
             agents={enrichedAgents}

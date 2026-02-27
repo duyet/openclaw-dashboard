@@ -16,6 +16,8 @@ interface UseGatewaySessionsResult {
   sessionsByGateway: Map<string, GatewaySession[]>;
   gatewayOnline: Map<string, boolean>;
   sessionByKey: Map<string, GatewaySession>;
+  scopeErrors: Map<string, boolean>;
+  syncStatus: Map<string, "idle" | "syncing" | "synced">;
   isLoading: boolean;
 }
 
@@ -55,13 +57,38 @@ export function useGatewaySessions(
                 )
               ),
             ]);
-            return { gatewayId: gateway.id, sessions, online: true };
-          } catch {
-            // Gateway offline or error — return empty result
+
+            // Fire-and-forget sync to API after successful session fetch
+            if (sessions && Array.isArray(sessions) && sessions.length > 0) {
+              fetch(
+                `/api/v1/gateways/${encodeURIComponent(gateway.id)}/sessions/sync`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ sessions }),
+                }
+              ).catch(() => {
+                // Silent failure - sync is not critical to UI
+              });
+            }
+
+            return {
+              gatewayId: gateway.id,
+              sessions,
+              online: true,
+              scopeError: false,
+            };
+          } catch (err) {
+            // Detect scope errors
+            const scopeError =
+              err instanceof Error &&
+              err.message.includes("missing scope: operator");
+
             return {
               gatewayId: gateway.id,
               sessions: [] as GatewaySession[],
               online: false,
+              scopeError,
             };
           }
         })
@@ -75,6 +102,7 @@ export function useGatewaySessions(
             gatewayId: string;
             sessions: GatewaySession[];
             online: boolean;
+            scopeError: boolean;
           }> => r.status === "fulfilled"
         )
         .map((r) => r.value);
@@ -110,10 +138,33 @@ export function useGatewaySessions(
     return map;
   }, [sessionsByGateway]);
 
+  const scopeErrors = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const entry of query.data ?? []) {
+      map.set(entry.gatewayId, entry.scopeError ?? false);
+    }
+    return map;
+  }, [query.data]);
+
+  const syncStatus = useMemo(() => {
+    const map = new Map<string, "idle" | "syncing" | "synced">();
+    for (const entry of query.data ?? []) {
+      // Synced if online and has sessions
+      if (entry.online && entry.sessions.length > 0) {
+        map.set(entry.gatewayId, "synced");
+      } else {
+        map.set(entry.gatewayId, "idle");
+      }
+    }
+    return map;
+  }, [query.data]);
+
   return {
     sessionsByGateway,
     gatewayOnline,
     sessionByKey,
+    scopeErrors,
+    syncStatus,
     isLoading: query.isLoading,
   };
 }

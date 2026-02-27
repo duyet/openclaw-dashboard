@@ -105,6 +105,38 @@ export function GatewaysTable({
         ),
       },
       {
+        accessorKey: "device_token",
+        header: "Approval Status",
+        cell: ({ row }) => {
+          const gateway = row.original as unknown as Record<string, unknown>;
+          const deviceToken = gateway?.device_token;
+          const grantedAt = gateway?.device_token_granted_at;
+
+          if (deviceToken) {
+            const relativeDate = grantedAt
+              ? dateCell(grantedAt as string, { relative: true })
+              : null;
+
+            return (
+              <div className="flex items-center gap-1.5">
+                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-sm text-emerald-700">Paired</span>
+                {relativeDate && (
+                  <span className="text-xs text-slate-500">({relativeDate})</span>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex h-2 w-2 rounded-full bg-amber-400" />
+              <span className="text-sm text-amber-700">Pending</span>
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "updated_at",
         header: "Updated",
         cell: ({ row }) => dateCell(row.original.updated_at),

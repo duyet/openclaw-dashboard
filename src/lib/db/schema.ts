@@ -170,6 +170,8 @@ export const gateways = sqliteTable(
     url: text("url").notNull(),
     token: text("token"),
     workspaceRoot: text("workspace_root").notNull(),
+    deviceToken: text("device_token"),
+    deviceTokenGrantedAt: text("device_token_granted_at"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -364,6 +366,9 @@ export const agents = sqliteTable(
     deleteRequestedAt: text("delete_requested_at"),
     deleteConfirmTokenHash: text("delete_confirm_token_hash"),
     lastSeenAt: text("last_seen_at"),
+    sessionStatus: text("session_status"),
+    sessionLastActivityAt: text("session_last_activity_at"),
+    sessionSyncedAt: text("session_synced_at"),
     isBoardLead: integer("is_board_lead", { mode: "boolean" })
       .notNull()
       .default(false),

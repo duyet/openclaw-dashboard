@@ -33,6 +33,7 @@ type AgentWithGateway = AgentRead & {
   _sessionActive?: boolean;
   _sessionStatus?: string;
   _lastActivity?: string;
+  _sessionSyncedAt?: string;
 };
 
 type AgentsTableProps = {
@@ -210,6 +211,22 @@ export function AgentsTable({
             );
           }
           return dateCell(row.original.last_seen_at, { relative: true });
+        },
+      },
+      {
+        accessorKey: "session_synced_at",
+        header: "Last Synced",
+        cell: ({ row }) => {
+          const syncedAt = row.original._sessionSyncedAt;
+          if (syncedAt) {
+            return (
+              <div className="flex items-center gap-1">
+                {dateCell(syncedAt, { relative: true })}
+                <span className="text-xs text-emerald-600">(db)</span>
+              </div>
+            );
+          }
+          return <span className="text-sm text-slate-400">—</span>;
         },
       },
       {
