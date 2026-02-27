@@ -92,7 +92,7 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 
 /** Client metadata sent in every connect request. */
 const CLIENT_META = {
-  id: "openclaw-mission-control",
+  id: "cli",
   version: "1.0.0",
   platform: "cloudflare-worker",
   mode: "backend",
@@ -221,7 +221,7 @@ export async function callGatewayRpc(
             maxProtocol: 3,
             client: CLIENT_META,
             role: "operator",
-            scopes: ["operator.admin"],
+            scopes: ["operator.read", "operator.write"],
             caps: [],
             auth: { token: token ?? "" },
           },
