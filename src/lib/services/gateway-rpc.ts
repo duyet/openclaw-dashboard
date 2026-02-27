@@ -524,6 +524,28 @@ export function syncSkillPack(
 
 // -- Task/Execution history --
 
+// Cronjob from gateway's cron.list RPC
+export interface GatewayCronJob {
+  id: string;
+  name: string;
+  enabled: boolean;
+  agentId: string;
+  schedule: {
+    kind: "cron" | "every";
+    expr?: string;
+    everyMs?: number;
+  };
+  state: {
+    nextRunAtMs: number;
+    lastRunAtMs?: number;
+    lastStatus?: string;
+    lastDurationMs?: number;
+    lastError?: string;
+  };
+  sessionKey?: string;
+  sessionTarget?: string;
+}
+
 export interface GatewayTask {
   id: string;
   name: string;
@@ -567,20 +589,17 @@ export interface GatewaySession {
 }
 
 /**
- * Fetch cronjob task history from the gateway.
- * Returns cronjob runs via cron.list RPC method.
+ * Fetch cronjobs from the gateway.
+ * Returns scheduled cronjobs via cron.list RPC method.
  */
 export function getTaskHistory(
   config: GatewayConfig,
   params?: {
     limit?: number;
     offset?: number;
-    agent_id?: string;
-    session_key?: string;
-    since?: string; // ISO timestamp
   }
-): Promise<GatewayTask[]> {
-  return rpc<GatewayTask[]>(config, "cron.list", params ?? {});
+): Promise<GatewayCronJob[]> {
+  return rpc<GatewayCronJob[]>(config, "cron.list", params ?? {});
 }
 
 // -- Node pairing --

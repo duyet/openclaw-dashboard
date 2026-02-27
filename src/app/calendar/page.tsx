@@ -25,7 +25,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { type GatewayTask, getTaskHistory } from "@/lib/services/gateway-rpc";
+import {
+  type GatewayCronJob,
+  getTaskHistory,
+} from "@/lib/services/gateway-rpc";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -44,7 +47,7 @@ type ApiTaskWithBoard = ApiTask & { _boardId: string };
 type ApiTaskWithGateway = ApiTask & {
   _gatewayId: string;
   _gatewayName: string;
-  _gatewayTask: GatewayTask;
+  _gatewayCronJob: GatewayCronJob;
 };
 
 type ApiTaskWithSource = ApiTaskWithBoard | ApiTaskWithGateway;
@@ -206,7 +209,7 @@ export default function CalendarPage() {
       const results = await Promise.allSettled(
         gateways.map(async (gateway: GatewayRead) => {
           try {
-            const tasks = await Promise.race([
+            const cronjobs = await Promise.race([
               getTaskHistory(
                 { url: gateway.url, token: gateway.token ?? null },
                 { limit: 100 }
@@ -218,16 +221,18 @@ export default function CalendarPage() {
                 )
               ),
             ]);
-            return tasks
-              .filter((t) => t.due_at) // Only tasks with due dates
-              .map<ApiTaskWithGateway>((task) => ({
-                id: `gateway-${gateway.id}-${task.id}`,
-                title: task.name,
-                status: GATEWAY_STATUS_MAP[task.status] ?? task.status,
-                due_at: task.due_at,
+            return cronjobs
+              .filter((j) => j.enabled && j.state.nextRunAtMs) // Only enabled jobs with next run time
+              .map<ApiTaskWithGateway>((job) => ({
+                id: `gateway-${gateway.id}-${job.id}`,
+                title: job.name,
+                status:
+                  GATEWAY_STATUS_MAP[job.state.lastStatus ?? "pending"] ??
+                  "pending",
+                due_at: new Date(job.state.nextRunAtMs).toISOString(),
                 _gatewayId: gateway.id,
                 _gatewayName: gateway.name,
-                _gatewayTask: task,
+                _gatewayCronJob: job,
               }));
           } catch {
             // Server offline or error — return empty array
@@ -584,7 +589,7 @@ export default function CalendarPage() {
                   {isGatewayTask(selectedTask) ? (
                     <>
                       <Server className="h-5 w-5 text-muted-foreground/60" />
-                      {selectedTask._gatewayTask.name}
+                      {selectedTask._gatewayCronJob.name}
                     </>
                   ) : (
                     selectedTask.title
@@ -592,7 +597,7 @@ export default function CalendarPage() {
                 </DialogTitle>
                 <DialogDescription>
                   {isGatewayTask(selectedTask)
-                    ? `Task from ${selectedTask._gatewayName}`
+                    ? `Cronjob from ${selectedTask._gatewayName}`
                     : `Task from ${
                         boardNameMap.get(selectedTask._boardId) ??
                         "Unknown board"
@@ -608,7 +613,7 @@ export default function CalendarPage() {
                     <div className="font-medium">{selectedTask.status}</div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Due date</span>
+                    <span className="text-muted-foreground">Next run</span>
                     <div className="font-medium">
                       {selectedTask.due_at
                         ? new Date(selectedTask.due_at).toLocaleString()
@@ -620,49 +625,53 @@ export default function CalendarPage() {
                       <div>
                         <span className="text-muted-foreground">Agent</span>
                         <div className="font-medium">
-                          {selectedTask._gatewayTask.agent_name ?? "—"}
+                          {selectedTask._gatewayCronJob.agentId ?? "—"}
                         </div>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Created</span>
+                        <span className="text-muted-foreground">Schedule</span>
                         <div className="font-medium">
-                          {new Date(
-                            selectedTask._gatewayTask.created_at
-                          ).toLocaleString()}
+                          {selectedTask._gatewayCronJob.schedule.kind === "cron"
+                            ? selectedTask._gatewayCronJob.schedule.expr
+                            : `Every ${Math.round(
+                                (selectedTask._gatewayCronJob.schedule
+                                  .everyMs ?? 0) /
+                                  60000
+                              )} min`}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Last run</span>
+                        <div className="font-medium">
+                          {selectedTask._gatewayCronJob.state.lastRunAtMs
+                            ? new Date(
+                                selectedTask._gatewayCronJob.state.lastRunAtMs
+                              ).toLocaleString()
+                            : "Never"}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Enabled</span>
+                        <div className="font-medium">
+                          {selectedTask._gatewayCronJob.enabled ? "Yes" : "No"}
                         </div>
                       </div>
                     </>
                   )}
                 </div>
 
-                {/* Server task details */}
-                {isGatewayTask(selectedTask) && (
-                  <>
-                    {selectedTask._gatewayTask.error && (
-                      <div>
-                        <span className="text-sm font-medium text-destructive">
-                          Error
-                        </span>
-                        <pre className="mt-1 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
-                          {selectedTask._gatewayTask.error}
-                        </pre>
-                      </div>
-                    )}
-
-                    {selectedTask._gatewayTask.result && (
-                      <div>
-                        <span className="text-sm font-medium">Result</span>
-                        <pre className="mt-1 max-h-48 overflow-y-auto rounded-lg bg-muted p-3 text-xs">
-                          {JSON.stringify(
-                            selectedTask._gatewayTask.result,
-                            null,
-                            2
-                          )}
-                        </pre>
-                      </div>
-                    )}
-                  </>
-                )}
+                {/* Cronjob error */}
+                {isGatewayTask(selectedTask) &&
+                  selectedTask._gatewayCronJob.state.lastError && (
+                    <div>
+                      <span className="text-sm font-medium text-destructive">
+                        Last Error
+                      </span>
+                      <pre className="mt-1 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
+                        {selectedTask._gatewayCronJob.state.lastError}
+                      </pre>
+                    </div>
+                  )}
               </div>
             </>
           ) : null}
