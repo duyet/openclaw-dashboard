@@ -62,7 +62,7 @@ export async function GET(request: Request) {
       board_ids: boardIdsByDef.get(def.id) || [],
     }));
 
-    return Response.json({ data: result, status: 200 });
+    return Response.json(result);
   } catch (error) {
     return handleApiError(error);
   }

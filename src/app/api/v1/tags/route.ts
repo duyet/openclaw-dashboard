@@ -40,10 +40,7 @@ export async function GET(request: Request) {
 
     const total = countResult[0]?.count ?? 0;
 
-    return Response.json({
-      data: paginatedResponse(result, total, { limit, offset }),
-      status: 200,
-    });
+    return Response.json(paginatedResponse(result, total, { limit, offset }));
   } catch (error) {
     return handleApiError(error);
   }

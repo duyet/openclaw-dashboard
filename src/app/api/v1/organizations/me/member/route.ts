@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       throw new ApiError(404, "Not a member of the active organization");
     }
 
-    return Response.json({ data: rows[0], status: 200 });
+    return Response.json(rows[0]);
   } catch (error) {
     return handleApiError(error);
   }
