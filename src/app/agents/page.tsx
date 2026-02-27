@@ -14,6 +14,10 @@ import {
   type listBoardsApiV1BoardsGetResponse,
   useListBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
+import {
+  type listGatewaysApiV1GatewaysGetResponse,
+  useListGatewaysApiV1GatewaysGet,
+} from "@/api/generated/gateways/gateways";
 import type { AgentRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
 import { useAuth } from "@/auth/clerk";
@@ -22,8 +26,17 @@ import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout"
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import { useGatewaySessions } from "@/lib/hooks/use-gateway-sessions";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
+
+type EnrichedAgent = AgentRead & {
+  _gatewayName?: string;
+  _gatewayOnline?: boolean;
+  _sessionActive?: boolean;
+  _sessionStatus?: string;
+  _lastActivity?: string;
+};
 
 const AGENT_SORTABLE_COLUMNS = [
   "name",
@@ -73,6 +86,17 @@ export default function AgentsPage() {
     },
   });
 
+  const gatewaysQuery = useListGatewaysApiV1GatewaysGet<
+    listGatewaysApiV1GatewaysGetResponse,
+    ApiError
+  >({ limit: 200 }, {
+    query: {
+      enabled: Boolean(isSignedIn && isAdmin),
+      staleTime: 30_000,
+      refetchInterval: 60_000,
+    },
+  });
+
   const boards = useMemo(
     () =>
       boardsQuery.data?.status === 200
@@ -87,6 +111,39 @@ export default function AgentsPage() {
         : [],
     [agentsQuery.data]
   );
+  const gateways = useMemo(
+    () =>
+      gatewaysQuery.data?.status === 200
+        ? (gatewaysQuery.data.data.items ?? [])
+        : [],
+    [gatewaysQuery.data]
+  );
+
+  const { sessionByKey, gatewayOnline, isLoading: sessionsLoading } =
+    useGatewaySessions(gateways, { enabled: Boolean(isSignedIn && isAdmin) });
+
+  const gatewayNameById = useMemo(
+    () => new Map(gateways.map((g) => [g.id, g.name])),
+    [gateways]
+  );
+
+  const enrichedAgents = useMemo<EnrichedAgent[]>(() => {
+    return agents.map((agent) => {
+      const gatewayName = gatewayNameById.get(agent.gateway_id);
+      const isOnline = gatewayOnline.get(agent.gateway_id);
+      const session = agent.openclaw_session_id
+        ? sessionByKey.get(agent.openclaw_session_id)
+        : undefined;
+      return {
+        ...agent,
+        _gatewayName: gatewayName,
+        _gatewayOnline: isOnline,
+        _sessionActive: session != null,
+        _sessionStatus: session?.status,
+        _lastActivity: session?.last_activity_at,
+      };
+    });
+  }, [agents, gatewayNameById, gatewayOnline, sessionByKey]);
 
   const deleteMutation = useDeleteAgentApiV1AgentsAgentIdDelete<
     ApiError,
@@ -125,9 +182,9 @@ export default function AgentsPage() {
           signUpForceRedirectUrl: "/agents",
         }}
         title="Agents"
-        description={`${agents.length} agent${agents.length === 1 ? "" : "s"} total.`}
+        description={`${enrichedAgents.length} agent${enrichedAgents.length === 1 ? "" : "s"} total.`}
         headerActions={
-          agents.length > 0 ? (
+          enrichedAgents.length > 0 ? (
             <Button onClick={() => router.push("/agents/new")}>
               New agent
             </Button>
@@ -139,9 +196,11 @@ export default function AgentsPage() {
       >
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AgentsTable
-            agents={agents}
+            agents={enrichedAgents}
             boards={boards}
             isLoading={agentsQuery.isLoading}
+            sessionsLoading={sessionsLoading}
+            gatewayOnline={gatewayOnline}
             sorting={sorting}
             onSortingChange={onSortingChange}
             showActions

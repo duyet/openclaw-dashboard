@@ -27,10 +27,20 @@ type AgentsTableEmptyState = {
   actionLabel?: string;
 };
 
+type AgentWithGateway = AgentRead & {
+  _gatewayName?: string;
+  _gatewayOnline?: boolean;
+  _sessionActive?: boolean;
+  _sessionStatus?: string;
+  _lastActivity?: string;
+};
+
 type AgentsTableProps = {
-  agents: AgentRead[];
+  agents: AgentWithGateway[];
   boards?: BoardRead[];
   isLoading?: boolean;
+  sessionsLoading?: boolean;
+  gatewayOnline?: Map<string, boolean>;
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
   showActions?: boolean;
@@ -41,6 +51,12 @@ type AgentsTableProps = {
   emptyMessage?: string;
   emptyState?: AgentsTableEmptyState;
   onDelete?: (agent: AgentRead) => void;
+};
+
+const SESSION_STATUS_COLORS: Record<string, string> = {
+  active: "bg-emerald-100 text-emerald-700",
+  idle: "bg-amber-100 text-amber-700",
+  bootstrapping: "bg-blue-100 text-blue-700",
 };
 
 const DEFAULT_EMPTY_ICON = (
@@ -64,6 +80,7 @@ export function AgentsTable({
   agents,
   boards = [],
   isLoading = false,
+  sessionsLoading = false,
   sorting,
   onSortingChange,
   showActions = true,
@@ -85,7 +102,7 @@ export function AgentsTable({
       setInternalSorting(updater);
     });
 
-  const sortedAgents = useMemo(() => [...agents], [agents]);
+  const sortedAgents = useMemo<AgentWithGateway[]>(() => [...agents], [agents]);
   const columnVisibility = useMemo<VisibilityState>(
     () =>
       Object.fromEntries(
@@ -98,8 +115,8 @@ export function AgentsTable({
     [boards]
   );
 
-  const columns = useMemo<ColumnDef<AgentRead>[]>(() => {
-    const baseColumns: ColumnDef<AgentRead>[] = [
+  const columns = useMemo<ColumnDef<AgentWithGateway>[]>(() => {
+    const baseColumns: ColumnDef<AgentWithGateway>[] = [
       {
         accessorKey: "name",
         header: "Agent",
@@ -113,7 +130,21 @@ export function AgentsTable({
       {
         accessorKey: "status",
         header: "Status",
-        cell: ({ row }) => pillCell(row.original.status),
+        cell: ({ row }) => {
+          const liveStatus = row.original._sessionStatus;
+          return (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {pillCell(row.original.status)}
+              {liveStatus && liveStatus !== row.original.status ? (
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${SESSION_STATUS_COLORS[liveStatus] ?? "bg-slate-100 text-slate-700"}`}
+                >
+                  {liveStatus}
+                </span>
+              ) : null}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "openclaw_session_id",
@@ -141,10 +172,45 @@ export function AgentsTable({
         },
       },
       {
+        accessorKey: "gateway_id",
+        header: "Gateway",
+        cell: ({ row }) => {
+          const name = row.original._gatewayName;
+          if (!name) {
+            return <span className="text-sm text-slate-400">—</span>;
+          }
+          const online = row.original._gatewayOnline;
+          // Show pulsing dot when gateway online status is unknown (still loading)
+          const isChecking = online === undefined || sessionsLoading;
+          let dotClass = "animate-pulse bg-slate-300";
+          if (!isChecking) {
+            dotClass = online ? "bg-emerald-500" : "bg-slate-300";
+          }
+          return (
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotClass}`}
+              />
+              <span className="text-sm text-slate-700">{name}</span>
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "last_seen_at",
         header: "Last seen",
-        cell: ({ row }) =>
-          dateCell(row.original.last_seen_at, { relative: true }),
+        cell: ({ row }) => {
+          const liveTs = row.original._lastActivity;
+          if (liveTs) {
+            return (
+              <div className="flex items-center gap-1">
+                {dateCell(liveTs, { relative: true })}
+                <span className="text-xs text-emerald-600">(live)</span>
+              </div>
+            );
+          }
+          return dateCell(row.original.last_seen_at, { relative: true });
+        },
       },
       {
         accessorKey: "updated_at",
@@ -154,7 +220,7 @@ export function AgentsTable({
     ];
 
     return baseColumns;
-  }, [boardNameById]);
+  }, [boardNameById, sessionsLoading]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

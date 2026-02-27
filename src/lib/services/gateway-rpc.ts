@@ -350,8 +350,8 @@ function rpc<T>(
 
 // -- Session management --
 
-export function getSessions(config: GatewayConfig): Promise<unknown[]> {
-  return rpc<unknown[]>(config, "sessions.list", {});
+export function getSessions(config: GatewayConfig): Promise<GatewaySession[]> {
+  return rpc<GatewaySession[]>(config, "sessions.list", {});
 }
 
 export function getSession(
@@ -504,6 +504,15 @@ export interface GatewayTask {
   due_at?: string;
   error?: string;
   result?: unknown;
+}
+
+export interface GatewaySession {
+  session_key: string;
+  agent_name?: string;
+  status?: string; // "active" | "idle" | "bootstrapping"
+  workspace_root?: string;
+  created_at?: string;
+  last_activity_at?: string;
 }
 
 /**
