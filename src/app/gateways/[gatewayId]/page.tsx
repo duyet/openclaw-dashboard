@@ -17,6 +17,7 @@ import {
 } from "@/api/generated/boards/boards";
 import {
   type getGatewayApiV1GatewaysGatewayIdGetResponse,
+  getListGatewaysApiV1GatewaysGetQueryKey,
   useGetGatewayApiV1GatewaysGatewayIdGet,
 } from "@/api/generated/gateways/gateways";
 import type { AgentRead } from "@/api/generated/model";
@@ -28,8 +29,11 @@ import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { formatTimestamp } from "@/lib/formatters";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
+import { toGatewayConfig } from "@/lib/services/gateway-rpc";
 import { useGatewayConnectionStatus } from "@/lib/use-gateway-connection-status";
+import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
+import { useToast } from "@/components/providers/ToastProvider";
 
 const maskToken = (value?: string | null) => {
   if (!value) return "—";
@@ -48,7 +52,10 @@ export default function GatewayDetailPage() {
     : gatewayIdParam;
 
   const { isAdmin } = useOrganizationMembership(isSignedIn);
+  const { pushToast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState<AgentRead | null>(null);
+  const [pairingGatewayId, setPairingGatewayId] = useState<string | null>(null);
+  const [requestingGatewayId, setRequestingGatewayId] = useState<string | null>(null);
   const agentsKey = getListAgentsApiV1AgentsGetQueryKey(
     gatewayId ? { gateway_id: gatewayId } : undefined
   );
@@ -135,6 +142,35 @@ export default function GatewayDetailPage() {
     () => (gateway?.name ? gateway.name : "Gateway"),
     [gateway?.name]
   );
+
+  const { pairGateway } = useGatewayPairing({
+    onApproved: () => {
+      setPairingGatewayId(null);
+      queryClient.invalidateQueries({ queryKey: getListGatewaysApiV1GatewaysGetQueryKey() });
+      pushToast("Gateway approved successfully!", "success");
+    },
+    onRejected: () => {
+      setPairingGatewayId(null);
+      pushToast("Gateway approval was rejected or timed out.", "error");
+    },
+  });
+
+  const handleRequestApproval = async () => {
+    if (!gateway) return;
+    setRequestingGatewayId(gateway.id);
+
+    try {
+      await pairGateway(gateway.id, toGatewayConfig(gateway));
+      setRequestingGatewayId(null);
+      setPairingGatewayId(gateway.id);
+      pushToast("Pairing request sent. Check your gateway to approve.", "success");
+    } catch (err) {
+      setRequestingGatewayId(null);
+      const message = err instanceof Error ? err.message : "Failed to request pairing";
+      pushToast(message, "error");
+    }
+  };
+
   const handleDelete = () => {
     if (!deleteTarget) return;
     deleteMutation.mutate({ agentId: deleteTarget.id });
@@ -218,6 +254,48 @@ export default function GatewayDetailPage() {
                       {maskToken(gateway.token)}
                     </p>
                   </div>
+                  <div>
+                    <p className="text-xs uppercase text-muted-foreground/60">
+                      Approval Status
+                    </p>
+                    {gateway.device_token ? (
+                      <p className="mt-1 text-sm font-medium text-emerald-700">
+                        ✓ Paired{" "}
+                        {gateway.device_token_granted_at && (
+                          <span className="text-xs text-slate-500">
+                            ({formatTimestamp(gateway.device_token_granted_at)})
+                          </span>
+                        )}
+                      </p>
+                    ) : pairingGatewayId === gateway.id ? (
+                      <p className="mt-1 text-sm font-medium text-blue-700">
+                        <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500 mr-1.5" />
+                        Waiting for approval...
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm font-medium text-amber-700">
+                        ⚠ Pending
+                      </p>
+                    )}
+                  </div>
+                  {!gateway.device_token && (
+                    <div className="pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRequestApproval}
+                        disabled={
+                          requestingGatewayId === gateway.id ||
+                          pairingGatewayId === gateway.id
+                        }
+                        className="h-7 px-2 text-xs"
+                      >
+                        {requestingGatewayId === gateway.id
+                          ? "Sending..."
+                          : "Request Approval"}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
