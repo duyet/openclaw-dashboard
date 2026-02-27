@@ -34,7 +34,7 @@ export function GatewayPairingBanner({
     try {
       const response = await requestPairing(gatewayConfig, {
         label: "Mission Control",
-        scopes: ["operator.read", "operator.write"],
+        scopes: ["operator.pairing"],
       });
 
       setRequestId(response.request_id);

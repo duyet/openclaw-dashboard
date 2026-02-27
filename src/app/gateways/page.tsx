@@ -99,7 +99,7 @@ export default function GatewaysPage() {
     try {
       const response = await requestPairing(config, {
         label: "Mission Control",
-        scopes: ["operator.read", "operator.write"],
+        scopes: ["operator.pairing"],
       });
 
       // Poll for approval
