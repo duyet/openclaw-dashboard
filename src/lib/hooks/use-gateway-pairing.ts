@@ -22,10 +22,7 @@ interface UseGatewayPairingOptions {
 }
 
 interface UseGatewayPairingResult {
-  pairGateway: (
-    gatewayId: string,
-    config: GatewayConfig
-  ) => Promise<void>;
+  pairGateway: (gatewayId: string, config: GatewayConfig) => Promise<void>;
 }
 
 export function useGatewayPairing(
@@ -37,7 +34,9 @@ export function useGatewayPairing(
     async (gatewayId: string, config: GatewayConfig) => {
       log.info("pairGateway:start", { gatewayId });
 
-      const response = await requestPairing(config, { nodeId: PAIRING_NODE_ID });
+      const response = await requestPairing(config, {
+        nodeId: PAIRING_NODE_ID,
+      });
       const requestId = response.request.requestId;
       log.info("requestPairing:success", {
         requestId,
@@ -45,13 +44,21 @@ export function useGatewayPairing(
         created: response.created,
       });
 
-      log.info("polling:started", { gatewayId, requestId, pollInterval: POLL_INTERVAL_MS });
+      log.info("polling:started", {
+        gatewayId,
+        requestId,
+        pollInterval: POLL_INTERVAL_MS,
+      });
 
       const pollInterval = setInterval(async () => {
         try {
           log.info("polling:check", { requestId });
           const listResponse = await listPairing(config);
-          log.info("polling:listResponse", { requestId, pairedCount: listResponse.paired.length, pendingCount: listResponse.pending.length });
+          log.info("polling:listResponse", {
+            requestId,
+            pairedCount: listResponse.paired.length,
+            pendingCount: listResponse.pending.length,
+          });
 
           const pairedNode = listResponse.paired.find(
             (n) => n.nodeId === PAIRING_NODE_ID

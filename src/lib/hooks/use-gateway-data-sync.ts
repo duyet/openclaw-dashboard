@@ -81,12 +81,20 @@ export function useGatewayDataSync(
           const sessions = await Promise.race([
             getSessions({ url: gateway.url, token: gateway.token ?? null }),
             new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+              setTimeout(
+                () => reject(new Error("Gateway RPC timeout")),
+                timeout
+              )
             ),
           ]);
 
           result.sessions = sessions;
-          console.log("[GatewayDataSync] Gateway", gateway.name, "sessions:", sessions.length);
+          console.log(
+            "[GatewayDataSync] Gateway",
+            gateway.name,
+            "sessions:",
+            sessions.length
+          );
 
           // Sync sessions to API
           if (sessions.length > 0) {
@@ -105,18 +113,29 @@ export function useGatewayDataSync(
           const cronjobs = await Promise.race([
             getTaskHistory({ url: gateway.url, token: gateway.token ?? null }),
             new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+              setTimeout(
+                () => reject(new Error("Gateway RPC timeout")),
+                timeout
+              )
             ),
           ]);
 
           result.cronjobs = cronjobs;
-          console.log("[GatewayDataSync] Gateway", gateway.name, "cronjobs:", cronjobs.length);
-
+          console.log(
+            "[GatewayDataSync] Gateway",
+            gateway.name,
+            "cronjobs:",
+            cronjobs.length
+          );
         } catch (err) {
           const errorMessage =
             err instanceof Error ? err.message : "Unknown error";
           result.error = errorMessage;
-          console.error("[GatewayDataSync] Failed for gateway:", gateway.name, err);
+          console.error(
+            "[GatewayDataSync] Failed for gateway:",
+            gateway.name,
+            err
+          );
         }
 
         results.push(result);

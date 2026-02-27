@@ -151,7 +151,15 @@ export default function AgentsPage() {
       scopeErrorsCount: scopeErrors.size,
       gatewayOnlineCount: gatewayOnline.size,
     });
-  }, [isSignedIn, isAdmin, gateways, agents, sessionsLoading, scopeErrors, gatewayOnline]);
+  }, [
+    isSignedIn,
+    isAdmin,
+    gateways,
+    agents,
+    sessionsLoading,
+    scopeErrors,
+    gatewayOnline,
+  ]);
 
   const gatewayNameById = useMemo(
     () => new Map(gateways.map((g) => [g.id, g.name])),

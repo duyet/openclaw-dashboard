@@ -17,9 +17,9 @@ import { useToast } from "@/components/providers/ToastProvider";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { buttonVariants } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
+import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { toGatewayConfig } from "@/lib/services/gateway-rpc";
-import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
 import { useUrlSorting } from "@/lib/use-url-sorting";
 
@@ -101,7 +101,10 @@ export default function GatewaysPage() {
     setPairingGatewayId(gateway.id);
 
     try {
-      pushToast("Pairing request sent. Check your gateway to approve.", "success");
+      pushToast(
+        "Pairing request sent. Check your gateway to approve.",
+        "success"
+      );
       await pairGateway(gateway.id, toGatewayConfig(gateway));
     } catch (err) {
       setPairingGatewayId(null);

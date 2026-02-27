@@ -15,8 +15,8 @@ import { useMemo, useState } from "react";
 import { useListGatewaysApiV1GatewaysGet } from "@/api/generated/gateways/gateways";
 import type { GatewayRead, OrganizationRead } from "@/api/generated/model";
 import { useGetMyOrgApiV1OrganizationsMeGet } from "@/api/generated/organizations/organizations";
-import { useAuth } from "@/auth/clerk";
 import { customFetch } from "@/api/mutator";
+import { useAuth } from "@/auth/clerk";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import {
   Dialog,
@@ -202,14 +202,22 @@ export default function CalendarPage() {
       gateways.map((g: GatewayRead) => g.id).join(","),
     ],
     queryFn: async () => {
-      console.log("[Calendar] Fetching gateway tasks from", gateways.length, "gateways");
+      console.log(
+        "[Calendar] Fetching gateway tasks from",
+        gateways.length,
+        "gateways"
+      );
       if (gateways.length === 0) return [] as ApiTaskWithGateway[];
 
       // Fetch tasks from all gateways in parallel with timeout
       const timeout = 10000; // 10s timeout per gateway
       const results = await Promise.allSettled(
         gateways.map(async (gateway: GatewayRead) => {
-          console.log("[Calendar] Fetching from gateway:", gateway.name, gateway.url);
+          console.log(
+            "[Calendar] Fetching from gateway:",
+            gateway.name,
+            gateway.url
+          );
           try {
             const cronjobs = await Promise.race([
               getTaskHistory(
@@ -223,7 +231,13 @@ export default function CalendarPage() {
                 )
               ),
             ]);
-            console.log("[Calendar] Gateway", gateway.name, "returned", cronjobs.length, "jobs");
+            console.log(
+              "[Calendar] Gateway",
+              gateway.name,
+              "returned",
+              cronjobs.length,
+              "jobs"
+            );
             return cronjobs
               .filter((j) => j.enabled && j.state.nextRunAtMs) // Only enabled jobs with next run time
               .map<ApiTaskWithGateway>((job) => ({
@@ -238,7 +252,11 @@ export default function CalendarPage() {
                 _gatewayCronJob: job,
               }));
           } catch (err) {
-            console.error("[Calendar] Failed to fetch from gateway:", gateway.name, err);
+            console.error(
+              "[Calendar] Failed to fetch from gateway:",
+              gateway.name,
+              err
+            );
             // Server offline or error — return empty array
             return [] as ApiTaskWithGateway[];
           }
@@ -639,8 +657,7 @@ export default function CalendarPage() {
                             ? selectedTask._gatewayCronJob.schedule.expr
                             : `Every ${Math.round(
                                 (selectedTask._gatewayCronJob.schedule
-                                  .everyMs ?? 0) /
-                                  60000
+                                  .everyMs ?? 0) / 60000
                               )} min`}
                         </div>
                       </div>

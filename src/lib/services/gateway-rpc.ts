@@ -221,7 +221,12 @@ export async function callGatewayRpc(
             maxProtocol: 3,
             client: CLIENT_META,
             role: "operator",
-            scopes: ["operator.read", "operator.write", "operator.pairing", "operator.admin"],
+            scopes: [
+              "operator.read",
+              "operator.write",
+              "operator.pairing",
+              "operator.admin",
+            ],
             caps: [],
             auth: { token: token ?? "" },
           },
@@ -327,9 +332,10 @@ export interface GatewayConfig {
 }
 
 /** Creates a GatewayConfig from a gateway object with optional url/token fields. */
-export function toGatewayConfig(
-  gateway: { url?: string | null; token?: string | null }
-): GatewayConfig {
+export function toGatewayConfig(gateway: {
+  url?: string | null;
+  token?: string | null;
+}): GatewayConfig {
   return { url: gateway.url ?? "", token: gateway.token ?? null };
 }
 
@@ -620,11 +626,7 @@ export function requestPairing(
   config: GatewayConfig,
   params: { nodeId: string }
 ): Promise<PairingRequestResponse> {
-  return rpc<PairingRequestResponse>(
-    config,
-    "node.pair.request",
-    params
-  );
+  return rpc<PairingRequestResponse>(config, "node.pair.request", params);
 }
 
 /**

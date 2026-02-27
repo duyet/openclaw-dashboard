@@ -52,7 +52,11 @@ export function useGatewaySessions(
 
       const results = await Promise.allSettled(
         uniqueGateways.map(async (gateway) => {
-          console.log("[useGatewaySessions] Fetching sessions from gateway:", gateway.name, gateway.url);
+          console.log(
+            "[useGatewaySessions] Fetching sessions from gateway:",
+            gateway.name,
+            gateway.url
+          );
           log.info("gatewayFetch:start", {
             gatewayId: gateway.id,
             gatewayName: gateway.name,
@@ -61,11 +65,19 @@ export function useGatewaySessions(
             const sessions = await Promise.race([
               getSessions({ url: gateway.url, token: gateway.token ?? null }),
               new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+                setTimeout(
+                  () => reject(new Error("Gateway RPC timeout")),
+                  timeout
+                )
               ),
             ]);
 
-            console.log("[useGatewaySessions] Success from gateway:", gateway.name, "sessions:", sessions.length);
+            console.log(
+              "[useGatewaySessions] Success from gateway:",
+              gateway.name,
+              "sessions:",
+              sessions.length
+            );
             log.info("gatewayFetch:success", {
               gatewayId: gateway.id,
               numSessions: sessions.length,
@@ -108,7 +120,11 @@ export function useGatewaySessions(
               err instanceof Error &&
               err.message.includes("missing scope: operator");
 
-            console.error("[useGatewaySessions] Failed to fetch from gateway:", gateway.name, err);
+            console.error(
+              "[useGatewaySessions] Failed to fetch from gateway:",
+              gateway.name,
+              err
+            );
             log.error("gatewayFetch:failed", err, {
               gatewayId: gateway.id,
               gatewayName: gateway.name,

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { GatewayConfig } from "@/lib/services/gateway-rpc";
-import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { Button } from "@/components/ui/button";
-
 import type { PairingState } from "@/lib/hooks/use-gateway-pairing";
+import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
+import type { GatewayConfig } from "@/lib/services/gateway-rpc";
 
 interface GatewayPairingBannerProps {
   gatewayId: string;
@@ -44,7 +43,9 @@ export function GatewayPairingBanner({
     } catch (err) {
       setState("idle");
       setError(
-        err instanceof Error ? err.message : "Failed to request gateway approval"
+        err instanceof Error
+          ? err.message
+          : "Failed to request gateway approval"
       );
     }
   };

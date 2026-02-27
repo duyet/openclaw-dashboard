@@ -24,16 +24,16 @@ import type { AgentRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
 import { useAuth } from "@/auth/clerk";
 import { AgentsTable } from "@/components/agents/AgentsTable";
+import { useToast } from "@/components/providers/ToastProvider";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog";
 import { formatTimestamp } from "@/lib/formatters";
+import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { createOptimisticListDeleteMutation } from "@/lib/list-delete";
 import { toGatewayConfig } from "@/lib/services/gateway-rpc";
 import { useGatewayConnectionStatus } from "@/lib/use-gateway-connection-status";
-import { useGatewayPairing } from "@/lib/hooks/use-gateway-pairing";
 import { useOrganizationMembership } from "@/lib/use-organization-membership";
-import { useToast } from "@/components/providers/ToastProvider";
 
 const maskToken = (value?: string | null) => {
   if (!value) return "—";
@@ -55,7 +55,9 @@ export default function GatewayDetailPage() {
   const { pushToast } = useToast();
   const [deleteTarget, setDeleteTarget] = useState<AgentRead | null>(null);
   const [pairingGatewayId, setPairingGatewayId] = useState<string | null>(null);
-  const [requestingGatewayId, setRequestingGatewayId] = useState<string | null>(null);
+  const [requestingGatewayId, setRequestingGatewayId] = useState<string | null>(
+    null
+  );
   const agentsKey = getListAgentsApiV1AgentsGetQueryKey(
     gatewayId ? { gateway_id: gatewayId } : undefined
   );
@@ -146,7 +148,9 @@ export default function GatewayDetailPage() {
   const { pairGateway } = useGatewayPairing({
     onApproved: () => {
       setPairingGatewayId(null);
-      queryClient.invalidateQueries({ queryKey: getListGatewaysApiV1GatewaysGetQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: getListGatewaysApiV1GatewaysGetQueryKey(),
+      });
       pushToast("Gateway approved successfully!", "success");
     },
     onRejected: () => {
@@ -157,7 +161,10 @@ export default function GatewayDetailPage() {
 
   const handleRequestApproval = async () => {
     if (!gateway) return;
-    console.log("[handleRequestApproval] Starting pairing request for gateway:", gateway.id);
+    console.log(
+      "[handleRequestApproval] Starting pairing request for gateway:",
+      gateway.id
+    );
     setRequestingGatewayId(gateway.id);
 
     try {
@@ -165,12 +172,18 @@ export default function GatewayDetailPage() {
       await pairGateway(gateway.id, toGatewayConfig(gateway));
       console.log("[handleRequestApproval] pairGateway returned successfully");
       // Set pairing state immediately after request succeeds
-      console.log("[handleRequestApproval] Setting pairingGatewayId to:", gateway.id);
+      console.log(
+        "[handleRequestApproval] Setting pairingGatewayId to:",
+        gateway.id
+      );
       setPairingGatewayId(gateway.id);
       console.log("[handleRequestApproval] Clearing requestingGatewayId");
       setRequestingGatewayId(null);
       console.log("[handleRequestApproval] Showing success toast");
-      pushToast("Pairing request sent. Check your gateway to approve.", "success");
+      pushToast(
+        "Pairing request sent. Check your gateway to approve.",
+        "success"
+      );
       console.log("[handleRequestApproval] State after request:", {
         pairingGatewayId: gateway.id,
         requestingGatewayId: null,
@@ -178,7 +191,8 @@ export default function GatewayDetailPage() {
     } catch (err) {
       console.error("[handleRequestApproval] Pairing request failed:", err);
       setRequestingGatewayId(null);
-      const message = err instanceof Error ? err.message : "Failed to request pairing";
+      const message =
+        err instanceof Error ? err.message : "Failed to request pairing";
       pushToast(message, "error");
     }
   };

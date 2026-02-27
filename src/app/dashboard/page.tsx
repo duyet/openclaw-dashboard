@@ -38,14 +38,14 @@ import type { DashboardMetricsApiV1MetricsDashboardGetRangeKey } from "@/api/gen
 import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
-import { useGatewaySessions } from "@/lib/hooks/use-gateway-sessions";
-import { getTaskHistory } from "@/lib/services/gateway-rpc";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import DropdownSelect, {
   type DropdownSelectOption,
 } from "@/components/ui/dropdown-select";
 import { parseApiDatetime } from "@/lib/datetime";
+import { useGatewaySessions } from "@/lib/hooks/use-gateway-sessions";
+import { getTaskHistory } from "@/lib/services/gateway-rpc";
 
 type RangeKey = DashboardMetricsApiV1MetricsDashboardGetRangeKey;
 type BucketKey = "hour" | "day" | "week" | "month";
@@ -358,29 +358,56 @@ export default function DashboardPage() {
   // Fetch cronjobs from online gateways
   useEffect(() => {
     if (!isSignedIn || gateways.length === 0) {
-      console.log("[Dashboard] No gateways or not signed in", { isSignedIn, gatewaysCount: gateways.length });
+      console.log("[Dashboard] No gateways or not signed in", {
+        isSignedIn,
+        gatewaysCount: gateways.length,
+      });
       return;
     }
 
     const fetchCronjobs = async () => {
-      console.log("[Dashboard] Fetching cronjobs from", gateways.length, "gateways");
+      console.log(
+        "[Dashboard] Fetching cronjobs from",
+        gateways.length,
+        "gateways"
+      );
       let total = 0;
       const timeout = 10_000;
 
       await Promise.allSettled(
         gateways.map(async (gateway) => {
-          console.log("[Dashboard] Fetching from gateway:", gateway.name, gateway.url);
+          console.log(
+            "[Dashboard] Fetching from gateway:",
+            gateway.name,
+            gateway.url
+          );
           try {
             const jobs = await Promise.race([
-              getTaskHistory({ url: gateway.url, token: gateway.token ?? null }),
+              getTaskHistory({
+                url: gateway.url,
+                token: gateway.token ?? null,
+              }),
               new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+                setTimeout(
+                  () => reject(new Error("Gateway RPC timeout")),
+                  timeout
+                )
               ),
             ]);
-            console.log("[Dashboard] Gateway", gateway.name, "returned", jobs.length, "jobs");
+            console.log(
+              "[Dashboard] Gateway",
+              gateway.name,
+              "returned",
+              jobs.length,
+              "jobs"
+            );
             total += jobs.length;
           } catch (err) {
-            console.error("[Dashboard] Failed to fetch cronjobs from gateway:", gateway.name, err);
+            console.error(
+              "[Dashboard] Failed to fetch cronjobs from gateway:",
+              gateway.name,
+              err
+            );
             // Gateway offline or error - skip
           }
         })

@@ -11,12 +11,14 @@ import {
   getBoardSnapshotApiV1BoardsBoardIdSnapshotGet,
   listBoardsApiV1BoardsGet,
 } from "@/api/generated/boards/boards";
+import { useListGatewaysApiV1GatewaysGet } from "@/api/generated/gateways/gateways";
 import type {
   ActivityEventRead,
   AgentRead,
   ApprovalRead,
   BoardMemoryRead,
   BoardRead,
+  GatewayRead,
   TaskCommentRead,
   TaskRead,
 } from "@/api/generated/model";
@@ -25,8 +27,6 @@ import {
   useGetMyMembershipApiV1OrganizationsMeMemberGet,
 } from "@/api/generated/organizations/organizations";
 import { streamTasksApiV1BoardsBoardIdTasksStreamGet } from "@/api/generated/tasks/tasks";
-import { useListGatewaysApiV1GatewaysGet } from "@/api/generated/gateways/gateways";
-import type { GatewayRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
@@ -42,13 +42,11 @@ import {
   resolveHumanActorName,
   resolveMemberDisplayName,
 } from "@/lib/display-name";
-import { cn } from "@/lib/utils";
 import {
-  type GatewayCronJob,
-  type GatewaySession,
   getSessions,
   getTaskHistory,
 } from "@/lib/services/gateway-rpc";
+import { cn } from "@/lib/utils";
 
 const SSE_RECONNECT_BACKOFF = {
   baseMs: 1_000,
@@ -1338,11 +1336,20 @@ export default function ActivityPage() {
           const cronjobs = await Promise.race([
             getTaskHistory({ url: gateway.url, token: gateway.token ?? null }),
             new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+              setTimeout(
+                () => reject(new Error("Gateway RPC timeout")),
+                timeout
+              )
             ),
           ]);
 
-          console.log("[Activity] Gateway", gateway.name, "returned", cronjobs.length, "cronjobs");
+          console.log(
+            "[Activity] Gateway",
+            gateway.name,
+            "returned",
+            cronjobs.length,
+            "cronjobs"
+          );
 
           // Add recent cronjob runs to feed
           const seenCronJobs = new Set<string>();
@@ -1391,11 +1398,20 @@ export default function ActivityPage() {
           const sessions = await Promise.race([
             getSessions({ url: gateway.url, token: gateway.token ?? null }),
             new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Gateway RPC timeout")), timeout)
+              setTimeout(
+                () => reject(new Error("Gateway RPC timeout")),
+                timeout
+              )
             ),
           ]);
 
-          console.log("[Activity] Gateway", gateway.name, "returned", sessions.length, "sessions");
+          console.log(
+            "[Activity] Gateway",
+            gateway.name,
+            "returned",
+            sessions.length,
+            "sessions"
+          );
 
           // Add recent sessions to feed
           const seenSessions = new Set<string>();
@@ -1431,7 +1447,11 @@ export default function ActivityPage() {
             }
           }
         } catch (err) {
-          console.error("[Activity] Failed to poll gateway:", gateway.name, err);
+          console.error(
+            "[Activity] Failed to poll gateway:",
+            gateway.name,
+            err
+          );
         }
       }
     };
