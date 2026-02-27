@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { requireActorContext } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { organizationMembers, organizations } from "@/lib/db/schema";
@@ -21,31 +21,24 @@ export async function GET(request: Request) {
       throw new ApiError(401, "Unauthorized");
     }
 
-    const rows = await db
-      .select({
-        id: organizationMembers.organizationId,
-        role: organizationMembers.role,
-      })
-      .from(organizationMembers)
-      .where(eq(organizationMembers.userId, actor.userId));
+    // Fetch memberships and all organizations in parallel
+    const [memberships, allOrgs] = await Promise.all([
+      db
+        .select()
+        .from(organizationMembers)
+        .where(eq(organizationMembers.userId, actor.userId)),
+      db.select().from(organizations),
+    ]);
 
-    // Fetch organization names in parallel
-    const orgIds = rows.map((r) => r.id);
-    const orgs =
-      orgIds.length > 0
-        ? await db
-            .select({ id: organizations.id, name: organizations.name })
-            .from(organizations)
-            .where(inArray(organizations.id, orgIds))
-        : [];
+    // Create org map for lookup
+    const orgMap = new Map(allOrgs.map((o) => [o.id, o]));
 
-    const orgMap = new Map(orgs.map((o) => [o.id, o.name]));
-
-    const data = rows.map((row) => ({
-      id: row.id,
-      name: orgMap.get(row.id) ?? "",
-      role: row.role,
-      is_active: row.id === actor.orgId,
+    // Join memberships with org data
+    const data = memberships.map((m) => ({
+      id: m.organizationId,
+      name: orgMap.get(m.organizationId)?.name ?? "",
+      role: m.role,
+      is_active: m.organizationId === actor.orgId,
     }));
 
     return Response.json({ data, status: 200 });
