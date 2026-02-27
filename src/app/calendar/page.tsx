@@ -16,7 +16,7 @@ import { useListGatewaysApiV1GatewaysGet } from "@/api/generated/gateways/gatewa
 import type { GatewayRead, OrganizationRead } from "@/api/generated/model";
 import { useGetMyOrgApiV1OrganizationsMeGet } from "@/api/generated/organizations/organizations";
 import { useAuth } from "@/auth/clerk";
-import { getLocalAuthToken, isLocalAuthMode } from "@/auth/localAuth";
+import { customFetch } from "@/api/mutator";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import {
   Dialog,
@@ -62,6 +62,13 @@ type ApiAgent = {
 // Helpers
 // ---------------------------------------------------------------------------
 
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await customFetch<{ data: T; status: number }>(url, {
+    method: "GET",
+  });
+  return response.data;
+}
+
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
   "January",
@@ -77,17 +84,6 @@ const MONTHS = [
   "November",
   "December",
 ];
-
-async function fetchJson<T>(url: string): Promise<T> {
-  const headers = new Headers();
-  if (isLocalAuthMode()) {
-    const token = getLocalAuthToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  }
-  const res = await fetch(url, { credentials: "include", headers });
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json() as Promise<T>;
-}
 
 function buildCalendarGrid(year: number, month: number): (number | null)[] {
   const firstDay = new Date(year, month, 1).getDay();
