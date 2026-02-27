@@ -11,30 +11,9 @@ import {
 import { type ReactNode, useMemo, useState } from "react";
 
 import type { AgentRead, BoardRead } from "@/api/generated/model";
+import { createLogger } from "@/lib/logger";
 
-// ============================================================================
-// ERROR LOGGING UTILITIES
-// ============================================================================
-
-const LOG_PREFIX = "[AgentsTable]";
-
-function logError(context: string, error: unknown, extra?: Record<string, unknown>) {
-  const errorDetails = {
-    context,
-    timestamp: new Date().toISOString(),
-    error: error instanceof Error ? {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    } : { error },
-    ...extra,
-  };
-  console.error(LOG_PREFIX, context, errorDetails);
-}
-
-function logInfo(context: string, data?: unknown) {
-  console.log(LOG_PREFIX, context, data ?? "");
-}
+const log = createLogger("[AgentsTable]");
 import {
   dateCell,
   linkifyCell,
@@ -130,10 +109,10 @@ export function AgentsTable({
   const sortedAgents = useMemo<AgentWithGateway[]>(() => {
     try {
       const result = Array.isArray(agents) ? [...agents] : [];
-      logInfo("sortedAgents:success", { count: result.length });
+      log.info("sortedAgents:success", { count: result.length });
       return result;
     } catch (err) {
-      logError("sortedAgents:failed", err, { agents });
+      log.error("sortedAgents:failed", err, { agents });
       return [];
     }
   }, [agents]);
@@ -181,7 +160,7 @@ export function AgentsTable({
               </div>
             );
           } catch (err) {
-            logError("statusCell:failed", err, {
+            log.error("statusCell:failed", err, {
               agentId: row.original.id,
               agentName: row.original.name,
               status: row.original.status,
@@ -241,7 +220,7 @@ export function AgentsTable({
               </div>
             );
           } catch (err) {
-            logError("gatewayCell:failed", err, {
+            log.error("gatewayCell:failed", err, {
               agentId: row.original.id,
               agentName: row.original.name,
               gatewayId: row.original.gateway_id,

@@ -4,48 +4,13 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { createLogger } from "@/lib/logger";
+import { setupGlobalErrorHandlers } from "@/lib/global-error-handlers";
 
-// ============================================================================
-// ERROR LOGGING UTILITIES
-// ============================================================================
+const log = createLogger("[AgentsPage]");
 
-const LOG_PREFIX = "[AgentsPage]";
-
-function logError(context: string, error: unknown, extra?: Record<string, unknown>) {
-  const errorDetails = {
-    context,
-    timestamp: new Date().toISOString(),
-    error: error instanceof Error ? {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    } : { error },
-    ...extra,
-  };
-  console.error(LOG_PREFIX, context, errorDetails);
-}
-
-function logInfo(context: string, data?: unknown) {
-  console.log(LOG_PREFIX, context, data ?? "");
-}
-
-// Global error handler to catch unhandled errors
-if (typeof window !== "undefined") {
-  window.addEventListener("error", (event) => {
-    logError("window:error", event.error, {
-      message: event.message,
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-    });
-  });
-
-  window.addEventListener("unhandledrejection", (event) => {
-    logError("window:unhandledRejection", event.reason, {
-      promise: String(event.promise),
-    });
-  });
-}
+// Setup global error handlers once at module load
+setupGlobalErrorHandlers();
 import {
   getListAgentsApiV1AgentsGetQueryKey,
   type listAgentsApiV1AgentsGetResponse,
@@ -147,7 +112,7 @@ export default function AgentsPage() {
       const result = boardsQuery.data?.status === 200
         ? (boardsQuery.data.data.items ?? [])
         : [];
-      logInfo("boards:useMemo", { count: Array.isArray(result) ? result.length : 0 });
+      log.info("boards:useMemo", { count: Array.isArray(result) ? result.length : 0 });
       return result;
     },
     [boardsQuery.data]
@@ -158,7 +123,7 @@ export default function AgentsPage() {
       const result = agentsQuery.data?.status === 200
         ? (agentsQuery.data.data.items ?? [])
         : [];
-      logInfo("agents:useMemo", { count: Array.isArray(result) ? result.length : 0 });
+      log.info("agents:useMemo", { count: Array.isArray(result) ? result.length : 0 });
       return result;
     },
     [agentsQuery.data]
@@ -169,7 +134,7 @@ export default function AgentsPage() {
       const result = gatewaysQuery.data?.status === 200
         ? (gatewaysQuery.data.data.items ?? [])
         : [];
-      logInfo("gateways:useMemo", { count: Array.isArray(result) ? result.length : 0 });
+      log.info("gateways:useMemo", { count: Array.isArray(result) ? result.length : 0 });
       return result;
     },
     [gatewaysQuery.data]
@@ -180,7 +145,7 @@ export default function AgentsPage() {
 
   // Log component lifecycle and query state changes
   useEffect(() => {
-    logInfo("component:mounted", {
+    log.info("component:mounted", {
       isSignedIn,
       isAdmin,
       gatewaysCount: Array.isArray(gateways) ? gateways.length : 0,
@@ -198,7 +163,7 @@ export default function AgentsPage() {
 
   const enrichedAgents = useMemo<EnrichedAgent[]>(() => {
     try {
-      logInfo("enrichedAgents:start", { agentsCount: Array.isArray(agents) ? agents.length : 0 });
+      log.info("enrichedAgents:start", { agentsCount: Array.isArray(agents) ? agents.length : 0 });
       const result = Array.isArray(agents) ? agents.map((agent) => {
         const gatewayName = gatewayNameById.get(agent.gateway_id);
         const isOnline = gatewayOnline.get(agent.gateway_id);
@@ -215,10 +180,10 @@ export default function AgentsPage() {
           _sessionSyncedAt: (agent as unknown as Record<string, unknown>)?.session_synced_at as string | undefined,
         };
       }) : [];
-      logInfo("enrichedAgents:success", { count: result.length });
+      log.info("enrichedAgents:success", { count: result.length });
       return result;
     } catch (err) {
-      logError("enrichedAgents:failed", err, {
+      log.error("enrichedAgents:failed", err, {
         agentsCount: Array.isArray(agents) ? agents.length : 0,
         agentsSample: Array.isArray(agents) ? agents.slice(0, 2) : [],
       });
@@ -277,7 +242,7 @@ export default function AgentsPage() {
       >
         {(() => {
           try {
-            logInfo("renderBanners:start", { gatewaysCount: Array.isArray(gateways) ? gateways.length : 0 });
+            log.info("renderBanners:start", { gatewaysCount: Array.isArray(gateways) ? gateways.length : 0 });
             const result = Array.isArray(gateways) ? gateways.map((gateway) => {
               const hasScopeError = scopeErrors.get(gateway.id);
               if (!hasScopeError) return null;
@@ -290,10 +255,10 @@ export default function AgentsPage() {
                 />
               );
             }) : null;
-            logInfo("renderBanners:success", { bannerCount: result ? result.filter(Boolean).length : 0 });
+            log.info("renderBanners:success", { bannerCount: result ? result.filter(Boolean).length : 0 });
             return result;
           } catch (err) {
-            logError("renderBanners:failed", err, {
+            log.error("renderBanners:failed", err, {
               gatewaysCount: Array.isArray(gateways) ? gateways.length : 0,
               gatewaysSample: Array.isArray(gateways) ? gateways.slice(0, 2) : [],
             });

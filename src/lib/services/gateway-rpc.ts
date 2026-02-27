@@ -350,8 +350,27 @@ function rpc<T>(
 
 // -- Session management --
 
-export function getSessions(config: GatewayConfig): Promise<GatewaySession[]> {
-  return rpc<GatewaySession[]>(config, "sessions.list", {});
+// sessions.list returns a wrapper object with the sessions array inside
+export interface GatewaySessionsListResponse {
+  ts: string;
+  path: string;
+  count: number;
+  defaults: {
+    modelProvider: string;
+    model: string;
+    contextTokens: number;
+  };
+  sessions: GatewaySession[];
+}
+
+export async function getSessions(config: GatewayConfig): Promise<GatewaySession[]> {
+  const response = await rpc<GatewaySessionsListResponse>(config, "sessions.list", {});
+  // Extract the sessions array and normalize `key` to `session_key`
+  const rawSessions = response?.sessions ?? [];
+  return rawSessions.map((s) => ({
+    ...s,
+    session_key: s.key ?? s.session_key ?? "", // Map `key` to `session_key` for consistency
+  }));
 }
 
 export function getSession(
@@ -506,13 +525,32 @@ export interface GatewayTask {
   result?: unknown;
 }
 
+// Gateway session response from sessions.list
+// Note: The gateway uses `key` but we normalize to `session_key` for consistency
 export interface GatewaySession {
-  session_key: string;
-  agent_name?: string;
+  session_key: string;  // Mapped from `key` in gateway response
+  key?: string;  // Original field from gateway
+  kind?: string;  // "direct" | "group"
+  label?: string;
+  displayName?: string;
+  updatedAt?: number;  // Unix timestamp in seconds
+  sessionId?: string;  // Internal session UUID
   status?: string; // "active" | "idle" | "bootstrapping"
   workspace_root?: string;
   created_at?: string;
   last_activity_at?: string;
+  // Additional fields from gateway response
+  systemSent?: boolean;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  totalTokensFresh?: boolean;
+  modelProvider?: string;
+  model?: string;
+  contextTokens?: number;
+  channel?: string;
+  chatType?: string;
+  subject?: string;
 }
 
 /**
