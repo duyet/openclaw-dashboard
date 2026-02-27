@@ -36,7 +36,7 @@ export function useGatewaySessions(
   }, [gateways]);
 
   const gatewayIds = useMemo(
-    () => uniqueGateways.map((g) => g.id),
+    () => Array.isArray(uniqueGateways) ? uniqueGateways.map((g) => g.id) : [],
     [uniqueGateways]
   );
 
@@ -46,7 +46,7 @@ export function useGatewaySessions(
       const timeout = 10_000; // 10s timeout per gateway
 
       const results = await Promise.allSettled(
-        uniqueGateways.map(async (gateway) => {
+        (Array.isArray(uniqueGateways) ? uniqueGateways : []).map(async (gateway) => {
           try {
             const sessions = await Promise.race([
               getSessions({ url: gateway.url, token: gateway.token ?? null }),

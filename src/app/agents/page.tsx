@@ -125,12 +125,12 @@ export default function AgentsPage() {
     useGatewaySessions(gateways, { enabled: Boolean(isSignedIn && isAdmin) });
 
   const gatewayNameById = useMemo(
-    () => new Map(gateways.map((g) => [g.id, g.name])),
+    () => new Map(Array.isArray(gateways) ? gateways.map((g) => [g.id, g.name]) : []),
     [gateways]
   );
 
   const enrichedAgents = useMemo<EnrichedAgent[]>(() => {
-    return agents.map((agent) => {
+    return Array.isArray(agents) ? agents.map((agent) => {
       const gatewayName = gatewayNameById.get(agent.gateway_id);
       const isOnline = gatewayOnline.get(agent.gateway_id);
       const session = agent.openclaw_session_id
@@ -145,7 +145,7 @@ export default function AgentsPage() {
         _lastActivity: session?.last_activity_at,
         _sessionSyncedAt: (agent as unknown as Record<string, unknown>)?.session_synced_at as string | undefined,
       };
-    });
+    }) : [];
   }, [agents, gatewayNameById, gatewayOnline, sessionByKey]);
 
   const deleteMutation = useDeleteAgentApiV1AgentsAgentIdDelete<
@@ -197,7 +197,7 @@ export default function AgentsPage() {
         adminOnlyMessage="Only organization owners and admins can access agents."
         stickyHeader
       >
-        {gateways.map((gateway) => {
+        {Array.isArray(gateways) ? gateways.map((gateway) => {
           const hasScopeError = scopeErrors.get(gateway.id);
           if (!hasScopeError) return null;
           return (
@@ -208,7 +208,7 @@ export default function AgentsPage() {
               gatewayConfig={{ url: gateway.url, token: gateway.token ?? null }}
             />
           );
-        })}
+        }) : null}
 
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <AgentsTable
