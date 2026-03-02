@@ -7,7 +7,6 @@ import { useParams } from "next/navigation";
 import { SignedIn, SignedOut, SignInButton } from "@/auth/clerk";
 
 import { BoardApprovalsPanel } from "@/components/BoardApprovalsPanel";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
 
@@ -31,8 +30,7 @@ export default function BoardApprovalsPage() {
         </div>
       </SignedOut>
       <SignedIn>
-        <DashboardSidebar />
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-muted/40 to-muted/60">
+        <div className="min-h-full bg-gradient-to-br from-muted/40 to-muted/60">
           <div className="p-6">
             {boardId ? (
               <div className="h-[calc(100vh-160px)] min-h-[520px]">
@@ -40,7 +38,7 @@ export default function BoardApprovalsPage() {
               </div>
             ) : null}
           </div>
-        </main>
+        </div>
       </SignedIn>
     </DashboardShell>
   );

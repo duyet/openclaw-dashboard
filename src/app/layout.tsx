@@ -35,20 +35,30 @@ const displayFont = DM_Serif_Display({
   weight: ["400"],
 });
 
+import { ThemeProvider } from "next-themes";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${bodyFont.variable} ${headingFont.variable} ${displayFont.variable} min-h-screen bg-app text-strong antialiased`}
+        suppressHydrationWarning
       >
-        <AuthProvider>
-          <ToastProvider>
-            <QueryProvider>
-              <GlobalLoader />
-              {children}
-            </QueryProvider>
-          </ToastProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <ToastProvider>
+              <QueryProvider>
+                <GlobalLoader />
+                {children}
+              </QueryProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

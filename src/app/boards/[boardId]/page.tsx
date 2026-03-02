@@ -79,7 +79,6 @@ import {
   DependencyBanner,
   type DependencyBannerDependency,
 } from "@/components/molecules/DependencyBanner";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { TaskBoard } from "@/components/organisms/TaskBoard";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -2989,10 +2988,9 @@ export default function BoardDetailPage() {
         </div>
       </SignedOut>
       <SignedIn>
-        <DashboardSidebar />
-        <main
+        <div
           className={cn(
-            "flex-1 bg-gradient-to-br from-muted/40 to-muted/60",
+            "min-h-full flex-1 bg-gradient-to-br from-muted/40 to-muted/60",
             isSidePanelOpen ? "overflow-hidden" : "overflow-y-auto"
           )}
         >
@@ -3557,7 +3555,7 @@ export default function BoardDetailPage() {
               )}
             </div>
           </div>
-        </main>
+        </div>
       </SignedIn>
       {isDetailOpen || isChatOpen || isLiveFeedOpen ? (
         <div

@@ -32,7 +32,6 @@ import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { ActivityFeed } from "@/components/activity/ActivityFeed";
 import { Markdown } from "@/components/atoms/Markdown";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { usePageActive } from "@/hooks/usePageActive";
 import { createExponentialBackoff } from "@/lib/backoff";
@@ -42,10 +41,7 @@ import {
   resolveHumanActorName,
   resolveMemberDisplayName,
 } from "@/lib/display-name";
-import {
-  getSessions,
-  getTaskHistory,
-} from "@/lib/services/gateway-rpc";
+import { getSessions, getTaskHistory } from "@/lib/services/gateway-rpc";
 import { cn } from "@/lib/utils";
 
 const SSE_RECONNECT_BACKOFF = {
@@ -1486,36 +1482,33 @@ export default function ActivityPage() {
             />
           </SignedOut>
           <SignedIn>
-            <DashboardSidebar />
-            <main className="flex-1 overflow-y-auto bg-muted/40">
-              <div className="sticky top-0 z-30 border-b border-border bg-card">
-                <div className="px-8 py-6">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <ActivityIcon className="h-5 w-5 text-foreground/80" />
-                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                          Live feed
-                        </h1>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Realtime task, approval, agent, and board-chat activity
-                        across all boards.
-                      </p>
+            <div className="sticky top-0 z-30 border-b border-border bg-card">
+              <div className="px-8 py-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <ActivityIcon className="h-5 w-5 text-foreground/80" />
+                      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                        Live feed
+                      </h1>
                     </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Realtime task, approval, agent, and board-chat activity
+                      across all boards.
+                    </p>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="p-8">
-                <ActivityFeed
-                  isLoading={isFeedLoading}
-                  errorMessage={feedError}
-                  items={orderedFeed}
-                  renderItem={(item) => <FeedCard key={item.id} item={item} />}
-                />
-              </div>
-            </main>
+            <div className="p-8">
+              <ActivityFeed
+                isLoading={isFeedLoading}
+                errorMessage={feedError}
+                items={orderedFeed}
+                renderItem={(item) => <FeedCard key={item.id} item={item} />}
+              />
+            </div>
           </SignedIn>
         </>
       ) : null}

@@ -38,7 +38,6 @@ import type { DashboardMetricsApiV1MetricsDashboardGetRangeKey } from "@/api/gen
 import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import DropdownSelect, {
   type DropdownSelectOption,
@@ -541,395 +540,385 @@ export default function DashboardPage() {
         />
       </SignedOut>
       <SignedIn>
-        <DashboardSidebar />
-        <main className="flex-1 overflow-y-auto bg-muted/40">
-          <div className="border-b border-border bg-card px-8 py-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="font-heading text-2xl font-semibold text-foreground tracking-tight">
-                  Dashboard
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Monitor your mission control operations
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                <DropdownSelect
-                  value={selectedRange}
-                  onValueChange={(value) => {
-                    const nextRange = value as RangeKey;
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.set("range", nextRange);
-                    router.replace(`${pathname}?${params.toString()}`);
-                  }}
-                  options={DASHBOARD_RANGE_OPTIONS}
-                  ariaLabel="Dashboard date range"
-                  placeholder="Select range"
-                  searchEnabled={false}
-                  triggerClassName="h-9 min-w-[150px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
-                  contentClassName="rounded-lg border border-border"
-                />
-                <DropdownSelect
-                  value={selectedGroupId ?? ALL_FILTER_VALUE}
-                  onValueChange={(value) => {
-                    const nextGroupId =
-                      value === ALL_FILTER_VALUE ? null : value;
-                    const params = new URLSearchParams(searchParams.toString());
-                    if (nextGroupId) {
-                      params.set("group", nextGroupId);
-                    } else {
-                      params.delete("group");
-                    }
-                    if (selectedBoardId) {
-                      const selectedBoardRecord = boards.find(
-                        (board) => board.id === selectedBoardId
-                      );
-                      const boardVisibleInScope = nextGroupId
-                        ? selectedBoardRecord?.board_group_id === nextGroupId
-                        : true;
-                      if (!boardVisibleInScope) {
-                        params.delete("board");
-                      }
-                    }
-                    router.replace(`${pathname}?${params.toString()}`);
-                  }}
-                  options={boardGroupOptions}
-                  ariaLabel="Dashboard board group filter"
-                  placeholder="All groups"
-                  triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
-                  contentClassName="rounded-lg border border-border"
-                  searchEnabled={false}
-                  disabled={boardGroupsQuery.isLoading}
-                />
-                <DropdownSelect
-                  value={selectedBoardId ?? ALL_FILTER_VALUE}
-                  onValueChange={(value) => {
-                    const nextBoardId =
-                      value === ALL_FILTER_VALUE ? null : value;
-                    const params = new URLSearchParams(searchParams.toString());
-                    if (nextBoardId) {
-                      params.set("board", nextBoardId);
-                    } else {
+        <div className="border-b border-border bg-card px-8 py-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="font-heading text-2xl font-semibold text-foreground tracking-tight">
+                Dashboard
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Monitor your mission control operations
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <DropdownSelect
+                value={selectedRange}
+                onValueChange={(value) => {
+                  const nextRange = value as RangeKey;
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set("range", nextRange);
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+                options={DASHBOARD_RANGE_OPTIONS}
+                ariaLabel="Dashboard date range"
+                placeholder="Select range"
+                searchEnabled={false}
+                triggerClassName="h-9 min-w-[150px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
+                contentClassName="rounded-lg border border-border"
+              />
+              <DropdownSelect
+                value={selectedGroupId ?? ALL_FILTER_VALUE}
+                onValueChange={(value) => {
+                  const nextGroupId = value === ALL_FILTER_VALUE ? null : value;
+                  const params = new URLSearchParams(searchParams.toString());
+                  if (nextGroupId) {
+                    params.set("group", nextGroupId);
+                  } else {
+                    params.delete("group");
+                  }
+                  if (selectedBoardId) {
+                    const selectedBoardRecord = boards.find(
+                      (board) => board.id === selectedBoardId
+                    );
+                    const boardVisibleInScope = nextGroupId
+                      ? selectedBoardRecord?.board_group_id === nextGroupId
+                      : true;
+                    if (!boardVisibleInScope) {
                       params.delete("board");
                     }
-                    router.replace(`${pathname}?${params.toString()}`);
-                  }}
-                  options={boardOptions}
-                  ariaLabel="Dashboard board filter"
-                  placeholder="All boards"
-                  triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
-                  contentClassName="rounded-lg border border-border"
-                  searchEnabled={false}
-                  disabled={boardsQuery.isLoading || boardOptions.length <= 1}
-                />
-                {selectedGroup ? (
-                  <Link
-                    href={`/board-groups/${selectedGroup.id}`}
-                    className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
-                  >
-                    Open group
-                  </Link>
-                ) : null}
-                {selectedBoard ? (
-                  <Link
-                    href={`/boards/${selectedBoard.id}`}
-                    className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
-                  >
-                    Open board
-                  </Link>
-                ) : null}
-              </div>
+                  }
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+                options={boardGroupOptions}
+                ariaLabel="Dashboard board group filter"
+                placeholder="All groups"
+                triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
+                contentClassName="rounded-lg border border-border"
+                searchEnabled={false}
+                disabled={boardGroupsQuery.isLoading}
+              />
+              <DropdownSelect
+                value={selectedBoardId ?? ALL_FILTER_VALUE}
+                onValueChange={(value) => {
+                  const nextBoardId = value === ALL_FILTER_VALUE ? null : value;
+                  const params = new URLSearchParams(searchParams.toString());
+                  if (nextBoardId) {
+                    params.set("board", nextBoardId);
+                  } else {
+                    params.delete("board");
+                  }
+                  router.replace(`${pathname}?${params.toString()}`);
+                }}
+                options={boardOptions}
+                ariaLabel="Dashboard board filter"
+                placeholder="All boards"
+                triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
+                contentClassName="rounded-lg border border-border"
+                searchEnabled={false}
+                disabled={boardsQuery.isLoading || boardOptions.length <= 1}
+              />
+              {selectedGroup ? (
+                <Link
+                  href={`/board-groups/${selectedGroup.id}`}
+                  className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
+                >
+                  Open group
+                </Link>
+              ) : null}
+              {selectedBoard ? (
+                <Link
+                  href={`/boards/${selectedBoard.id}`}
+                  className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
+                >
+                  Open board
+                </Link>
+              ) : null}
             </div>
           </div>
-          <div className="p-8">
-            {metricsQuery.error ? (
-              <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground/80 shadow-sm">
-                {metricsQuery.error.message}
+        </div>
+        <div className="p-8">
+          {metricsQuery.error ? (
+            <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground/80 shadow-sm">
+              {metricsQuery.error.message}
+            </div>
+          ) : null}
+
+          {metricsQuery.isLoading && !metrics ? (
+            <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+              Loading dashboard metrics…
+            </div>
+          ) : null}
+
+          {metrics ? (
+            <>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <KpiCard
+                  label="Active agents"
+                  value={formatNumber(metrics.kpis.active_agents)}
+                  icon={<Users className="h-4 w-4" />}
+                  progress={activeProgress}
+                />
+                <KpiCard
+                  label="Tasks in progress"
+                  value={formatNumber(metrics.kpis.tasks_in_progress)}
+                  icon={<PenSquare className="h-4 w-4" />}
+                  progress={wipProgress}
+                />
+                <KpiCard
+                  label="Error rate"
+                  value={formatPercent(metrics.kpis.error_rate_pct)}
+                  icon={<Activity className="h-4 w-4" />}
+                  progress={errorProgress}
+                />
+                <KpiCard
+                  label="Median cycle time"
+                  value={formatHours(metrics.kpis.median_cycle_time_hours_7d)}
+                  icon={<Timer className="h-4 w-4" />}
+                  progress={cycleProgress}
+                />
               </div>
-            ) : null}
 
-            {metricsQuery.isLoading && !metrics ? (
-              <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
-                Loading dashboard metrics…
+              <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <KpiCard
+                  label="Total gateways"
+                  value={formatNumber(totalGateways)}
+                  icon={<Server className="h-4 w-4" />}
+                />
+                <KpiCard
+                  label="Online gateways"
+                  value={formatNumber(onlineGateways)}
+                  icon={<Server className="h-4 w-4" />}
+                />
+                <KpiCard
+                  label="Active sessions"
+                  value={formatNumber(totalSessions)}
+                  icon={<Activity className="h-4 w-4" />}
+                />
+                <KpiCard
+                  label="Cronjobs"
+                  value={formatNumber(totalCronjobs)}
+                  icon={<Timer className="h-4 w-4" />}
+                />
               </div>
-            ) : null}
 
-            {metrics ? (
-              <>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <KpiCard
-                    label="Active agents"
-                    value={formatNumber(metrics.kpis.active_agents)}
-                    icon={<Users className="h-4 w-4" />}
-                    progress={activeProgress}
-                  />
-                  <KpiCard
-                    label="Tasks in progress"
-                    value={formatNumber(metrics.kpis.tasks_in_progress)}
-                    icon={<PenSquare className="h-4 w-4" />}
-                    progress={wipProgress}
-                  />
-                  <KpiCard
-                    label="Error rate"
-                    value={formatPercent(metrics.kpis.error_rate_pct)}
-                    icon={<Activity className="h-4 w-4" />}
-                    progress={errorProgress}
-                  />
-                  <KpiCard
-                    label="Median cycle time"
-                    value={formatHours(metrics.kpis.median_cycle_time_hours_7d)}
-                    icon={<Timer className="h-4 w-4" />}
-                    progress={cycleProgress}
-                  />
-                </div>
+              <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <ChartCard title="Completed Tasks" subtitle="Throughput">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={throughputSeries}
+                      margin={{ left: 4, right: 12 }}
+                    >
+                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <XAxis
+                        dataKey="period"
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        width={40}
+                      />
+                      <Tooltip
+                        content={
+                          <TooltipCard formatter={(v) => formatNumber(v)} />
+                        }
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{
+                          paddingTop: "8px",
+                          fontSize: "12px",
+                          color: "#64748b",
+                        }}
+                      />
+                      <Bar
+                        dataKey="value"
+                        name="Completed"
+                        fill="#2563eb"
+                        radius={[6, 6, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
 
-                <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <KpiCard
-                    label="Total gateways"
-                    value={formatNumber(totalGateways)}
-                    icon={<Server className="h-4 w-4" />}
-                  />
-                  <KpiCard
-                    label="Online gateways"
-                    value={formatNumber(onlineGateways)}
-                    icon={<Server className="h-4 w-4" />}
-                  />
-                  <KpiCard
-                    label="Active sessions"
-                    value={formatNumber(totalSessions)}
-                    icon={<Activity className="h-4 w-4" />}
-                  />
-                  <KpiCard
-                    label="Cronjobs"
-                    value={formatNumber(totalCronjobs)}
-                    icon={<Timer className="h-4 w-4" />}
-                  />
-                </div>
+                <ChartCard title="Avg Hours to Review" subtitle="Cycle time">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={cycleSeries}
+                      margin={{ left: 4, right: 12 }}
+                    >
+                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <XAxis
+                        dataKey="period"
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        width={40}
+                      />
+                      <Tooltip
+                        content={
+                          <TooltipCard formatter={(v) => `${v.toFixed(1)}h`} />
+                        }
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{
+                          paddingTop: "8px",
+                          fontSize: "12px",
+                          color: "#64748b",
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        name="Hours"
+                        stroke="#1d4ed8"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
 
-                <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <ChartCard title="Completed Tasks" subtitle="Throughput">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={throughputSeries}
-                        margin={{ left: 4, right: 12 }}
-                      >
-                        <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                        <XAxis
-                          dataKey="period"
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                        />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                          width={40}
-                        />
-                        <Tooltip
-                          content={
-                            <TooltipCard formatter={(v) => formatNumber(v)} />
-                          }
-                        />
-                        <Legend
-                          verticalAlign="bottom"
-                          align="center"
-                          iconType="circle"
-                          iconSize={8}
-                          wrapperStyle={{
-                            paddingTop: "8px",
-                            fontSize: "12px",
-                            color: "#64748b",
-                          }}
-                        />
-                        <Bar
-                          dataKey="value"
-                          name="Completed"
-                          fill="#2563eb"
-                          radius={[6, 6, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartCard>
+                <ChartCard title="Failed Events" subtitle="Error rate">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={errorSeries}
+                      margin={{ left: 4, right: 12 }}
+                    >
+                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <XAxis
+                        dataKey="period"
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        width={40}
+                      />
+                      <Tooltip
+                        content={
+                          <TooltipCard formatter={(v) => formatPercent(v)} />
+                        }
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{
+                          paddingTop: "8px",
+                          fontSize: "12px",
+                          color: "#64748b",
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        name="Error rate"
+                        stroke="#1e40af"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
 
-                  <ChartCard title="Avg Hours to Review" subtitle="Cycle time">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={cycleSeries}
-                        margin={{ left: 4, right: 12 }}
-                      >
-                        <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                        <XAxis
-                          dataKey="period"
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                        />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                          width={40}
-                        />
-                        <Tooltip
-                          content={
-                            <TooltipCard
-                              formatter={(v) => `${v.toFixed(1)}h`}
-                            />
-                          }
-                        />
-                        <Legend
-                          verticalAlign="bottom"
-                          align="center"
-                          iconType="circle"
-                          iconSize={8}
-                          wrapperStyle={{
-                            paddingTop: "8px",
-                            fontSize: "12px",
-                            color: "#64748b",
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="value"
-                          name="Hours"
-                          stroke="#1d4ed8"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartCard>
-
-                  <ChartCard title="Failed Events" subtitle="Error rate">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={errorSeries}
-                        margin={{ left: 4, right: 12 }}
-                      >
-                        <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                        <XAxis
-                          dataKey="period"
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                        />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                          width={40}
-                        />
-                        <Tooltip
-                          content={
-                            <TooltipCard formatter={(v) => formatPercent(v)} />
-                          }
-                        />
-                        <Legend
-                          verticalAlign="bottom"
-                          align="center"
-                          iconType="circle"
-                          iconSize={8}
-                          wrapperStyle={{
-                            paddingTop: "8px",
-                            fontSize: "12px",
-                            color: "#64748b",
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="value"
-                          name="Error rate"
-                          stroke="#1e40af"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartCard>
-
-                  <ChartCard
-                    title="Status Distribution"
-                    subtitle="Work in progress"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={wipSeries}
-                        margin={{ left: 4, right: 12 }}
-                      >
-                        <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                        <XAxis
-                          dataKey="period"
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                        />
-                        <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tick={{ fill: "#94a3b8", fontSize: 11 }}
-                          width={40}
-                        />
-                        <Tooltip
-                          content={
-                            <TooltipCard formatter={(v) => formatNumber(v)} />
-                          }
-                        />
-                        <Legend
-                          verticalAlign="bottom"
-                          align="center"
-                          iconType="circle"
-                          iconSize={8}
-                          wrapperStyle={{
-                            paddingTop: "8px",
-                            fontSize: "12px",
-                            color: "#64748b",
-                          }}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="inbox"
-                          name="Inbox"
-                          stackId="wip"
-                          fill="#fed7aa"
-                          stroke="#ea580c"
-                          fillOpacity={0.8}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="in_progress"
-                          name="In progress"
-                          stackId="wip"
-                          fill="#bfdbfe"
-                          stroke="#1d4ed8"
-                          fillOpacity={0.8}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="review"
-                          name="Review"
-                          stackId="wip"
-                          fill="#e9d5ff"
-                          stroke="#7e22ce"
-                          fillOpacity={0.85}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="done"
-                          name="Done"
-                          stackId="wip"
-                          fill="#bbf7d0"
-                          stroke="#15803d"
-                          fillOpacity={0.9}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </ChartCard>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </main>
+                <ChartCard
+                  title="Status Distribution"
+                  subtitle="Work in progress"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={wipSeries} margin={{ left: 4, right: 12 }}>
+                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <XAxis
+                        dataKey="period"
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tick={{ fill: "#94a3b8", fontSize: 11 }}
+                        width={40}
+                      />
+                      <Tooltip
+                        content={
+                          <TooltipCard formatter={(v) => formatNumber(v)} />
+                        }
+                      />
+                      <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{
+                          paddingTop: "8px",
+                          fontSize: "12px",
+                          color: "#64748b",
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="inbox"
+                        name="Inbox"
+                        stackId="wip"
+                        fill="#fed7aa"
+                        stroke="#ea580c"
+                        fillOpacity={0.8}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="in_progress"
+                        name="In progress"
+                        stackId="wip"
+                        fill="#bfdbfe"
+                        stroke="#1d4ed8"
+                        fillOpacity={0.8}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="review"
+                        name="Review"
+                        stackId="wip"
+                        fill="#e9d5ff"
+                        stroke="#7e22ce"
+                        fillOpacity={0.85}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="done"
+                        name="Done"
+                        stackId="wip"
+                        fill="#bbf7d0"
+                        stroke="#15803d"
+                        fillOpacity={0.9}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+            </>
+          ) : null}
+        </div>
       </SignedIn>
     </DashboardShell>
   );

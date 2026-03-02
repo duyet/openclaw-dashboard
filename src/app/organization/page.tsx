@@ -36,7 +36,6 @@ import {
 import { type ApiError, customFetch } from "@/api/mutator";
 import { SignedIn, SignedOut, useAuth } from "@/auth/clerk";
 import { SignedOutPanel } from "@/components/auth/SignedOutPanel";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { BoardAccessTable } from "@/components/organization/BoardAccessTable";
 import { MembersInvitesTable } from "@/components/organization/MembersInvitesTable";
 import { DashboardShell } from "@/components/templates/DashboardShell";
@@ -697,8 +696,7 @@ export default function OrganizationPage() {
         />
       </SignedOut>
       <SignedIn>
-        <DashboardSidebar />
-        <main className="flex-1 overflow-y-auto bg-muted/40">
+        <div className="min-h-full flex-1 overflow-y-auto bg-muted/40">
           <div className="sticky top-0 z-30 border-b border-border bg-card">
             <div className="px-8 py-6">
               <div className="flex flex-wrap items-center justify-between gap-6">
@@ -809,7 +807,7 @@ export default function OrganizationPage() {
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </SignedIn>
 
       <Dialog open={inviteDialogOpen} onOpenChange={handleInviteDialogChange}>

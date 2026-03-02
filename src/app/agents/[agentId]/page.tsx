@@ -27,7 +27,6 @@ import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { Markdown } from "@/components/atoms/Markdown";
 import { StatusPill } from "@/components/atoms/StatusPill";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
 import {
@@ -158,7 +157,6 @@ export default function AgentDetailPage() {
         </div>
       </SignedOut>
       <SignedIn>
-        <DashboardSidebar />
         {!isAdmin ? (
           <div className="flex h-full flex-col gap-6 rounded-2xl surface-panel p-8">
             <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-6 py-5 text-sm text-muted">

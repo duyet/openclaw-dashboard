@@ -11,7 +11,6 @@ import type { ApprovalRead, BoardRead } from "@/api/generated/model";
 import type { ApiError } from "@/api/mutator";
 import { SignedIn, SignedOut, SignInButton, useAuth } from "@/auth/clerk";
 import { BoardApprovalsPanel } from "@/components/BoardApprovalsPanel";
-import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
 
@@ -162,7 +161,7 @@ function GlobalApprovalsInner() {
   }, [errorText, warnings]);
 
   return (
-    <main className="flex-1 overflow-y-auto bg-gradient-to-br from-muted/40 to-muted/60">
+    <div className="min-h-full bg-gradient-to-br from-muted/40 to-muted/60">
       <div className="p-6">
         <div className="h-[calc(100vh-160px)] min-h-[520px]">
           <BoardApprovalsPanel
@@ -176,7 +175,7 @@ function GlobalApprovalsInner() {
           />
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -196,7 +195,6 @@ export default function GlobalApprovalsPage() {
         </div>
       </SignedOut>
       <SignedIn>
-        <DashboardSidebar />
         <GlobalApprovalsInner />
       </SignedIn>
     </DashboardShell>
