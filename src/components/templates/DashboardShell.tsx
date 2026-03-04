@@ -79,15 +79,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <HeaderBar />
 
-        {/* Main Content + Right Sidebar wrapper */}
-        <div className="flex-1 flex overflow-hidden relative z-0 bg-muted/20">
+        {/* Main Content wrapper */}
+        <div className="flex-1 flex overflow-hidden relative z-0 bg-background">
           <main className="flex-1 overflow-auto pb-16 md:pb-0">
             <div aria-live="polite" className="h-full">
               {children}
             </div>
           </main>
-
-          <LiveFeed />
         </div>
       </div>
     </div>

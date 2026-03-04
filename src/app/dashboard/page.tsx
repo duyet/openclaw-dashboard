@@ -1,6 +1,14 @@
 "use client";
 
-import { Activity, PenSquare, Server, Timer, Users } from "lucide-react";
+import {
+  Activity,
+  CheckSquare,
+  MonitorPlay,
+  PenSquare,
+  Server,
+  Timer,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -195,41 +203,53 @@ function TooltipCard({ active, payload, label, formatter }: TooltipProps) {
   );
 }
 
-function KpiCard({
-  label,
+function MetricCard({
+  title,
   value,
-  sublabel,
+  subtext,
   icon,
-  progress = 0,
+  colorScheme = "blue",
 }: {
-  label: string;
-  value: string;
-  sublabel?: string;
+  title: string;
+  value: string | React.ReactNode;
+  subtext?: string;
   icon: React.ReactNode;
-  progress?: number;
+  colorScheme?: "blue" | "green" | "purple" | "red" | "emerald";
 }) {
+  const colors = {
+    blue: "bg-[#1A233A] border-[#2A3B63] text-blue-400",
+    green: "bg-[#14291D] border-[#1D402B] text-green-400",
+    purple: "bg-[#251536] border-[#3D235C] text-purple-400",
+    red: "bg-[#2D1616] border-[#4A2020] text-red-400",
+    emerald: "bg-emerald-950/30 border-emerald-900/50 text-emerald-500",
+  };
+
+  const selectedColors = colors[colorScheme];
+
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="mb-4 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {label}
+    <div
+      className={`rounded-xl border p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between h-32 relative overflow-hidden ${selectedColors}`}
+    >
+      <div className="flex items-start justify-between">
+        <p className="text-sm font-medium text-foreground/80 tracking-tight">
+          {title}
         </p>
-        <div className="rounded-lg bg-primary/5 p-2 text-primary">{icon}</div>
+        <div
+          className={`p-1.5 rounded-md ${selectedColors.replace("bg-", "bg-opacity-50 bg-")}`}
+        >
+          {icon}
+        </div>
       </div>
-      <div className="flex items-end gap-2">
-        <h3 className="font-heading text-4xl font-bold text-foreground">
+      <div className="mt-4 flex items-end justify-between">
+        <h3 className="font-mono text-3xl font-semibold text-foreground tracking-tighter">
           {value}
         </h3>
+        {subtext && <p className={`text-xs ml-2 mb-1 opacity-70`}>{subtext}</p>}
       </div>
-      {sublabel ? (
-        <p className="mt-2 text-xs text-muted-foreground">{sublabel}</p>
-      ) : null}
-      <div className="mt-3 h-1 overflow-hidden rounded-full bg-border/50">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-primary"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      {/* Decorative gradient blur */}
+      <div
+        className={`absolute -bottom-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-20 bg-current`}
+      />
     </div>
   );
 }
@@ -244,16 +264,16 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm overflow-hidden flex flex-col hover:-translate-y-0.5 hover:shadow-md transition-all">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="font-heading text-base font-semibold text-foreground">
+          <h3 className="font-heading text-base font-semibold text-foreground tracking-tight">
             {title}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
         </div>
       </div>
-      <div className="h-56">{children}</div>
+      <div className="h-56 flex-1">{children}</div>
     </div>
   );
 }
@@ -540,167 +560,80 @@ export default function DashboardPage() {
         />
       </SignedOut>
       <SignedIn>
-        <div className="border-b border-border bg-card px-8 py-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="font-heading text-2xl font-semibold text-foreground tracking-tight">
-                Dashboard
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Monitor your mission control operations
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <DropdownSelect
-                value={selectedRange}
-                onValueChange={(value) => {
-                  const nextRange = value as RangeKey;
-                  const params = new URLSearchParams(searchParams.toString());
-                  params.set("range", nextRange);
-                  router.replace(`${pathname}?${params.toString()}`);
-                }}
-                options={DASHBOARD_RANGE_OPTIONS}
-                ariaLabel="Dashboard date range"
-                placeholder="Select range"
-                searchEnabled={false}
-                triggerClassName="h-9 min-w-[150px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
-                contentClassName="rounded-lg border border-border"
-              />
-              <DropdownSelect
-                value={selectedGroupId ?? ALL_FILTER_VALUE}
-                onValueChange={(value) => {
-                  const nextGroupId = value === ALL_FILTER_VALUE ? null : value;
-                  const params = new URLSearchParams(searchParams.toString());
-                  if (nextGroupId) {
-                    params.set("group", nextGroupId);
-                  } else {
-                    params.delete("group");
-                  }
-                  if (selectedBoardId) {
-                    const selectedBoardRecord = boards.find(
-                      (board) => board.id === selectedBoardId
-                    );
-                    const boardVisibleInScope = nextGroupId
-                      ? selectedBoardRecord?.board_group_id === nextGroupId
-                      : true;
-                    if (!boardVisibleInScope) {
-                      params.delete("board");
-                    }
-                  }
-                  router.replace(`${pathname}?${params.toString()}`);
-                }}
-                options={boardGroupOptions}
-                ariaLabel="Dashboard board group filter"
-                placeholder="All groups"
-                triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
-                contentClassName="rounded-lg border border-border"
-                searchEnabled={false}
-                disabled={boardGroupsQuery.isLoading}
-              />
-              <DropdownSelect
-                value={selectedBoardId ?? ALL_FILTER_VALUE}
-                onValueChange={(value) => {
-                  const nextBoardId = value === ALL_FILTER_VALUE ? null : value;
-                  const params = new URLSearchParams(searchParams.toString());
-                  if (nextBoardId) {
-                    params.set("board", nextBoardId);
-                  } else {
-                    params.delete("board");
-                  }
-                  router.replace(`${pathname}?${params.toString()}`);
-                }}
-                options={boardOptions}
-                ariaLabel="Dashboard board filter"
-                placeholder="All boards"
-                triggerClassName="h-9 min-w-[170px] rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground/90 shadow-sm focus-visible:ring-ring"
-                contentClassName="rounded-lg border border-border"
-                searchEnabled={false}
-                disabled={boardsQuery.isLoading || boardOptions.length <= 1}
-              />
-              {selectedGroup ? (
-                <Link
-                  href={`/board-groups/${selectedGroup.id}`}
-                  className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
-                >
-                  Open group
-                </Link>
-              ) : null}
-              {selectedBoard ? (
-                <Link
-                  href={`/boards/${selectedBoard.id}`}
-                  className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground/90 shadow-sm transition hover:bg-accent/50"
-                >
-                  Open board
-                </Link>
-              ) : null}
-            </div>
-          </div>
-        </div>
-        <div className="p-8">
+        <div className="p-4 md:p-6 lg:p-8 space-y-6">
           {metricsQuery.error ? (
-            <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground/80 shadow-sm">
+            <div className="rounded-lg border border-red-900/50 bg-red-950/20 p-4 text-sm text-red-400 shadow-sm">
               {metricsQuery.error.message}
             </div>
           ) : null}
 
           {metricsQuery.isLoading && !metrics ? (
-            <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
-              Loading dashboard metrics…
+            <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm animate-pulse">
+              Loading mission control telemetry…
             </div>
           ) : null}
 
           {metrics ? (
             <>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <KpiCard
-                  label="Active agents"
+              {/* Top Metrics Row */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <MetricCard
+                  title="Active Agents"
                   value={formatNumber(metrics.kpis.active_agents)}
-                  icon={<Users className="h-4 w-4" />}
-                  progress={activeProgress}
+                  icon={<Users className="h-4 w-4 text-blue-400" />}
+                  colorScheme="blue"
+                  subtext={`Max progress: ${activeProgress}%`}
                 />
-                <KpiCard
-                  label="Tasks in progress"
+                <MetricCard
+                  title="Tasks In Progress"
                   value={formatNumber(metrics.kpis.tasks_in_progress)}
-                  icon={<PenSquare className="h-4 w-4" />}
-                  progress={wipProgress}
+                  icon={<PenSquare className="h-4 w-4 text-purple-400" />}
+                  colorScheme="purple"
+                  subtext={`Max progress: ${wipProgress}%`}
                 />
-                <KpiCard
-                  label="Error rate"
+                <MetricCard
+                  title="Error Rate"
                   value={formatPercent(metrics.kpis.error_rate_pct)}
-                  icon={<Activity className="h-4 w-4" />}
-                  progress={errorProgress}
+                  icon={<Activity className="h-4 w-4 text-emerald-500" />}
+                  colorScheme="emerald"
                 />
-                <KpiCard
-                  label="Median cycle time"
+                <MetricCard
+                  title="Median Cycle Time"
                   value={formatHours(metrics.kpis.median_cycle_time_hours_7d)}
-                  icon={<Timer className="h-4 w-4" />}
-                  progress={cycleProgress}
+                  icon={<Timer className="h-4 w-4 text-green-400" />}
+                  colorScheme="green"
                 />
               </div>
 
-              <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <KpiCard
-                  label="Total gateways"
+              {/* Secondary Metrics Row */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+                <MetricCard
+                  title="Total Gateways"
                   value={formatNumber(totalGateways)}
-                  icon={<Server className="h-4 w-4" />}
+                  icon={<Server className="h-4 w-4 text-blue-400" />}
+                  colorScheme="blue"
                 />
-                <KpiCard
-                  label="Online gateways"
+                <MetricCard
+                  title="Online Gateways"
                   value={formatNumber(onlineGateways)}
-                  icon={<Server className="h-4 w-4" />}
+                  icon={<Server className="h-4 w-4 text-emerald-500" />}
+                  colorScheme="emerald"
                 />
-                <KpiCard
-                  label="Active sessions"
+                <MetricCard
+                  title="Active Sessions"
                   value={formatNumber(totalSessions)}
-                  icon={<Activity className="h-4 w-4" />}
+                  icon={<MonitorPlay className="h-4 w-4 text-purple-400" />}
+                  colorScheme="purple"
                 />
-                <KpiCard
-                  label="Cronjobs"
+                <MetricCard
+                  title="Cronjobs"
                   value={formatNumber(totalCronjobs)}
-                  icon={<Timer className="h-4 w-4" />}
+                  icon={<Timer className="h-4 w-4 text-green-400" />}
+                  colorScheme="green"
                 />
               </div>
 
+              {/* Charts Row */}
               <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <ChartCard title="Completed Tasks" subtitle="Throughput">
                   <ResponsiveContainer width="100%" height="100%">
@@ -708,7 +641,11 @@ export default function DashboardPage() {
                       data={throughputSeries}
                       margin={{ left: 4, right: 12 }}
                     >
-                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="#e2e8f0"
+                        strokeOpacity={0.1}
+                      />
                       <XAxis
                         dataKey="period"
                         tickLine={false}
@@ -725,6 +662,7 @@ export default function DashboardPage() {
                         content={
                           <TooltipCard formatter={(v) => formatNumber(v)} />
                         }
+                        cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
                       />
                       <Legend
                         verticalAlign="bottom"
@@ -740,7 +678,7 @@ export default function DashboardPage() {
                       <Bar
                         dataKey="value"
                         name="Completed"
-                        fill="#2563eb"
+                        fill="#3b82f6"
                         radius={[6, 6, 0, 0]}
                       />
                     </BarChart>
@@ -753,7 +691,11 @@ export default function DashboardPage() {
                       data={cycleSeries}
                       margin={{ left: 4, right: 12 }}
                     >
-                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="#e2e8f0"
+                        strokeOpacity={0.1}
+                      />
                       <XAxis
                         dataKey="period"
                         tickLine={false}
@@ -786,9 +728,10 @@ export default function DashboardPage() {
                         type="monotone"
                         dataKey="value"
                         name="Hours"
-                        stroke="#1d4ed8"
+                        stroke="#8b5cf6"
                         strokeWidth={2}
-                        dot={false}
+                        dot={{ r: 3, fill: "#8b5cf6", strokeWidth: 0 }}
+                        activeDot={{ r: 5 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -800,7 +743,11 @@ export default function DashboardPage() {
                       data={errorSeries}
                       margin={{ left: 4, right: 12 }}
                     >
-                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="#e2e8f0"
+                        strokeOpacity={0.1}
+                      />
                       <XAxis
                         dataKey="period"
                         tickLine={false}
@@ -833,9 +780,9 @@ export default function DashboardPage() {
                         type="monotone"
                         dataKey="value"
                         name="Error rate"
-                        stroke="#1e40af"
+                        stroke="#10b981"
                         strokeWidth={2}
-                        dot={false}
+                        dot={{ r: 3, fill: "#10b981", strokeWidth: 0 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -847,7 +794,11 @@ export default function DashboardPage() {
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={wipSeries} margin={{ left: 4, right: 12 }}>
-                      <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                      <CartesianGrid
+                        vertical={false}
+                        stroke="#e2e8f0"
+                        strokeOpacity={0.1}
+                      />
                       <XAxis
                         dataKey="period"
                         tickLine={false}
@@ -881,36 +832,36 @@ export default function DashboardPage() {
                         dataKey="inbox"
                         name="Inbox"
                         stackId="wip"
-                        fill="#fed7aa"
+                        fill="#ea580c"
                         stroke="#ea580c"
-                        fillOpacity={0.8}
+                        fillOpacity={0.2}
                       />
                       <Area
                         type="monotone"
                         dataKey="in_progress"
                         name="In progress"
                         stackId="wip"
-                        fill="#bfdbfe"
-                        stroke="#1d4ed8"
-                        fillOpacity={0.8}
+                        fill="#3b82f6"
+                        stroke="#3b82f6"
+                        fillOpacity={0.2}
                       />
                       <Area
                         type="monotone"
                         dataKey="review"
                         name="Review"
                         stackId="wip"
-                        fill="#e9d5ff"
-                        stroke="#7e22ce"
-                        fillOpacity={0.85}
+                        fill="#8b5cf6"
+                        stroke="#8b5cf6"
+                        fillOpacity={0.2}
                       />
                       <Area
                         type="monotone"
                         dataKey="done"
                         name="Done"
                         stackId="wip"
-                        fill="#bbf7d0"
-                        stroke="#15803d"
-                        fillOpacity={0.9}
+                        fill="#10b981"
+                        stroke="#10b981"
+                        fillOpacity={0.2}
                       />
                     </AreaChart>
                   </ResponsiveContainer>

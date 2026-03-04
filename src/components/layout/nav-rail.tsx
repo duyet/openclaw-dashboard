@@ -2,13 +2,24 @@
 
 import {
   Activity,
+  Bell,
   CheckSquare,
+  ChevronLeft,
+  Clock,
   Cpu,
+  Database,
+  Github,
   LayoutDashboard,
   Menu,
+  MonitorPlay,
   MoreHorizontal,
+  Rocket,
   ScrollText,
   Settings,
+  Terminal,
+  Users,
+  Wallet,
+  Webhook,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,7 +47,7 @@ const navGroups: NavGroup[] = [
     items: [
       {
         id: "dashboard",
-        label: "Dashboard",
+        label: "Overview",
         href: "/dashboard",
         icon: <LayoutDashboard size={20} />,
         priority: true,
@@ -53,6 +64,13 @@ const navGroups: NavGroup[] = [
         label: "Tasks",
         href: "/boards/all",
         icon: <CheckSquare size={20} />,
+        priority: true,
+      },
+      {
+        id: "sessions",
+        label: "Sessions",
+        href: "/sessions",
+        icon: <MonitorPlay size={20} />,
         priority: true,
       },
     ],
@@ -75,12 +93,81 @@ const navGroups: NavGroup[] = [
         icon: <ScrollText size={20} />,
         priority: false,
       },
+      {
+        id: "tokens",
+        label: "Tokens",
+        href: "/tokens",
+        icon: <Terminal size={20} />,
+        priority: false,
+      },
+      {
+        id: "agent-costs",
+        label: "Agent Costs",
+        href: "/costs",
+        icon: <Wallet size={20} />,
+        priority: false,
+      },
+      {
+        id: "memory",
+        label: "Memory",
+        href: "/memory",
+        icon: <Database size={20} />,
+        priority: false,
+      },
+    ],
+  },
+  {
+    id: "automate",
+    label: "AUTOMATE",
+    items: [
+      {
+        id: "cron",
+        label: "Cron",
+        href: "/cron",
+        icon: <Clock size={20} />,
+        priority: false,
+      },
+      {
+        id: "spawn",
+        label: "Spawn",
+        href: "/spawn",
+        icon: <Rocket size={20} />,
+        priority: false,
+      },
+      {
+        id: "webhooks",
+        label: "Webhooks",
+        href: "/webhooks",
+        icon: <Webhook size={20} />,
+        priority: false,
+      },
+      {
+        id: "alerts",
+        label: "Alerts",
+        href: "/alerts",
+        icon: <Bell size={20} />,
+        priority: false,
+      },
+      {
+        id: "github",
+        label: "GitHub",
+        href: "/github",
+        icon: <Github size={20} />,
+        priority: false,
+      },
     ],
   },
   {
     id: "admin",
     label: "ADMIN",
     items: [
+      {
+        id: "users",
+        label: "Users",
+        href: "/users",
+        icon: <Users size={20} />,
+        priority: false,
+      },
       {
         id: "settings",
         label: "Settings",
@@ -140,27 +227,61 @@ export function NavRail() {
         {/* Header: Logo + toggle */}
         <div
           className={`flex items-center shrink-0 ${
-            sidebarExpanded ? "px-3 py-3 gap-2.5" : "flex-col py-3 gap-2"
+            sidebarExpanded ? "px-4 pt-5 pb-2 gap-3" : "flex-col py-4 gap-2"
           }`}
         >
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
-            <span className="text-primary-foreground font-bold text-xs">
-              OC
+          <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+            <span className="text-white font-bold text-xs tracking-wider">
+              MC
             </span>
           </div>
           {sidebarExpanded && (
-            <span className="text-sm font-semibold text-foreground truncate flex-1">
-              OpenClaw
+            <span className="text-sm font-bold text-foreground truncate flex-1 tracking-tight">
+              Mission Control
             </span>
           )}
           <button
             onClick={toggleSidebar}
             title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth shrink-0"
+            className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-smooth shrink-0"
           >
-            <Menu size={16} />
+            {sidebarExpanded ? <ChevronLeft size={16} /> : <Menu size={16} />}
           </button>
         </div>
+
+        {/* User Profile Area */}
+        {sidebarExpanded && (
+          <div className="flex flex-col items-center px-4 py-4 mb-2">
+            <div className="w-16 h-16 rounded-full border-2 border-green-500/30 flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(34,197,94,0.15)] bg-card">
+              <img
+                src="https://api.dicebear.com/7.x/bottts/svg?seed=Alex&backgroundColor=transparent"
+                alt="Alex Cruz"
+                className="w-full h-full object-cover rounded-full bg-slate-800"
+              />
+            </div>
+            <div className="mt-3 text-sm font-bold text-foreground tracking-tight">
+              Alex Cruz
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+              <span className="text-green-500 text-[10px]">⚒</span>
+              <span>Working...</span>
+            </div>
+            <div className="mt-4 w-full bg-muted/40 border border-border/50 rounded-full py-1.5 px-3 flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis shadow-inner">
+              Chatting with Brandon in Discord
+            </div>
+          </div>
+        )}
+        {!sidebarExpanded && (
+          <div className="flex flex-col items-center pb-4 mb-2 border-b border-border/50 mx-2">
+            <div className="w-8 h-8 rounded-full border border-green-500/30 p-0.5 bg-card shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+              <img
+                src="https://api.dicebear.com/7.x/bottts/svg?seed=Alex&backgroundColor=transparent"
+                alt="Alex Cruz"
+                className="w-full h-full object-cover rounded-full bg-slate-800"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Nav groups */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-1">
@@ -273,16 +394,15 @@ function NavButton({
       <Link
         href={item.href}
         aria-current={active ? "page" : undefined}
-        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-smooth relative ${
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-smooth relative font-medium group ${
           active
-            ? "bg-primary/15 text-primary"
+            ? "bg-blue-600/20 text-blue-500"
             : "text-muted-foreground hover:text-foreground hover:bg-secondary"
         }`}
       >
-        {active && (
-          <span className="absolute left-0 w-0.5 h-5 bg-primary rounded-r" />
-        )}
-        <div className="w-5 h-5 shrink-0">{item.icon}</div>
+        <div className={`w-5 h-5 shrink-0 ${active ? "text-blue-500" : ""}`}>
+          {item.icon}
+        </div>
         <span className="text-sm truncate">{item.label}</span>
       </Link>
     );
@@ -293,9 +413,9 @@ function NavButton({
       href={item.href}
       title={item.label}
       aria-current={active ? "page" : undefined}
-      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-smooth group relative ${
+      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-smooth group relative ${
         active
-          ? "bg-primary/15 text-primary"
+          ? "bg-blue-600/20 text-blue-500"
           : "text-muted-foreground hover:text-foreground hover:bg-secondary"
       }`}
     >
@@ -304,10 +424,6 @@ function NavButton({
       <span className="absolute left-full ml-2 px-2 py-1 text-xs font-medium bg-popover text-popover-foreground border border-border rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
         {item.label}
       </span>
-      {/* Active indicator */}
-      {active && (
-        <span className="absolute left-0 w-0.5 h-5 bg-primary rounded-r" />
-      )}
     </Link>
   );
 }

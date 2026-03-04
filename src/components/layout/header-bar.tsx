@@ -60,42 +60,65 @@ export function HeaderBar() {
   return (
     <header
       aria-label="Application header"
-      className="h-14 bg-card/80 backdrop-blur-sm border-b border-border px-4 flex items-center justify-between shrink-0"
+      className="h-14 bg-card border-b border-border px-6 flex items-center justify-between shrink-0"
     >
-      {/* Left: Page title + breadcrumb */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-sm font-semibold text-foreground">
-          {tabLabels[activeTab] || "Mission Control"}
-        </h1>
-        <span className="text-2xs text-muted-foreground font-mono-tight">
-          v2.0
-        </span>
-      </div>
+      {/* Left Container: Title + Search + Stats */}
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-base font-bold text-foreground tracking-tight">
+            {tabLabels[activeTab] || "Overview"}
+          </h1>
+          <span className="text-xs text-muted-foreground font-mono">
+            v1.3.0
+          </span>
+        </div>
 
-      {/* Center: Search trigger + Quick stats (desktop only) */}
-      <div className="hidden md:flex items-center gap-4">
-        <button
-          onClick={() => {
-            setSearchOpen(true);
-            setTimeout(() => searchInputRef.current?.focus(), 50);
-          }}
-          className="flex items-center gap-2 h-8 px-3 rounded-md bg-secondary/50 border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
-        >
-          <Search size={14} />
-          <span>Search...</span>
-          <kbd className="text-2xs px-1 py-0.5 rounded bg-muted border border-border font-mono ml-2">
-            &#8984;K
-          </kbd>
-        </button>
+        {/* Search Input inline */}
+        <div className="hidden lg:flex items-center">
+          <button
+            onClick={() => {
+              setSearchOpen(true);
+              setTimeout(() => searchInputRef.current?.focus(), 50);
+            }}
+            className="flex items-center gap-2 h-8 w-64 px-3 rounded-lg bg-secondary/80 border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Search size={14} />
+            <span>Search...</span>
+            <div className="ml-auto text-[10px] px-1.5 rounded bg-muted font-mono border border-border flex items-center font-medium opacity-80">
+              ⌘K
+            </div>
+          </button>
+        </div>
 
-        <ConnectionBadge connection={connection} onReconnect={() => {}} />
+        {/* Top metrics tags */}
+        <div className="hidden xl:flex items-center gap-5 text-xs font-semibold text-muted-foreground tracking-tight">
+          <div className="flex items-center gap-1.5">
+            <span>Sessions</span>
+            <span className="text-foreground">1</span>
+            <span className="text-muted-foreground/50">/ 48</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span>Gateway</span>
+            <div className="flex items-center gap-1 text-green-500">
+              <span className="text-[10px]">●</span>
+              <span className="font-mono">1ms</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span>Events</span>
+            <div className="flex items-center gap-1 text-blue-500">
+              <span className="text-[10px]">●</span>
+              <span>Live</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Mobile connection dot */}
       <MobileConnectionDot connection={connection} onReconnect={() => {}} />
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         {/* Mobile search trigger */}
         <button
           onClick={() => {
@@ -108,18 +131,24 @@ export function HeaderBar() {
           <Search size={16} />
         </button>
 
-        {/* Chat toggle placeholder */}
-        <button className="hidden md:flex h-8 px-2.5 rounded-md text-xs font-medium transition-smooth items-center gap-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary">
-          <MessageSquare size={14} />
+        {/* Time display */}
+        <div className="hidden md:flex text-xs font-mono font-medium text-muted-foreground">
+          12:51
+        </div>
+
+        {/* Chat toggle */}
+        <button className="hidden sm:flex h-8 px-2 rounded-md text-xs font-medium transition-smooth items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary">
+          <MessageSquare size={16} />
           Chat
         </button>
 
-        {/* Notifications placeholder */}
+        {/* Notifications */}
         <button className="h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center relative">
           <Bell size={16} />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full ring-2 ring-card" />
         </button>
 
-        {/* Simple Theme Toggle */}
+        {/* Theme Toggle */}
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center relative"
@@ -128,9 +157,9 @@ export function HeaderBar() {
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </button>
 
-        {/* User menu placeholder */}
-        <div className="h-8 w-8 rounded-full bg-primary/20 text-primary text-xs font-semibold flex items-center justify-center ml-2">
-          OC
+        {/* User Avatar */}
+        <div className="h-8 w-8 rounded-full bg-blue-600/20 text-blue-500 text-xs font-semibold flex items-center justify-center ml-2 cursor-pointer border border-blue-500/30 font-mono transition-smooth hover:bg-blue-600/30 hover:border-blue-500/50">
+          A
         </div>
       </div>
 

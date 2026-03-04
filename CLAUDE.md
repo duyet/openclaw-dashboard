@@ -117,6 +117,7 @@ src/lib/                        — shared utilities, auth, db, services
 src/lib/db/schema.ts            — Drizzle schema (29 tables)
 src/lib/services/gateway-rpc.ts — WebSocket JSON-RPC client
 src/components/                 — React components (atoms, molecules, organisms, ui)
+src/store/                      — Zustand global state management
 ```
 
 ## What NOT To Do
